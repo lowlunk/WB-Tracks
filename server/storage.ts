@@ -4,8 +4,11 @@ import {
   inventoryItems,
   inventoryTransactions,
   users,
+  componentPhotos,
   type Component,
   type InsertComponent,
+  type ComponentPhoto,
+  type InsertComponentPhoto,
   type InventoryLocation,
   type InsertInventoryLocation,
   type InventoryItem,
@@ -17,6 +20,8 @@ import {
   type TransferItem,
   type InventoryItemWithDetails,
   type ComponentWithInventory,
+  type LoginData,
+  type RegisterData,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc } from "drizzle-orm";
@@ -25,7 +30,11 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  loginUser(username: string): Promise<User | undefined>;
+  updateLastLogin(id: number): Promise<void>;
 
   // Component methods
   getAllComponents(): Promise<Component[]>;
