@@ -225,13 +225,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/components", async (req, res) => {
+  app.post("/api/components", requireAuth, async (req, res) => {
     try {
+      const userId = (req.session as any).userId;
       const validatedData = insertComponentSchema.parse(req.body);
-      const component = await storage.createComponent(validatedData);
+      const component = await storage.createComponent(validatedData, userId);
       res.status(201).json(component);
     } catch (error) {
       res.status(400).json({ message: "Invalid component data" });
+    }
+  });
+
+  // Component photo routes
+  app.get("/api/components/:id/photos", async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.id);
+      const photos = await storage.getComponentPhotos(componentId);
+      res.json(photos);
+    } catch (error) {
+      console.error("Error fetching component photos:", error);
+      res.status(500).json({ message: "Failed to fetch component photos" });
+    }
+  });
+
+  app.post("/api/components/:id/photos", requireAuth, upload.single('image'), async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.id);
+      const userId = (req.session as any).userId;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const imageUrl = `/uploads/components/${req.file.filename}`;
+      const caption = req.body.caption || '';
+
+      const photo = await storage.uploadComponentPhoto({
+        componentId,
+        imageUrl,
+        caption,
+        uploadedBy: userId,
+      });
+
+      res.json(photo);
+    } catch (error) {
+      console.error("Error uploading component photo:", error);
+      res.status(500).json({ message: "Failed to upload photo" });
+    }
+  });
+
+  app.delete("/api/components/:id/photos/:photoId", requireAuth, async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.photoId);
+      await storage.deleteComponentPhoto(photoId);
+      res.json({ message: "Photo deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting component photo:", error);
+      res.status(500).json({ message: "Failed to delete photo" });
+    }
+  });
+
+  app.put("/api/components/:id/photos/:photoId/primary", requireAuth, async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.id);
+      const photoId = parseInt(req.params.photoId);
+      await storage.setPrimaryPhoto(componentId, photoId);
+      res.json({ message: "Primary photo updated successfully" });
+    } catch (error) {
+      console.error("Error setting primary photo:", error);
+      res.status(500).json({ message: "Failed to set primary photo" });
     }
   });
 
@@ -404,6 +466,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Barcode lookup failed" });
     }
   });
+
+  // Serve uploaded files
+  app.use('/uploads', require('express').static(path.join(process.cwd(), 'uploads')));
 
   const httpServer = createServer(app);
 
