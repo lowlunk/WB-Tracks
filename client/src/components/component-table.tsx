@@ -57,7 +57,7 @@ export default function ComponentTable({
   const itemsPerPage = 10;
 
   const filteredComponents = components.filter((component) => {
-    if (!locationFilter) return true;
+    if (!locationFilter || locationFilter === "all") return true;
     if (locationFilter === "main") return (component.mainStock || 0) > 0;
     if (locationFilter === "line") return (component.lineStock || 0) > 0;
     return true;
@@ -111,7 +111,7 @@ export default function ComponentTable({
               <SelectValue placeholder="All Locations" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
+              <SelectItem value="all">All Locations</SelectItem>
               <SelectItem value="main">Main Inventory</SelectItem>
               <SelectItem value="line">Line Inventory</SelectItem>
             </SelectContent>
