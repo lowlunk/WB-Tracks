@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 60 4.8% 95.9%;
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 60 4.8% 95.9%;
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+
+  /* WB-Tracks Custom Colors */
+  --wb-primary: 207 90% 54%; /* #2196F3 */
+  --wb-primary-dark: 210 79% 46%; /* #1976D2 */
+  --wb-primary-light: 207 90% 77%; /* #64B5F6 */
+  --wb-secondary: 122 39% 49%; /* #4CAF50 */
+  --wb-secondary-dark: 122 40% 41%; /* #388E3C */
+  --wb-accent: 36 100% 50%; /* #FF9800 */
+  --wb-error: 4 90% 58%; /* #F44336 */
+  --wb-warning: 45 100% 51%; /* #FFC107 */
+  --wb-success: 122 39% 49%; /* #4CAF50 */
+  --wb-surface: 0 0% 100%; /* #FFFFFF */
+  --wb-background: 0 0% 98%; /* #FAFAFA */
+  --wb-on-primary: 0 0% 100%; /* #FFFFFF */
+  --wb-on-secondary: 0 0% 100%; /* #FFFFFF */
+  --wb-on-surface: 0 0% 13%; /* #212121 */
+  --wb-on-background: 0 0% 13%; /* #212121 */
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+
+  /* Dark mode WB-Tracks colors */
+  --wb-background: 240 10% 3.9%; /* #0A0A0B */
+  --wb-surface: 240 10% 8%; /* #141417 */
+  --wb-on-surface: 0 0% 98%; /* #FAFAFA */
+  --wb-on-background: 0 0% 98%; /* #FAFAFA */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: hsl(var(--wb-background));
+    color: hsl(var(--wb-on-background));
+  }
+
+  /* Production environment optimizations */
+  @media (max-width: 768px) {
+    body {
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+  }
+}
+
+@layer components {
+  /* WB-Tracks specific component styles */
+  .wb-btn-primary {
+    @apply bg-[hsl(var(--wb-primary))] text-[hsl(var(--wb-on-primary))] hover:bg-[hsl(var(--wb-primary-dark))] transition-colors;
+  }
+
+  .wb-btn-secondary {
+    @apply bg-[hsl(var(--wb-secondary))] text-[hsl(var(--wb-on-secondary))] hover:bg-[hsl(var(--wb-secondary-dark))] transition-colors;
+  }
+
+  .wb-btn-accent {
+    @apply bg-[hsl(var(--wb-accent))] text-white hover:opacity-90 transition-opacity;
+  }
+
+  .wb-card {
+    @apply bg-[hsl(var(--wb-surface))] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700;
+  }
+
+  .wb-input {
+    @apply border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-[hsl(var(--wb-surface))] text-[hsl(var(--wb-on-surface))] focus:ring-2 focus:ring-[hsl(var(--wb-primary))] focus:border-[hsl(var(--wb-primary))];
+  }
+
+  .wb-badge-success {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200;
+  }
+
+  .wb-badge-warning {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200;
+  }
+
+  .wb-badge-error {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200;
+  }
+
+  /* Mobile-friendly touch targets */
+  .wb-touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Loading states */
+  .wb-skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  }
+
+  /* Production environment styles */
+  .wb-production-safe {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* High contrast for accessibility */
+  @media (prefers-contrast: high) {
+    .wb-btn-primary {
+      @apply border-2 border-blue-800;
+    }
+    
+    .wb-btn-secondary {
+      @apply border-2 border-green-800;
+    }
+  }
+
+  /* Focus indicators for keyboard navigation */
+  .wb-focus-visible:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[hsl(var(--wb-primary))];
+  }
+}
+
+@layer utilities {
+  /* Mobile-first responsive utilities */
+  .wb-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .wb-grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+
+  /* Animation utilities for better UX */
+  .wb-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .wb-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .wb-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Print styles for reports */
+@media print {
+  .wb-no-print {
+    display: none !important;
+  }
+  
+  .wb-print-only {
+    display: block !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
