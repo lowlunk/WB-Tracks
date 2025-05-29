@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -33,17 +33,21 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
   const { data: component, isLoading } = useQuery({
     queryKey: ["/api/components", componentId],
     enabled: isOpen && !!componentId,
-    onSuccess: (data: Component) => {
-      setFormData({
-        componentNumber: data.componentNumber || "",
-        description: data.description || "",
-        category: data.category || "",
-        supplier: data.supplier || "",
-        unitPrice: data.unitPrice?.toString() || "",
-        notes: data.notes || "",
-      });
-    },
   });
+
+  // Update form data when component data is loaded
+  useEffect(() => {
+    if (component) {
+      setFormData({
+        componentNumber: (component as any).componentNumber || "",
+        description: (component as any).description || "",
+        category: (component as any).category || "",
+        supplier: (component as any).supplier || "",
+        unitPrice: (component as any).unitPrice?.toString() || "",
+        notes: (component as any).notes || "",
+      });
+    }
+  }, [component]);
 
   // Fetch component photos
   const { data: photos = [] } = useQuery({

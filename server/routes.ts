@@ -9,6 +9,7 @@ import connectPg from "connect-pg-simple";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
+import express from "express";
 
 // Session configuration
 const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -468,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Serve uploaded files
-  app.use('/uploads', require('express').static(path.join(process.cwd(), 'uploads')));
+  app.use('/uploads', (await import('express')).static(path.join(process.cwd(), 'uploads')));
 
   const httpServer = createServer(app);
 
