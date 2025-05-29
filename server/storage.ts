@@ -40,9 +40,15 @@ export interface IStorage {
   getAllComponents(): Promise<Component[]>;
   getComponent(id: number): Promise<Component | undefined>;
   getComponentByNumber(componentNumber: string): Promise<Component | undefined>;
-  createComponent(component: InsertComponent): Promise<Component>;
-  updateComponent(id: number, component: Partial<InsertComponent>): Promise<Component>;
+  createComponent(component: InsertComponent, userId?: number): Promise<Component>;
+  updateComponent(id: number, component: Partial<InsertComponent>, userId?: number): Promise<Component>;
   deleteComponent(id: number): Promise<void>;
+
+  // Component photo methods
+  getComponentPhotos(componentId: number): Promise<ComponentPhoto[]>;
+  uploadComponentPhoto(photo: InsertComponentPhoto): Promise<ComponentPhoto>;
+  deleteComponentPhoto(id: number): Promise<void>;
+  setPrimaryPhoto(componentId: number, photoId: number): Promise<void>;
 
   // Location methods
   getAllLocations(): Promise<InventoryLocation[]>;
@@ -88,9 +94,41 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async loginUser(username: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(
+        eq(users.username, username),
+        eq(users.isActive, true)
+      ));
+    return user || undefined;
+  }
+
+  async updateLastLogin(id: number): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastLogin: new Date() })
+      .where(eq(users.id, id));
   }
 
   async getAllComponents(): Promise<Component[]> {
@@ -107,18 +145,62 @@ export class DatabaseStorage implements IStorage {
     return component || undefined;
   }
 
-  async createComponent(component: InsertComponent): Promise<Component> {
-    const [newComponent] = await db.insert(components).values(component).returning();
+  async createComponent(component: InsertComponent, userId?: number): Promise<Component> {
+    const componentData = {
+      ...component,
+      createdBy: userId,
+      updatedBy: userId,
+    };
+    const [newComponent] = await db.insert(components).values(componentData).returning();
     return newComponent;
   }
 
-  async updateComponent(id: number, component: Partial<InsertComponent>): Promise<Component> {
+  async updateComponent(id: number, component: Partial<InsertComponent>, userId?: number): Promise<Component> {
+    const updateData = {
+      ...component,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    };
     const [updatedComponent] = await db
       .update(components)
-      .set(component)
+      .set(updateData)
       .where(eq(components.id, id))
       .returning();
     return updatedComponent;
+  }
+
+  // Component photo methods
+  async getComponentPhotos(componentId: number): Promise<ComponentPhoto[]> {
+    return await db
+      .select()
+      .from(componentPhotos)
+      .where(eq(componentPhotos.componentId, componentId))
+      .orderBy(desc(componentPhotos.isPrimary), desc(componentPhotos.createdAt));
+  }
+
+  async uploadComponentPhoto(photo: InsertComponentPhoto): Promise<ComponentPhoto> {
+    const [newPhoto] = await db.insert(componentPhotos).values(photo).returning();
+    return newPhoto;
+  }
+
+  async deleteComponentPhoto(id: number): Promise<void> {
+    await db.delete(componentPhotos).where(eq(componentPhotos.id, id));
+  }
+
+  async setPrimaryPhoto(componentId: number, photoId: number): Promise<void> {
+    await db.transaction(async (tx) => {
+      // Remove primary flag from all photos for this component
+      await tx
+        .update(componentPhotos)
+        .set({ isPrimary: false })
+        .where(eq(componentPhotos.componentId, componentId));
+      
+      // Set the selected photo as primary
+      await tx
+        .update(componentPhotos)
+        .set({ isPrimary: true })
+        .where(eq(componentPhotos.id, photoId));
+    });
   }
 
   async deleteComponent(id: number): Promise<void> {
@@ -365,6 +447,7 @@ export class DatabaseStorage implements IStorage {
         transactionType: inventoryTransactions.transactionType,
         notes: inventoryTransactions.notes,
         createdAt: inventoryTransactions.createdAt,
+        createdBy: inventoryTransactions.createdBy,
         component: components,
       })
       .from(inventoryTransactions)
