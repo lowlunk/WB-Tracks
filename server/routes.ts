@@ -64,26 +64,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     tableName: "sessions",
   });
 
-  // Dynamic session configuration based on request
-  app.use((req, res, next) => {
-    const isSecureRequest = req.hostname.includes('replit.app') || req.protocol === 'https';
-    
-    // Set up session middleware dynamically
-    const sessionMiddleware = session({
-      store: sessionStore,
-      secret: process.env.SESSION_SECRET || 'wb-tracks-secret-key',
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: isSecureRequest,
-        maxAge: sessionTtl,
-        sameSite: isSecureRequest ? 'none' : 'lax'
-      }
-    });
-    
-    sessionMiddleware(req, res, next);
-  });
+  // Configure session middleware once
+  app.use(session({
+    store: sessionStore,
+    secret: process.env.SESSION_SECRET || 'wb-tracks-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false, // Allow both secure and non-secure for compatibility
+      maxAge: sessionTtl,
+      sameSite: 'lax'
+    }
+  }));
 
   // Initialize default data
   await storage.initializeDefaultData();
