@@ -34,45 +34,17 @@ function NotificationContent() {
     refetchInterval: 30000,
   });
 
-  const { notifications, addNotification } = useNotifications();
-  
-  // Convert low stock items to notifications (only if not already added)
-  useEffect(() => {
-    if (lowStockItems && Array.isArray(lowStockItems)) {
-      lowStockItems.forEach((item: any) => {
-        const notificationId = `low-stock-${item.component.id}-${item.location.id}`;
-        
-        // Only add notification if it doesn't already exist
-        if (!notifications.some(n => n.id === notificationId)) {
-          addNotification({
-            type: 'low_stock',
-            title: 'Low Stock Alert',
-            description: `${item.component.componentNumber} in ${item.location.name} has ${item.quantity} units remaining`,
-            severity: item.quantity === 0 ? 'critical' : 'warning',
-            componentNumber: item.component.componentNumber,
-            location: item.location.name
-          });
-        }
-      });
-    }
-  }, [lowStockItems, notifications, addNotification]);
-
   // Show dismissible banner for critical low stock items
-  const criticalItems = lowStockItems?.filter((item: any) => item.quantity === 0) || [];
-  const warningItems = lowStockItems?.filter((item: any) => item.quantity > 0 && item.quantity <= 5) || [];
+  const criticalItems = Array.isArray(lowStockItems) ? lowStockItems.filter((item: any) => item.quantity === 0) : [];
+  const warningItems = Array.isArray(lowStockItems) ? lowStockItems.filter((item: any) => item.quantity > 0 && item.quantity <= 5) : [];
 
   const dismissBanner = (bannerId: string) => {
     setDismissedBanners(prev => new Set(prev).add(bannerId));
   };
 
-  if (notifications.length === 0 && criticalItems.length === 0 && warningItems.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>No notifications at this time</p>
-        <p className="text-sm">You'll see low stock alerts and system updates here</p>
-      </div>
-    );
+  // Early return if no low stock items to display
+  if (!Array.isArray(lowStockItems) || lowStockItems.length === 0 || (criticalItems.length === 0 && warningItems.length === 0)) {
+    return null; // No notification content to show
   }
 
   return (
@@ -141,50 +113,7 @@ function NotificationContent() {
         </Alert>
       )}
 
-      {/* Regular Notifications */}
-      <div className="space-y-3">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className={`p-4 rounded-lg border ${
-              notification.severity === 'critical'
-                ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
-                : 'border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950'
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <Package className={`h-5 w-5 mt-0.5 ${
-                  notification.severity === 'critical' ? 'text-red-600' : 'text-yellow-600'
-                }`} />
-                <div>
-                  <h4 className={`font-medium ${
-                    notification.severity === 'critical' 
-                      ? 'text-red-800 dark:text-red-200' 
-                      : 'text-yellow-800 dark:text-yellow-200'
-                  }`}>
-                    {notification.title}
-                  </h4>
-                  <p className={`text-sm ${
-                    notification.severity === 'critical' 
-                      ? 'text-red-700 dark:text-red-300' 
-                      : 'text-yellow-700 dark:text-yellow-300'
-                  }`}>
-                    {notification.description}
-                  </p>
-                  <p className={`text-xs mt-1 ${
-                    notification.severity === 'critical' 
-                      ? 'text-red-600 dark:text-red-400' 
-                      : 'text-yellow-600 dark:text-yellow-400'
-                  }`}>
-                    {new Date(notification.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+
     </div>
   );
 }
@@ -193,7 +122,7 @@ function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location] = useLocation();
   const [showScanner, setShowScanner] = useState(false);
-  const { shouldShowTour, completeTour } = useOnboarding();
+  const { showTour, completeTour } = useOnboarding();
   const { theme } = useTheme();
 
   // Apply theme to document element
@@ -271,7 +200,7 @@ function Router() {
       <NotificationSystem />
 
       <OnboardingTour
-        isOpen={shouldShowTour}
+        isOpen={showTour}
         onClose={completeTour}
         mode="complete"
       />
