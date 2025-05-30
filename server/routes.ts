@@ -483,6 +483,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/transactions/consume", async (req, res) => {
+    try {
+      const { consumeItemSchema } = await import("@shared/schema");
+      const validatedData = consumeItemSchema.parse(req.body);
+      const transaction = await storage.consumeItems(validatedData);
+      
+      // Broadcast consume event via WebSocket
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'INVENTORY_UPDATED',
+            data: { transactionId: transaction.id, type: 'consume' }
+          }));
+        }
+      });
+      
+      res.status(201).json(transaction);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Add transaction failed" });
+    }
+  });
+
   app.post("/api/transactions/remove", async (req, res) => {
     try {
       const { componentId, locationId, quantity, notes } = req.body;

@@ -24,6 +24,7 @@ import {
   type User,
   type InsertUser,
   type TransferItem,
+  type ConsumeItem,
   type InventoryItemWithDetails,
   type ComponentWithInventory,
   type LoginData,
@@ -89,6 +90,7 @@ export interface IStorage {
   transferItems(transfer: TransferItem): Promise<InventoryTransaction>;
   addItemsToInventory(componentId: number, locationId: number, quantity: number, notes?: string): Promise<InventoryTransaction>;
   removeItemsFromInventory(componentId: number, locationId: number, quantity: number, notes?: string): Promise<InventoryTransaction>;
+  consumeItems(consume: ConsumeItem): Promise<InventoryTransaction>;
   getRecentTransactions(limit?: number): Promise<(InventoryTransaction & { component: Component; fromLocation?: InventoryLocation; toLocation?: InventoryLocation })[]>;
 
   // Dashboard stats
@@ -526,6 +528,45 @@ export class DatabaseStorage implements IStorage {
           quantity,
           transactionType: 'remove',
           notes,
+        })
+        .returning();
+
+      return transaction;
+    });
+  }
+
+  async consumeItems(consume: ConsumeItem): Promise<InventoryTransaction> {
+    return await db.transaction(async (tx) => {
+      const { componentId, locationId, quantity, notes } = consume;
+      
+      // Check current quantity
+      const [existingItem] = await tx
+        .select()
+        .from(inventoryItems)
+        .where(and(eq(inventoryItems.componentId, componentId), eq(inventoryItems.locationId, locationId)));
+
+      if (!existingItem || existingItem.quantity < quantity) {
+        throw new Error("Insufficient quantity to consume");
+      }
+
+      // Update inventory item
+      await tx
+        .update(inventoryItems)
+        .set({ 
+          quantity: existingItem.quantity - quantity,
+          lastUpdated: new Date()
+        })
+        .where(and(eq(inventoryItems.componentId, componentId), eq(inventoryItems.locationId, locationId)));
+
+      // Create transaction record for consumption (production use)
+      const [transaction] = await tx
+        .insert(inventoryTransactions)
+        .values({
+          componentId,
+          fromLocationId: locationId,
+          quantity,
+          transactionType: 'consume',
+          notes: notes || 'Used in production',
         })
         .returning();
 

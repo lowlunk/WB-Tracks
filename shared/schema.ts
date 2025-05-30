@@ -293,6 +293,13 @@ export const transferItemSchema = z.object({
   notes: z.string().optional(),
 });
 
+export const consumeItemSchema = z.object({
+  componentId: z.number(),
+  locationId: z.number(),
+  quantity: z.number().min(1),
+  notes: z.string().optional(),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Facility = typeof facilities.$inferSelect;
@@ -312,6 +319,7 @@ export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
 export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
 export type InsertInventoryTransaction = z.infer<typeof insertInventoryTransactionSchema>;
 export type TransferItem = z.infer<typeof transferItemSchema>;
+export type ConsumeItem = z.infer<typeof consumeItemSchema>;
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
 
