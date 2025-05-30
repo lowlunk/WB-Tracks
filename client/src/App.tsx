@@ -122,7 +122,7 @@ function NotificationContent() {
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
-  
+
   // Debug logging
   console.log('Auth State:', { user, isLoading, isAuthenticated, location });
 
@@ -180,7 +180,7 @@ function Router() {
             onSettingsClick={() => navigate('/settings')}
           />
         )}
-        
+
         <div className="flex-1 pb-16 md:pb-0">
           <Switch>
             <Route path="/" component={Dashboard} />

@@ -28,8 +28,9 @@ export default function Login() {
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      // Immediately reload the page to refresh authentication state
-      window.location.reload();
+      // Invalidate auth queries and redirect to dashboard
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setLocation("/");
     },
     onError: (error: any) => {
       toast({
