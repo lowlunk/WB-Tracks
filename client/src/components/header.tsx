@@ -64,6 +64,14 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
                 Line Inventory
               </Button>
             </Link>
+            <Link href="/inventory">
+              <Button 
+                variant={location === "/inventory" ? "default" : "ghost"}
+                className={location === "/inventory" ? "wb-btn-secondary" : ""}
+              >
+                Inventory
+              </Button>
+            </Link>
             <Link href="/admin">
               <Button 
                 variant={location === "/admin" ? "default" : "ghost"}
