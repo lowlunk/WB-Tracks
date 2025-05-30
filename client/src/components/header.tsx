@@ -12,9 +12,11 @@ import {
 
 interface HeaderProps {
   onScanClick?: () => void;
+  onNotificationClick?: () => void;
+  onSettingsClick?: () => void;
 }
 
-export default function Header({ onScanClick }: HeaderProps) {
+export default function Header({ onScanClick, onNotificationClick, onSettingsClick }: HeaderProps) {
   const [location] = useLocation();
   const [isOnline] = useState(true); // In a real app, this would check actual network status
 
@@ -75,6 +77,7 @@ export default function Header({ onScanClick }: HeaderProps) {
 
             {/* Notifications */}
             <Button 
+              onClick={onNotificationClick}
               variant="ghost" 
               size="icon" 
               className="relative wb-focus-visible"
@@ -101,6 +104,7 @@ export default function Header({ onScanClick }: HeaderProps) {
 
             {/* Settings */}
             <Button 
+              onClick={onSettingsClick}
               variant="ghost" 
               size="icon" 
               className="wb-focus-visible"

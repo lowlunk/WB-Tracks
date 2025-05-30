@@ -1,4 +1,5 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
+import { useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,13 +14,35 @@ import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
+import BarcodeScanner from "@/components/barcode-scanner";
+import NotificationSystem from "@/components/notification-system";
 
 function Router() {
+  const [, setLocation] = useLocation();
+  const [showScanner, setShowScanner] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleScanClick = () => {
+    setShowScanner(true);
+  };
+
+  const handleNotificationClick = () => {
+    setShowNotifications(true);
+  };
+
+  const handleSettingsClick = () => {
+    setLocation("/settings");
+  };
+
   // For now, let's bypass authentication to get the core system working
   // Users can still access all features without login
   return (
     <div className="min-h-screen bg-[hsl(var(--wb-background))]">
-      <Header />
+      <Header 
+        onScanClick={handleScanClick}
+        onNotificationClick={handleNotificationClick}
+        onSettingsClick={handleSettingsClick}
+      />
       <main className="pb-16 lg:pb-0">
         <Switch>
           <Route path="/" component={Dashboard} />
@@ -32,6 +55,24 @@ function Router() {
         </Switch>
       </main>
       <BottomNavigation />
+
+      {/* Global Modals */}
+      {showScanner && (
+        <BarcodeScanner
+          isOpen={showScanner}
+          onClose={() => setShowScanner(false)}
+          onScan={(result) => {
+            console.log('Scanned:', result);
+            setShowScanner(false);
+          }}
+        />
+      )}
+
+      {showNotifications && (
+        <NotificationSystem
+          className={showNotifications ? 'fixed inset-0 z-50' : 'hidden'}
+        />
+      )}
     </div>
   );
 }

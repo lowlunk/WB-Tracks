@@ -277,7 +277,10 @@ export default function Dashboard() {
                   className="wb-input w-full sm:w-80"
                 />
               </div>
-              <Button className="wb-btn-primary">
+              <Button 
+                onClick={() => setShowAddComponent(true)}
+                className="wb-btn-primary"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Component
               </Button>
