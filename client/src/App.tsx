@@ -121,7 +121,7 @@ function NotificationContent() {
 
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
 
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -174,7 +174,7 @@ function Router() {
           <Header 
             onScanClick={() => setShowScanner(true)}
             onNotificationClick={() => setShowNotifications(!showNotifications)}
-            onSettingsClick={() => window.location.href = '/settings'}
+            onSettingsClick={() => navigate('/settings')}
           />
         )}
         
