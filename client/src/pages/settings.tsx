@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3, Bell, AlertTriangle, Activity } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FacilityManagement from "@/components/facility-management";
+import { apiRequest } from "@/lib/queryClient";
 
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -88,35 +91,76 @@ export default function Settings() {
   });
   
   const [userSettings, setUserSettings] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    email: user?.email || "",
     notifications: true,
-    darkMode: false,
+    darkMode: document.documentElement.classList.contains('dark'),
     autoBackup: true,
     lowStockThreshold: 5,
   });
 
-  const handleUserUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // In a real implementation, this would update user profile
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
+  // Apply dark mode changes to the document
+  useEffect(() => {
+    if (userSettings.darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [userSettings.darkMode]);
+
+  // Load theme from localStorage on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setUserSettings(prev => ({ ...prev, darkMode: true }));
+    }
+  }, []);
+
+  // Test low inventory functionality
+  const testLowInventoryMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/test-low-inventory', {
+        method: 'POST',
       });
-    } catch (error) {
+      return response;
+    },
+    onSuccess: () => {
       toast({
-        title: "Error",
-        description: "Failed to update profile",
+        title: "Test Low Inventory Alert",
+        description: "Low stock alert test completed successfully. Check your notifications.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Test Failed",
+        description: error.message || "Failed to test low inventory alert",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
+
+  // Test activity notification functionality
+  const testActivityMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/test-activity', {
+        method: 'POST',
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Test Activity Alert",
+        description: "Activity alert test completed successfully. Check your notifications.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Test Failed",
+        description: error.message || "Failed to test activity alert",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleExportData = async () => {
     try {
@@ -543,13 +587,23 @@ export default function Settings() {
               <div className="space-y-4">
                 <h4 className="font-medium">Test Notifications</h4>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="wb-btn-secondary">
+                  <Button 
+                    variant="outline" 
+                    className="wb-btn-secondary"
+                    onClick={() => testLowInventoryMutation.mutate()}
+                    disabled={testLowInventoryMutation.isPending}
+                  >
                     <AlertTriangle className="h-4 w-4 mr-2" />
-                    Test Low Stock Alert
+                    {testLowInventoryMutation.isPending ? 'Testing...' : 'Test Low Stock Alert'}
                   </Button>
-                  <Button variant="outline" className="wb-btn-secondary">
+                  <Button 
+                    variant="outline" 
+                    className="wb-btn-secondary"
+                    onClick={() => testActivityMutation.mutate()}
+                    disabled={testActivityMutation.isPending}
+                  >
                     <Activity className="h-4 w-4 mr-2" />
-                    Test Activity Alert
+                    {testActivityMutation.isPending ? 'Testing...' : 'Test Activity Alert'}
                   </Button>
                 </div>
               </div>
