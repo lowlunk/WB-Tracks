@@ -16,6 +16,81 @@ import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
 import BarcodeScanner from "@/components/barcode-scanner";
 import NotificationSystem from "@/components/notification-system";
+import { useQuery } from "@tanstack/react-query";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Package, TrendingDown, Bell } from "lucide-react";
+
+// Simple notification content component for the modal
+function NotificationContent() {
+  const { data: lowStockItems } = useQuery({
+    queryKey: ["/api/inventory/low-stock"],
+    refetchInterval: 30000,
+  });
+
+  const notifications = [];
+  
+  // Convert low stock items to notifications
+  if (lowStockItems && Array.isArray(lowStockItems)) {
+    lowStockItems.forEach((item: any) => {
+      notifications.push({
+        id: `low-stock-${item.component.id}-${item.location.id}`,
+        type: 'low_stock',
+        title: 'Low Stock Alert',
+        description: `${item.component.componentNumber} in ${item.location.name} has ${item.quantity} units remaining`,
+        severity: item.quantity === 0 ? 'critical' : 'warning',
+        timestamp: new Date(),
+        componentNumber: item.component.componentNumber,
+        location: item.location.name,
+      });
+    });
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No notifications at this time</p>
+        <p className="text-sm">You'll see low stock alerts and system updates here</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {notifications.map((notification: any) => (
+        <Alert key={notification.id} variant={notification.severity === 'critical' ? 'destructive' : 'default'}>
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0 mt-0.5">
+              {notification.type === 'low_stock' ? (
+                notification.severity === 'critical' ? 
+                  <AlertTriangle className="h-4 w-4 text-red-500" /> : 
+                  <TrendingDown className="h-4 w-4 text-yellow-500" />
+              ) : (
+                <Package className="h-4 w-4 text-blue-500" />
+              )}
+            </div>
+            <div className="flex-1">
+              <h4 className="font-medium">{notification.title}</h4>
+              <AlertDescription className="mt-1">
+                {notification.description}
+              </AlertDescription>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-gray-500">
+                  {notification.timestamp.toLocaleTimeString()}
+                </span>
+                {notification.componentNumber && (
+                  <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                    #{notification.componentNumber}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Alert>
+      ))}
+    </div>
+  );
+}
 
 function Router() {
   const [, setLocation] = useLocation();
@@ -83,7 +158,7 @@ function Router() {
               </button>
             </div>
             <div className="p-6 overflow-y-auto max-h-[50vh]">
-              <NotificationSystem />
+              <NotificationContent />
             </div>
           </div>
         </div>
