@@ -119,7 +119,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateLastLogin(user.id);
 
       // Set session and save it explicitly
+      console.log('Login - Setting userId in session:', user.id);
+      console.log('Login - Session before:', (req as any).session);
       (req as any).session.userId = user.id;
+      console.log('Login - Session after setting userId:', (req as any).session);
       
       // Force session save before responding
       (req as any).session.save((err: any) => {
@@ -127,6 +130,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Session save error:', err);
           return res.status(500).json({ message: "Session save failed" });
         }
+        
+        console.log('Login - Session saved successfully');
+        console.log('Login - Final session state:', (req as any).session);
         
         res.json({ 
           message: "Login successful",
