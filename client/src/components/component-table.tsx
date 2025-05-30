@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Filter
 } from "lucide-react";
+import ComponentEditDialog from "@/components/component-edit-dialog";
 
 interface Component {
   id: number;
@@ -54,7 +55,21 @@ export default function ComponentTable({
 }: ComponentTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [locationFilter, setLocationFilter] = useState("");
+  const [editingComponent, setEditingComponent] = useState<Component | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const itemsPerPage = 10;
+
+  const handleEditClick = (component: Component) => {
+    console.log("Edit:", component);
+    setEditingComponent(component);
+    setIsEditModalOpen(true);
+    if (onEdit) onEdit(component);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingComponent(null);
+  };
 
   const filteredComponents = components.filter((component) => {
     if (!locationFilter || locationFilter === "all") return true;
@@ -214,7 +229,7 @@ export default function ComponentTable({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onEdit(component)}
+                      onClick={() => handleEditClick(component)}
                       className="wb-focus-visible"
                       title="Edit Component"
                     >
@@ -297,6 +312,15 @@ export default function ComponentTable({
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Component Edit Modal */}
+      {editingComponent && (
+        <ComponentEditModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          componentId={editingComponent.id}
+        />
       )}
     </div>
   );

@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, X, Star } from "lucide-react";
-import type { Component, ComponentPhoto } from "@shared/schema";
+import { Camera, Upload, X, Star, Package } from "lucide-react";
 
 interface ComponentEditModalProps {
   isOpen: boolean;
