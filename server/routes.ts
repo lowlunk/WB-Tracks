@@ -91,6 +91,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize default data
   await storage.initializeDefaultData();
 
+  // Health check endpoint
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+  });
+
   // Authentication routes
   app.post("/api/login", async (req, res) => {
     try {

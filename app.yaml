@@ -1,0 +1,32 @@
+# Digital Ocean App Platform Configuration
+name: wb-tracks
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: your-username/wb-tracks
+    branch: main
+  run_command: npm start
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  envs:
+  - key: NODE_ENV
+    value: "production"
+  - key: SESSION_SECRET
+    type: SECRET
+    value: "your-session-secret-here"
+  - key: DATABASE_URL
+    type: SECRET
+    value: "${db.DATABASE_URL}"
+
+databases:
+- name: wb-tracks-db
+  engine: PG
+  version: "15"
+  size: db-s-dev-database
+  num_nodes: 1
+  
+static_sites: []
