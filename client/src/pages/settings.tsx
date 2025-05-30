@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3, Bell, AlertTriangle, Activity } from "lucide-react";
+import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3, Bell, AlertTriangle, Activity, Play } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FacilityManagement from "@/components/facility-management";
 import { apiRequest } from "@/lib/queryClient";
@@ -19,6 +20,7 @@ export default function Settings() {
   const { user, logout } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
+  const { startTour, resetOnboarding } = useOnboarding();
   const [isLoading, setIsLoading] = useState(false);
 
   // Data export mutations
@@ -315,6 +317,32 @@ export default function Settings() {
                 <p className="text-sm text-gray-500">
                   Alert when stock falls below this number
                 </p>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Quick Tour</Label>
+                  <p className="text-sm text-gray-500">
+                    Restart the guided walkthrough of WB-Tracks features
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    resetOnboarding();
+                    startTour();
+                    toast({
+                      title: "Tour Started",
+                      description: "Follow the highlighted elements to learn about WB-Tracks features",
+                    });
+                  }}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  Start Tour
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -48,7 +48,7 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--wb-surface))] border-t border-gray-200 dark:border-gray-700 lg:hidden z-40 wb-production-safe">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--wb-surface))] border-t border-gray-200 dark:border-gray-700 lg:hidden z-40 wb-production-safe" data-tour="navigation">
       <div className={`grid ${isAdmin ? 'grid-cols-5' : 'grid-cols-4'} h-16`}>
         {navItems.map((item) => {
           const Icon = item.icon;

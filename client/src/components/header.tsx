@@ -126,6 +126,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
               onClick={onScanClick}
               className="wb-btn-primary wb-focus-visible"
               title="Scan Barcode"
+              data-tour="scan-button"
             >
               <QrCode className="h-5 w-5" />
               <span className="hidden sm:ml-2 sm:inline">Scan</span>
