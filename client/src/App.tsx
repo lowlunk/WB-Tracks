@@ -122,6 +122,9 @@ function NotificationContent() {
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
+  
+  // Debug logging
+  console.log('Auth State:', { user, isLoading, isAuthenticated, location });
 
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
