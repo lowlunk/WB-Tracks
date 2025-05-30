@@ -51,7 +51,10 @@ export default function MainInventory() {
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Transfer Items
           </Button>
-          <Button className="wb-btn-secondary">
+          <Button 
+            onClick={() => setShowAddComponent(true)}
+            className="wb-btn-secondary"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Items
           </Button>
@@ -151,6 +154,14 @@ export default function MainInventory() {
           }}
           defaultFromLocation={1}
           defaultComponentId={selectedComponentForTransfer?.id}
+        />
+      )}
+
+      {/* Add Component Dialog */}
+      {showAddComponent && (
+        <AddComponentDialog
+          isOpen={showAddComponent}
+          onClose={() => setShowAddComponent(false)}
         />
       )}
     </div>
