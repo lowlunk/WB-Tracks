@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ export default function Settings() {
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const { startTour, resetOnboarding } = useOnboarding();
+  const { theme, toggleTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
 
   // Data export mutations
@@ -94,34 +96,9 @@ export default function Settings() {
   
   const [userSettings, setUserSettings] = useState({
     notifications: true,
-    darkMode: document.documentElement.classList.contains('dark'),
     autoBackup: true,
     lowStockThreshold: 5,
   });
-
-  // Apply dark mode changes to the document and persist globally
-  useEffect(() => {
-    if (userSettings.darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('wb-tracks-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('wb-tracks-theme', 'light');
-    }
-    
-    // Dispatch custom event to notify other components
-    window.dispatchEvent(new CustomEvent('themeChanged', { 
-      detail: { theme: userSettings.darkMode ? 'dark' : 'light' } 
-    }));
-  }, [userSettings.darkMode]);
-
-  // Load theme from localStorage on component mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setUserSettings(prev => ({ ...prev, darkMode: true }));
-    }
-  }, []);
 
   // Test low inventory functionality
   const testLowInventoryMutation = useMutation({
@@ -286,8 +263,8 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch
-                  checked={userSettings.darkMode}
-                  onCheckedChange={(checked) => handleSettingChange("darkMode", checked)}
+                  checked={theme === 'dark'}
+                  onCheckedChange={toggleTheme}
                 />
               </div>
               
