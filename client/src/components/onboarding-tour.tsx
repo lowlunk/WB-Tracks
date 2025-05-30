@@ -211,16 +211,11 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
   const { user } = useAuth();
 
   // Filter steps based on mode and user role
-  const getFilteredSteps = () => {
-    let filtered = tourSteps.filter(step => {
-      if (step.category === 'admin' && user?.role !== 'admin') return false;
-      if (mode === 'basic' && step.category === 'advanced') return false;
-      return true;
-    });
-    return filtered;
-  };
-
-  const filteredSteps = getFilteredSteps();
+  const filteredSteps = tourSteps.filter(step => {
+    if (step.category === 'admin' && user?.role !== 'admin') return false;
+    if (mode === 'basic' && step.category === 'advanced') return false;
+    return true;
+  });
 
   useEffect(() => {
     if (isOpen && currentStep < filteredSteps.length) {
@@ -320,7 +315,11 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
   };
 
   const handleInteractionComplete = (stepId: string) => {
-    setCompletedInteractions(prev => new Set([...prev, stepId]));
+    setCompletedInteractions(prev => {
+      const newSet = new Set(prev);
+      newSet.add(stepId);
+      return newSet;
+    });
     setIsInteracting(true);
   };
 
@@ -393,93 +392,238 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
     };
   };
 
-  return (
-    <div className="fixed inset-0 z-50">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50" />
-      
-      {/* Highlight Box */}
-      {highlightElement && (
-        <div
-          className="absolute border-2 border-blue-500 bg-blue-500/10 rounded-lg pointer-events-none z-51 transition-all duration-300"
-          style={getHighlightStyle()}
-        />
-      )}
+  if (!currentStepData) return null;
 
-      {/* Tour Tooltip */}
-      <Card 
-        className="absolute w-96 bg-white dark:bg-gray-800 shadow-2xl z-52 transition-all duration-300"
-        style={getTooltipPosition()}
-      >
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Play className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-lg">{currentStepData.title}</CardTitle>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleSkip}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <CardDescription className="text-sm">
-            Step {currentStep + 1} of {filteredSteps.length}
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="pt-0">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            {currentStepData.description}
-          </p>
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50"
+        >
+          {/* Animated Overlay */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+          />
           
-          {currentStepData.action && (
-            <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-700 dark:text-blue-300">
-              💡 {currentStepData.action}
-            </div>
+          {/* Interactive Highlight Box with Pulse Animation */}
+          {highlightElement && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                boxShadow: currentStepData.interactive ? 
+                  "0 0 0 4px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.4)" : 
+                  "0 0 0 2px rgba(59, 130, 246, 0.5)"
+              }}
+              className={`absolute border-2 border-blue-500 bg-blue-500/10 rounded-lg pointer-events-none z-51 transition-all duration-300 ${
+                currentStepData.interactive ? 'animate-pulse' : ''
+              }`}
+              style={getHighlightStyle()}
+            >
+              {/* Floating Action Indicator */}
+              {currentStepData.interactive && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute -top-8 left-1/2 transform -translate-x-1/2"
+                >
+                  <div className="flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                    {getStepIcon(currentStepData.icon)}
+                    <span className="capitalize">{currentStepData.type}</span>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
           )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              {!isFirstStep && (
-                <Button variant="outline" size="sm" onClick={handlePrevious}>
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Button>
-              )}
-            </div>
-            
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={handleSkip}>
-                Skip Tour
-              </Button>
-              <Button size="sm" onClick={handleNext}>
-                {isLastStep ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Finish
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-1" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+          {/* Enhanced Tour Tooltip with Animations */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          >
+            <Card 
+              className="absolute w-96 bg-white dark:bg-gray-800 shadow-2xl z-52 border-0 overflow-hidden"
+              style={getTooltipPosition()}
+            >
+              {/* Progress Bar at Top */}
+              <div className="h-1 bg-gray-200 dark:bg-gray-700">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${tourProgress}%` }}
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
+                />
+              </div>
 
-          {/* Progress indicator */}
-          <div className="mt-4 flex gap-1">
-            {filteredSteps.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1 rounded-full flex-1 transition-colors ${
-                  index <= currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
-                }`}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      animate={{ rotate: currentStepData.type === 'observe' ? 360 : 0 }}
+                      transition={{ duration: 2, repeat: currentStepData.type === 'observe' ? Infinity : 0 }}
+                      className={`p-2 rounded-full ${getCategoryColor(currentStepData.category)}`}
+                    >
+                      {getStepIcon(currentStepData.icon)}
+                    </motion.div>
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        {currentStepData.title}
+                        <Badge variant="outline" className="text-xs">
+                          {currentStepData.category}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription className="text-sm">
+                        Step {currentStep + 1} of {filteredSteps.length}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-1">
+                    {currentStepData.duration && (
+                      <Button variant="ghost" size="sm" onClick={handlePause}>
+                        <motion.div animate={{ scale: isPaused ? 1.1 : 1 }}>
+                          {isPaused ? <Play className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </motion.div>
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={handleSkip}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-0 space-y-4">
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-gray-600 dark:text-gray-300"
+                >
+                  {currentStepData.description}
+                </motion.p>
+                
+                {currentStepData.action && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                  >
+                    <div className="flex items-start gap-2">
+                      <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                        {currentStepData.action}
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Interactive Elements Status */}
+                {currentStepData.interactive && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-2 text-xs text-gray-500"
+                  >
+                    {isInteracting ? (
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex items-center gap-1 text-green-600"
+                      >
+                        <CheckCircle className="h-3 w-3" />
+                        <span>Interaction detected!</span>
+                      </motion.div>
+                    ) : (
+                      <motion.div 
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="flex items-center gap-1"
+                      >
+                        <MousePointer className="h-3 w-3" />
+                        <span>Try the suggested action</span>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    {!isFirstStep && (
+                      <Button variant="outline" size="sm" onClick={handlePrevious}>
+                        <ArrowLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" onClick={handleSkip}>
+                      Skip Tour
+                    </Button>
+                    <Button size="sm" onClick={handleNext} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                      {isLastStep ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Complete
+                        </>
+                      ) : (
+                        <>
+                          Next
+                          <ArrowRight className="h-4 w-4 ml-1" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Enhanced Progress Indicator */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Progress</span>
+                    <span>{Math.round(tourProgress)}%</span>
+                  </div>
+                  <Progress value={tourProgress} className="h-2" />
+                  <div className="flex gap-1">
+                    {filteredSteps.map((step, index) => (
+                      <motion.div
+                        key={step.id}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ 
+                          opacity: 1, 
+                          scale: index === currentStep ? 1.2 : 1,
+                          backgroundColor: index <= currentStep ? '#3B82F6' : '#E5E7EB'
+                        }}
+                        className={`h-2 rounded-full flex-1 transition-all duration-300 ${
+                          index <= currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tour Mode Indicator */}
+                <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <Badge variant="secondary" className="text-xs">
+                    {mode} mode
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {filteredSteps.filter(s => s.category === 'basic').length} basic • 
+                    {filteredSteps.filter(s => s.category === 'advanced').length} advanced
+                    {user?.role === 'admin' && ` • ${filteredSteps.filter(s => s.category === 'admin').length} admin`}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
