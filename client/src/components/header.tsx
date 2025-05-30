@@ -31,7 +31,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
   const notificationCount = lowStockItems?.length || 0;
 
   return (
-    <header className="bg-[hsl(var(--wb-surface))] shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+    <header className="bg-[hsl(var(--wb-surface))] shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50" data-tour="header">
       <div className="wb-container">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Title */}

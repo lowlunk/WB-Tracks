@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import Dashboard from "@/pages/dashboard";
 import MainInventory from "@/pages/main-inventory";
 import LineInventory from "@/pages/line-inventory";
@@ -18,6 +19,7 @@ import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
 import BarcodeScanner from "@/components/barcode-scanner";
 import NotificationSystem from "@/components/notification-system";
+import OnboardingTour from "@/components/onboarding-tour";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Package, TrendingDown, Bell } from "lucide-react";
@@ -99,6 +101,7 @@ function Router() {
   const [, setLocation] = useLocation();
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const { showTour, completeTour, startTour } = useOnboarding();
 
   const handleScanClick = () => {
     setShowScanner(true);
@@ -184,6 +187,12 @@ function Router() {
           </div>
         </div>
       )}
+
+      {/* Onboarding Tour */}
+      <OnboardingTour 
+        isOpen={showTour} 
+        onClose={completeTour} 
+      />
     </div>
   );
 }
