@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal, jsonb, index, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -14,6 +14,25 @@ export const users = pgTable("users", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLogin: timestamp("last_login"),
+});
+
+// User groups table for organizing users
+export const userGroups = pgTable("user_groups", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  permissions: text("permissions").array(), // Array of permission strings
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User group memberships
+export const userGroupMemberships = pgTable("user_group_memberships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  groupId: integer("group_id").references(() => userGroups.id).notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
 export const components = pgTable("components", {
@@ -143,6 +162,22 @@ export const userRelations = relations(users, ({ many }) => ({
   updatedComponents: many(components, { relationName: "updatedBy" }),
   transactions: many(inventoryTransactions),
   uploadedPhotos: many(componentPhotos),
+  groupMemberships: many(userGroupMemberships),
+}));
+
+export const userGroupRelations = relations(userGroups, ({ many }) => ({
+  memberships: many(userGroupMemberships),
+}));
+
+export const userGroupMembershipRelations = relations(userGroupMemberships, ({ one }) => ({
+  user: one(users, {
+    fields: [userGroupMemberships.userId],
+    references: [users.id],
+  }),
+  group: one(userGroups, {
+    fields: [userGroupMemberships.groupId],
+    references: [userGroups.id],
+  }),
 }));
 
 // Facility relations
@@ -223,6 +258,17 @@ export const insertFacilitySchema = createInsertSchema(facilities).omit({
   updatedAt: true,
 });
 
+export const insertUserGroupSchema = createInsertSchema(userGroups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserGroupMembershipSchema = createInsertSchema(userGroupMemberships).omit({
+  id: true,
+  assignedAt: true,
+});
+
 export const insertInventoryLocationSchema = createInsertSchema(inventoryLocations).omit({
   id: true,
   createdAt: true,
@@ -251,6 +297,10 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Facility = typeof facilities.$inferSelect;
 export type InsertFacility = z.infer<typeof insertFacilitySchema>;
+export type UserGroup = typeof userGroups.$inferSelect;
+export type InsertUserGroup = z.infer<typeof insertUserGroupSchema>;
+export type UserGroupMembership = typeof userGroupMemberships.$inferSelect;
+export type InsertUserGroupMembership = z.infer<typeof insertUserGroupMembershipSchema>;
 export type Component = typeof components.$inferSelect;
 export type InsertComponent = z.infer<typeof insertComponentSchema>;
 export type ComponentPhoto = typeof componentPhotos.$inferSelect;
