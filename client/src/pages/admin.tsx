@@ -45,13 +45,18 @@ const AVAILABLE_PERMISSIONS = [
 ];
 
 export default function AdminDashboard() {
-  const { isAdmin, isLoading } = useUserRole();
+  const { user, isAdmin, isLoading } = useUserRole();
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [isAssignGroupDialogOpen, setIsAssignGroupDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null);
   const [assigningUser, setAssigningUser] = useState<User | null>(null);
+
+  // Debug logging
+  console.log('Admin Dashboard - User:', user);
+  console.log('Admin Dashboard - isAdmin:', isAdmin);
+  console.log('Admin Dashboard - isLoading:', isLoading);
 
   // Show loading state while checking user role
   if (isLoading) {
