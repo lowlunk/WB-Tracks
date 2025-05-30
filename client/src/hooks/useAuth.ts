@@ -17,6 +17,28 @@ interface User {
 export function useAuth() {
   const queryClient = useQueryClient();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
+
+  const autoLoginMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/auto-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        throw new Error("Auto-login failed");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+  });
 
   const { data: user, isLoading: userLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
@@ -28,7 +50,12 @@ export function useAuth() {
       });
       
       if (res.status === 401) {
-        return null; // Return null for unauthenticated instead of throwing
+        // If not authenticated, try auto-login once
+        if (!autoLoginAttempted) {
+          setAutoLoginAttempted(true);
+          autoLoginMutation.mutate();
+        }
+        return null;
       }
       
       if (!res.ok) {
@@ -43,15 +70,17 @@ export function useAuth() {
     mutationFn: () => apiRequest("/api/logout", "POST"),
     onSuccess: () => {
       queryClient.clear();
-      window.location.href = "/login";
+      setAutoLoginAttempted(false);
+      // Just refresh the page instead of redirecting to login
+      window.location.reload();
     },
   });
 
   useEffect(() => {
-    if (!userLoading) {
+    if (!userLoading && !autoLoginMutation.isPending) {
       setIsInitialized(true);
     }
-  }, [userLoading]);
+  }, [userLoading, autoLoginMutation.isPending]);
 
   const logout = () => {
     logoutMutation.mutate();
@@ -59,7 +88,7 @@ export function useAuth() {
 
   return {
     user: user as User | undefined,
-    isLoading: !isInitialized || userLoading,
+    isLoading: !isInitialized || userLoading || autoLoginMutation.isPending,
     isAuthenticated: !!user && user !== null,
     logout,
     error,
