@@ -755,6 +755,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin test endpoints
+  app.post("/api/admin/test-low-inventory", async (req, res) => {
+    try {
+      // Get some low stock items for testing
+      const lowStockItems = await storage.getLowStockItems();
+      
+      // Create a test notification
+      const testNotification = {
+        id: `test-low-${Date.now()}`,
+        type: 'low_stock',
+        title: 'Test Low Stock Alert',
+        message: lowStockItems.length > 0 
+          ? `Found ${lowStockItems.length} items with low stock`
+          : 'Test notification: Component ABC-123 is running low (2 remaining)',
+        severity: lowStockItems.length > 0 ? 'warning' : 'critical',
+        timestamp: new Date().toISOString(),
+        acknowledged: false
+      };
+
+      res.json({ 
+        success: true, 
+        message: 'Test low inventory alert sent',
+        notification: testNotification
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to send test notification" });
+    }
+  });
+
+  app.post("/api/admin/test-activity", async (req, res) => {
+    try {
+      const testNotification = {
+        id: `test-activity-${Date.now()}`,
+        type: 'transfer',
+        title: 'Test Activity Alert',
+        message: 'Test notification: 5 units of Component XYZ-789 transferred from Main to Line',
+        severity: 'info',
+        timestamp: new Date().toISOString(),
+        acknowledged: false
+      };
+
+      res.json({ 
+        success: true, 
+        message: 'Test activity alert sent',
+        notification: testNotification
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to send test notification" });
+    }
+  });
+
   // Serve uploaded files
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 

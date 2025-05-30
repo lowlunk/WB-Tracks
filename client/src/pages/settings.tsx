@@ -119,10 +119,7 @@ export default function Settings() {
   // Test low inventory functionality
   const testLowInventoryMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/test-low-inventory', {
-        method: 'POST',
-      });
-      return response;
+      return await apiRequest('/api/admin/test-low-inventory', 'POST');
     },
     onSuccess: () => {
       toast({
@@ -142,10 +139,7 @@ export default function Settings() {
   // Test activity notification functionality
   const testActivityMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/test-activity', {
-        method: 'POST',
-      });
-      return response;
+      return await apiRequest('/api/admin/test-activity', 'POST');
     },
     onSuccess: () => {
       toast({
