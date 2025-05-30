@@ -21,7 +21,8 @@ import {
   ArrowRightLeft, 
   Plus,
   TrendingUp,
-  Activity
+  Activity,
+  Zap
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -230,16 +231,21 @@ export default function Dashboard() {
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     activity.transactionType === 'transfer' ? 'bg-blue-100 dark:bg-blue-900' :
                     activity.transactionType === 'add' ? 'bg-green-100 dark:bg-green-900' :
+                    activity.transactionType === 'consume' ? 'bg-orange-100 dark:bg-orange-900' :
                     'bg-red-100 dark:bg-red-900'
                   }`}>
                     {activity.transactionType === 'transfer' && <ArrowRightLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
                     {activity.transactionType === 'add' && <Plus className="h-4 w-4 text-green-600 dark:text-green-400" />}
+                    {activity.transactionType === 'consume' && <Zap className="h-4 w-4 text-orange-600 dark:text-orange-400" />}
                     {activity.transactionType === 'remove' && <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium capitalize">
-                        {activity.transactionType} {activity.transactionType === 'transfer' ? 'Items' : activity.transactionType === 'add' ? 'to Inventory' : 'from Inventory'}
+                        {activity.transactionType === 'transfer' ? 'Transfer Items' :
+                         activity.transactionType === 'add' ? 'Add To Inventory' :
+                         activity.transactionType === 'consume' ? 'Consume From Inventory' :
+                         'Remove From Inventory'}
                       </span>
                       <Badge variant="secondary" className="wb-badge-success">
                         Completed

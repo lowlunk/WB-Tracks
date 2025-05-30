@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ComponentTable from "@/components/component-table";
 import TransferModal from "@/components/transfer-modal";
 import ConsumeModal from "@/components/consume-modal";
-import { Factory, Search, Plus, ArrowRightLeft, ArrowLeft, MinusCircle } from "lucide-react";
+import { Factory, Search, Plus, ArrowRightLeft, ArrowLeft, Zap } from "lucide-react";
 
 export default function LineInventory() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -126,7 +126,7 @@ export default function LineInventory() {
               variant="outline"
               className="wb-touch-target h-20 flex-col gap-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-950"
             >
-              <MinusCircle className="h-6 w-6" />
+              <Zap className="h-6 w-6" />
               <span>Consume for Production</span>
             </Button>
           </div>

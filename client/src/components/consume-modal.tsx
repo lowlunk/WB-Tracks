@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Factory, Package, MinusCircle } from "lucide-react";
+import { Factory, Package, Zap } from "lucide-react";
 import type { Component, InventoryLocation } from "@shared/schema";
 
 interface ConsumeModalProps {
@@ -159,7 +159,7 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
       <DialogContent className="max-w-lg mx-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <Factory className="h-5 w-5 text-orange-500" />
+            <Zap className="h-5 w-5 text-orange-500" />
             Consume for Production
           </DialogTitle>
         </DialogHeader>
@@ -288,7 +288,7 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
                 "Consuming..."
               ) : (
                 <>
-                  <MinusCircle className="h-4 w-4 mr-2" />
+                  <Zap className="h-4 w-4 mr-2" />
                   Consume for Production
                 </>
               )}
