@@ -68,10 +68,20 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
       quantity: number;
       notes?: string;
     }) => {
-      return apiRequest("/api/transactions/consume", {
+      const response = await fetch("/api/transactions/consume", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(consumeData),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to consume items");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({

@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import ComponentTable from "@/components/component-table";
 import TransferModal from "@/components/transfer-modal";
-import { Factory, Search, Plus, ArrowRightLeft, ArrowLeft } from "lucide-react";
+import ConsumeModal from "@/components/consume-modal";
+import { Factory, Search, Plus, ArrowRightLeft, ArrowLeft, MinusCircle } from "lucide-react";
 
 export default function LineInventory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showConsumeModal, setShowConsumeModal] = useState(false);
   const [selectedComponentForTransfer, setSelectedComponentForTransfer] = useState<any>(null);
+  const [selectedComponentForConsume, setSelectedComponentForConsume] = useState<any>(null);
 
   const { data: inventory, isLoading } = useQuery({
     queryKey: ["/api/inventory?locationId=2"],
@@ -102,7 +105,7 @@ export default function LineInventory() {
           <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Button
               onClick={() => setShowTransferModal(true)}
               className="wb-btn-primary wb-touch-target h-20 flex-col gap-2"
@@ -117,6 +120,14 @@ export default function LineInventory() {
             >
               <ArrowLeft className="h-6 w-6" />
               <span>Return to Main</span>
+            </Button>
+            <Button
+              onClick={() => setShowConsumeModal(true)}
+              variant="outline"
+              className="wb-touch-target h-20 flex-col gap-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-950"
+            >
+              <MinusCircle className="h-6 w-6" />
+              <span>Consume for Production</span>
             </Button>
           </div>
         </CardContent>
@@ -198,6 +209,16 @@ export default function LineInventory() {
           defaultComponentId={selectedComponentForTransfer?.id}
         />
       )}
+
+      {/* Consume Modal */}
+      <ConsumeModal
+        isOpen={showConsumeModal}
+        onClose={() => {
+          setShowConsumeModal(false);
+          setSelectedComponentForConsume(null);
+        }}
+        preSelectedComponent={selectedComponentForConsume}
+      />
     </div>
   );
 }
