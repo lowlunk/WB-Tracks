@@ -358,41 +358,39 @@ export default function BarcodeLabelPrinter({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="labelSize">Label Size</Label>
-                <Select value={labelData.labelSize} onValueChange={(value) => setLabelData({ ...labelData, labelSize: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LABEL_SIZES.map((size) => (
-                      <SelectItem key={size.value} value={size.value}>
-                        {size.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="barcodeType">Barcode Type</Label>
-                <Select value={labelData.barcodeType} onValueChange={(value) => setLabelData({ ...labelData, barcodeType: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BARCODE_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{type.label}</span>
-                          <span className="text-xs text-gray-500">{type.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label htmlFor="labelSize">Label Size</Label>
+              <Select value={labelData.labelSize} onValueChange={(value) => setLabelData({ ...labelData, labelSize: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LABEL_SIZES.map((size) => (
+                    <SelectItem key={size.value} value={size.value}>
+                      {size.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="barcodeType">Barcode Type</Label>
+              <Select value={labelData.barcodeType} onValueChange={(value) => setLabelData({ ...labelData, barcodeType: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-80">
+                  {BARCODE_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value} className="py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium">{type.label}</span>
+                        <span className="text-xs text-gray-500">{type.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-4">
