@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -22,13 +23,15 @@ export default function Login() {
       const response = await apiRequest('/api/login', 'POST', credentials);
       return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      // Force a page reload to refresh authentication state
-      window.location.href = "/";
+      // Invalidate and refetch authentication state
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Navigate to home page
+      setLocation("/");
     },
     onError: (error: any) => {
       toast({
