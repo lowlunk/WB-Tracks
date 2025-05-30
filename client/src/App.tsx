@@ -24,6 +24,7 @@ import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
 import BarcodeScanner from "@/components/barcode-scanner";
 import NotificationSystem from "@/components/notification-system";
+import NotificationPanel from "@/components/notification-panel";
 import OnboardingTour from "@/components/onboarding-tour";
 
 // Enhanced notification content component with dismissible banner
@@ -123,6 +124,7 @@ function Router() {
   const [location] = useLocation();
 
   const [showScanner, setShowScanner] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { showTour, completeTour } = useOnboarding();
   const { theme } = useTheme();
 
@@ -171,7 +173,7 @@ function Router() {
         {location !== '/login' && location !== '/register' && (
           <Header 
             onScanClick={() => setShowScanner(true)}
-            onNotificationClick={() => {/* Notification panel functionality */}}
+            onNotificationClick={() => setShowNotifications(!showNotifications)}
             onSettingsClick={() => window.location.href = '/settings'}
           />
         )}
@@ -203,6 +205,11 @@ function Router() {
       />
 
       <NotificationSystem />
+
+      <NotificationPanel
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
 
       <OnboardingTour
         isOpen={showTour}
