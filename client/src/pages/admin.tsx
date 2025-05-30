@@ -21,6 +21,7 @@ interface UserFormData {
   lastName: string;
   role: string;
   isActive: boolean;
+  password?: string;
 }
 
 interface GroupFormData {
@@ -68,6 +69,34 @@ export default function AdminDashboard() {
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery({
     queryKey: ["/api/admin/groups"],
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: UserFormData) => {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      if (!response.ok) throw new Error("Failed to create user");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setIsUserDialogOpen(false);
+      resetUserForm();
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create user",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateUserMutation = useMutation({
@@ -225,6 +254,17 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (editingUser) {
       updateUserMutation.mutate({ id: editingUser.id, data: userFormData });
+    } else {
+      // Creating new user
+      if (!userFormData.username || !userFormData.email || !userFormData.password) {
+        toast({
+          title: "Error",
+          description: "Username, email, and password are required",
+          variant: "destructive",
+        });
+        return;
+      }
+      createUserMutation.mutate(userFormData);
     }
   };
 
@@ -319,6 +359,114 @@ export default function AdminDashboard() {
                 <p className="text-sm text-muted-foreground">
                   {users.length} {users.length === 1 ? 'user' : 'users'} registered
                 </p>
+                <Dialog open={isUserDialogOpen && !editingUser} onOpenChange={setIsUserDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => { setEditingUser(null); resetUserForm(); }}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add User
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New User</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleUserSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="newUsername">Username *</Label>
+                          <Input
+                            id="newUsername"
+                            value={userFormData.username}
+                            onChange={(e) => setUserFormData({ ...userFormData, username: e.target.value })}
+                            placeholder="johndoe"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="newEmail">Email *</Label>
+                          <Input
+                            id="newEmail"
+                            type="email"
+                            value={userFormData.email}
+                            onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
+                            placeholder="john.doe@company.com"
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="newFirstName">First Name</Label>
+                          <Input
+                            id="newFirstName"
+                            value={userFormData.firstName}
+                            onChange={(e) => setUserFormData({ ...userFormData, firstName: e.target.value })}
+                            placeholder="John"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="newLastName">Last Name</Label>
+                          <Input
+                            id="newLastName"
+                            value={userFormData.lastName}
+                            onChange={(e) => setUserFormData({ ...userFormData, lastName: e.target.value })}
+                            placeholder="Doe"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="newRole">Role</Label>
+                          <Select value={userFormData.role} onValueChange={(value) => setUserFormData({ ...userFormData, role: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="manager">Manager</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="newStatus">Status</Label>
+                          <Select value={userFormData.isActive ? "active" : "inactive"} onValueChange={(value) => setUserFormData({ ...userFormData, isActive: value === "active" })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="newPassword">Initial Password *</Label>
+                        <Input
+                          id="newPassword"
+                          type="password"
+                          value={userFormData.password || ""}
+                          onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
+                          placeholder="Enter initial password"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsUserDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={createUserMutation.isPending}>
+                          Create User
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {usersLoading ? (

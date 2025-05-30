@@ -620,6 +620,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/users", async (req, res) => {
+    try {
+      const { username, email, firstName, lastName, role, isActive, password } = req.body;
+      
+      if (!username || !email || !password) {
+        return res.status(400).json({ error: "Username, email, and password are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userData = {
+        username,
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        role: role || 'user',
+        isActive: isActive !== undefined ? isActive : true,
+        password: hashedPassword,
+      };
+
+      const user = await storage.createUser(userData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
   app.put("/api/admin/users/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
