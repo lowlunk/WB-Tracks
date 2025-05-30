@@ -71,9 +71,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false, // Disable secure in development
+      secure: false,
       maxAge: sessionTtl,
       sameSite: 'lax',
+      domain: undefined, // Let browser handle domain
     },
   }));
 
