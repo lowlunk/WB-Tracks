@@ -19,14 +19,16 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
-      return await apiRequest('/api/login', 'POST', credentials);
+      const response = await apiRequest('/api/login', 'POST', credentials);
+      return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      setLocation("/");
+      // Force a page reload to refresh authentication state
+      window.location.href = "/";
     },
     onError: (error: any) => {
       toast({
