@@ -314,12 +314,12 @@ export default function ComponentTable({
         </div>
       )}
 
-      {/* Component Edit Modal */}
+      {/* Component Edit Dialog */}
       {editingComponent && (
-        <ComponentEditModal
+        <ComponentEditDialog
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
-          componentId={editingComponent.id}
+          component={editingComponent}
         />
       )}
     </div>

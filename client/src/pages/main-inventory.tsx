@@ -11,6 +11,7 @@ import { Warehouse, Search, Plus, ArrowRightLeft } from "lucide-react";
 export default function MainInventory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [selectedComponentForTransfer, setSelectedComponentForTransfer] = useState<any>(null);
 
   const { data: inventory, isLoading } = useQuery({
     queryKey: ["/api/inventory?locationId=1"],
@@ -126,7 +127,10 @@ export default function MainInventory() {
               isLoading={false}
               showLocationFilter={false}
               onEdit={(component) => console.log('Edit:', component)}
-              onTransfer={() => setShowTransferModal(true)}
+              onTransfer={(component) => {
+                setSelectedComponentForTransfer(component);
+                setShowTransferModal(true);
+              }}
               onViewDetails={(component) => console.log('View details:', component)}
             />
           )}
@@ -141,8 +145,10 @@ export default function MainInventory() {
           onTransfer={(transfer) => {
             console.log('Transfer:', transfer);
             setShowTransferModal(false);
+            setSelectedComponentForTransfer(null);
           }}
           defaultFromLocation={1}
+          defaultComponentId={selectedComponentForTransfer?.id}
         />
       )}
     </div>
