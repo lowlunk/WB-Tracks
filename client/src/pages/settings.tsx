@@ -16,6 +16,75 @@ export default function Settings() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Data export mutations
+  const exportDataMutation = useMutation({
+    mutationFn: async (type: string) => {
+      const response = await fetch(`/api/export/csv?type=${type}`);
+      if (!response.ok) {
+        throw new Error('Failed to export data');
+      }
+      return response.blob();
+    },
+    onSuccess: (blob, type) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${type}_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Export Successful",
+        description: `${type} data exported successfully`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Export Failed",
+        description: error.message || "Failed to export data",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const exportPowerBIMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/export/dashboard-data');
+      if (!response.ok) {
+        throw new Error('Failed to export dashboard data');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `wb_tracks_powerbi_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Power BI Export Successful",
+        description: "Dashboard data exported for Power BI integration",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Export Failed",
+        description: error.message || "Failed to export Power BI data",
+        variant: "destructive",
+      });
+    },
+  });
   
   const [userSettings, setUserSettings] = useState({
     firstName: user?.firstName || "",
@@ -251,11 +320,12 @@ export default function Settings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button
                   variant="outline"
-                  onClick={handleExportData}
+                  onClick={() => exportDataMutation.mutate('inventory')}
+                  disabled={exportDataMutation.isPending}
                   className="flex items-center justify-center"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Export to CSV
+                  {exportDataMutation.isPending ? 'Exporting...' : 'Export to CSV'}
                 </Button>
                 
                 <Button
@@ -278,10 +348,12 @@ export default function Settings() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleExportData}
+                  onClick={() => exportPowerBIMutation.mutate()}
+                  disabled={exportPowerBIMutation.isPending}
                   className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:text-blue-300"
                 >
-                  Export for Power BI
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  {exportPowerBIMutation.isPending ? 'Exporting...' : 'Export for Power BI'}
                 </Button>
               </div>
             </CardContent>

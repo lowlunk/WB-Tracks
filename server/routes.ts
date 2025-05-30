@@ -533,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const transactions = await storage.getRecentTransactions(100);
         csvData = 'ID,Component Number,Type,Quantity,From Location,To Location,Timestamp,Notes\n';
         transactions.forEach(tx => {
-          csvData += `${tx.id},"${tx.component.componentNumber}","${tx.type}",${tx.quantity},"${tx.fromLocation?.name || ''}","${tx.toLocation?.name || ''}","${tx.createdAt}","${tx.notes || ''}"\n`;
+          csvData += `${tx.id},"${tx.component.componentNumber}","${tx.transactionType}",${tx.quantity},"${tx.fromLocation?.name || ''}","${tx.toLocation?.name || ''}","${tx.createdAt}","${tx.notes || ''}"\n`;
         });
       }
       
