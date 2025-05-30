@@ -24,9 +24,11 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Printer
 } from "lucide-react";
 import ComponentEditDialog from "@/components/component-edit-dialog";
+import BarcodeLabelPrinter from "@/components/barcode-label-printer";
 
 interface Component {
   id: number;
@@ -57,6 +59,8 @@ export default function ComponentTable({
   const [locationFilter, setLocationFilter] = useState("");
   const [editingComponent, setEditingComponent] = useState<Component | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [printingComponent, setPrintingComponent] = useState<Component | null>(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const handleEditClick = (component: Component) => {
@@ -64,6 +68,11 @@ export default function ComponentTable({
     setEditingComponent(component);
     setIsEditModalOpen(true);
     if (onEdit) onEdit(component);
+  };
+
+  const handlePrintClick = (component: Component) => {
+    setPrintingComponent(component);
+    setIsPrintModalOpen(true);
   };
 
   const handleCloseEditModal = () => {
@@ -247,6 +256,15 @@ export default function ComponentTable({
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => handlePrintClick(component)}
+                      className="wb-focus-visible"
+                      title="Print Label"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => onViewDetails(component)}
                       className="wb-focus-visible"
                       title="View Details"
@@ -322,6 +340,19 @@ export default function ComponentTable({
           component={editingComponent}
         />
       )}
+
+      {/* Barcode Label Printer */}
+      <BarcodeLabelPrinter
+        isOpen={isPrintModalOpen}
+        onClose={() => {
+          setIsPrintModalOpen(false);
+          setPrintingComponent(null);
+        }}
+        component={printingComponent || undefined}
+        onPrint={(labelData) => {
+          console.log("Printing label:", labelData);
+        }}
+      />
     </div>
   );
 }
