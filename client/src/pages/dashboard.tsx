@@ -10,6 +10,7 @@ import ComponentTable from "@/components/component-table";
 import BarcodeScanner from "@/components/barcode-scanner";
 import TransferModal from "@/components/transfer-modal";
 import FloatingActionButton from "@/components/floating-action-button";
+import AddComponentDialog from "@/components/add-component-dialog";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { 
   Package, 
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showAddComponent, setShowAddComponent] = useState(false);
 
   // Connect to WebSocket for real-time updates
   useWebSocket();
@@ -316,10 +318,18 @@ export default function Dashboard() {
         />
       )}
 
+      {showAddComponent && (
+        <AddComponentDialog
+          isOpen={showAddComponent}
+          onClose={() => setShowAddComponent(false)}
+        />
+      )}
+
       {/* Floating Action Button */}
       <FloatingActionButton
         onScan={() => setShowScanner(true)}
         onTransfer={() => setShowTransferModal(true)}
+        onAddItem={() => setShowAddComponent(true)}
       />
     </div>
   );

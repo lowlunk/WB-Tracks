@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import ComponentTable from "@/components/component-table";
 import TransferModal from "@/components/transfer-modal";
+import AddComponentDialog from "@/components/add-component-dialog";
 import { Warehouse, Search, Plus, ArrowRightLeft } from "lucide-react";
 
 export default function MainInventory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedComponentForTransfer, setSelectedComponentForTransfer] = useState<any>(null);
+  const [showAddComponent, setShowAddComponent] = useState(false);
 
   const { data: inventory, isLoading } = useQuery({
     queryKey: ["/api/inventory?locationId=1"],
