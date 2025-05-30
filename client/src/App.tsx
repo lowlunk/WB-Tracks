@@ -95,6 +95,7 @@ function NotificationContent() {
 }
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -111,8 +112,24 @@ function Router() {
     setLocation("/settings");
   };
 
-  // For now, let's bypass authentication to get the core system working
-  // Users can still access all features without login
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading WB-Tracks...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  // Authenticated users see the main app
   return (
     <div className="min-h-screen bg-[hsl(var(--wb-background))]">
       <Header 
