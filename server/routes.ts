@@ -64,6 +64,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     tableName: "sessions",
   });
 
+  // Determine if we're in production (HTTPS)
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DOMAINS;
+  
   app.use(session({
     store: sessionStore,
     secret: process.env.SESSION_SECRET || 'wb-tracks-secret-key',
@@ -71,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: isProduction, // Use secure cookies in production (HTTPS)
       maxAge: sessionTtl,
       sameSite: 'lax',
       domain: undefined, // Let browser handle domain
