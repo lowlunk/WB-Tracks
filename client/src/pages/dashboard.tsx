@@ -163,6 +163,7 @@ export default function Dashboard() {
             </Button>
 
             <Button
+              onClick={() => setShowAddComponent(true)}
               variant="outline"
               className="wb-touch-target min-h-[120px] flex-col gap-3 border-[hsl(var(--wb-accent))] text-[hsl(var(--wb-accent))] hover:bg-[hsl(var(--wb-accent))]/10"
             >

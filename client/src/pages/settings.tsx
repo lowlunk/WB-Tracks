@@ -9,8 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3 } from "lucide-react";
-import Header from "@/components/header";
-import BottomNavigation from "@/components/bottom-navigation";
+
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -174,11 +173,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-6 pb-20 max-w-4xl">
-        <div className="flex items-center mb-6">
+    <div className="container mx-auto px-4 py-6 pb-20 max-w-4xl">
+      <div className="flex items-center mb-6">
           <SettingsIcon className="h-6 w-6 mr-2" />
           <h1 className="text-2xl font-bold">Settings</h1>
         </div>
@@ -401,9 +397,6 @@ export default function Settings() {
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      <BottomNavigation />
     </div>
   );
 }
