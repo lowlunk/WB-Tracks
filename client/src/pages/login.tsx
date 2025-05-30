@@ -28,10 +28,10 @@ export default function Login() {
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      // Invalidate and refetch authentication state
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      // Navigate to home page
-      setLocation("/");
+      // Force a complete page reload to ensure session is properly established
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     },
     onError: (error: any) => {
       toast({
