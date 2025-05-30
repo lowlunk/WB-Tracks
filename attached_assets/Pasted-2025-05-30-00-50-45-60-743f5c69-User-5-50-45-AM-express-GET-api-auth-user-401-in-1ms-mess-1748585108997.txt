@@ -1,0 +1,104 @@
+2025-05-30 00:50:45.60
+743f5c69
+User
+5:50:45 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:50:54.82
+743f5c69
+User
+5:50:54 AM [express] POST /api/login 200 in 137ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 00:50:54.98
+743f5c69
+User
+5:50:54 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:53:30.10
+743f5c69
+User
+5:53:30 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Not authenticated"}
+2025-05-30 00:53:36.31
+743f5c69
+User
+5:53:36 AM [express] POST /api/login 200 in 541ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 00:53:36.51
+743f5c69
+User
+5:53:36 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:53:50.07
+743f5c69
+User
+5:53:50 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:54:04.49
+743f5c69
+User
+5:54:04 AM [express] POST /api/login 200 in 553ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 00:54:04.66
+743f5c69
+User
+5:54:04 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Not authenticated"}
+2025-05-30 00:56:12.40
+743f5c69
+User
+5:56:12 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:56:19.55
+743f5c69
+User
+5:56:19 AM [express] POST /api/login 200 in 596ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 00:56:19.73
+743f5c69
+User
+5:56:19 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:56:31.05
+743f5c69
+User
+5:56:31 AM [express] GET /api/auth/user 401 in 2ms :: {"message":"Not authenticated"}
+2025-05-30 00:56:37.08
+743f5c69
+User
+5:56:37 AM [express] POST /api/login 200 in 566ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 00:56:37.30
+743f5c69
+User
+5:56:37 AM [express] GET /api/auth/user 401 in 2ms :: {"message":"Not authenticated"}
+2025-05-30 00:58:15.25
+743f5c69
+User
+5:58:15 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 00:58:24.27
+743f5c69
+User
+5:58:24 AM [express] POST /api/login 200 in 558ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 00:58:24.45
+743f5c69
+User
+5:58:24 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 01:00:52.15
+743f5c69
+User
+6:00:52 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-05-30 01:00:58.28
+743f5c69
+User
+6:00:58 AM [express] POST /api/login 200 in 561ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 01:00:58.48
+743f5c69
+User
+6:00:58 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Not authenticated"}
+2025-05-30 01:04:27.11
+743f5c69
+User
+6:04:27 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Not authenticated"}
+2025-05-30 01:04:35.08
+743f5c69
+User
+6:04:35 AM [express] POST /api/login 200 in 574ms :: {"message":"Login successful","user":{"id":4,"u…
+2025-05-30 01:04:35.30
+743f5c69
+User
+6:04:35 AM [express] GET /api/auth/user 401 in 2ms :: {"message":"Not authenticated"}
+2025-05-30 01:04:50.28
+743f5c69
+User
+6:04:50 AM [express] POST /api/login 200 in 587ms :: {"message":"Login successful","user":{"id":3,"u…
+2025-05-30 01:04:50.46
+743f5c69
+User
+6:04:50 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}

@@ -118,22 +118,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update last login
       await storage.updateLastLogin(user.id);
 
-      // Set session
+      // Set session and save it explicitly
       (req as any).session.userId = user.id;
       
-      res.json({ 
-        message: "Login successful",
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt,
-          lastLogin: new Date().toISOString()
+      // Force session save before responding
+      (req as any).session.save((err: any) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: "Session save failed" });
         }
+        
+        res.json({ 
+          message: "Login successful",
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            lastLogin: new Date().toISOString()
+          }
+        });
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -159,15 +167,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
+      console.log("Session check - sessionID:", (req as any).sessionID);
+      console.log("Session check - session:", (req as any).session);
+      console.log("Session check - userId:", (req as any).session?.userId);
+      
       const userId = (req as any).session?.userId;
       
       if (!userId) {
+        console.log("No userId in session");
         return res.status(401).json({ message: "Not authenticated" });
       }
 
       const user = await storage.getUser(userId);
       
       if (!user || !user.isActive) {
+        console.log("User not found or inactive:", user);
         return res.status(401).json({ message: "User not found or inactive" });
       }
 
