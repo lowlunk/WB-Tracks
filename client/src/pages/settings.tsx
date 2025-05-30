@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3 } from "lucide-react";
+import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3, Bell, AlertTriangle, Activity } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FacilityManagement from "@/components/facility-management";
 
 
@@ -398,6 +399,160 @@ export default function Settings() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Notifications Configuration */}
+          <Card className="wb-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification Settings
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Configure when and how you receive notifications
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Low Stock Alerts */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Low Stock Alerts</h4>
+                <div className="grid gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">Enable Low Stock Notifications</label>
+                      <p className="text-xs text-muted-foreground">
+                        Receive alerts when inventory levels are low
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Low Stock Threshold</label>
+                      <Input
+                        type="number"
+                        placeholder="5"
+                        className="wb-input"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Alert when quantity falls below this number
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Critical Stock Threshold</label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        className="wb-input"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Critical alert when quantity reaches this level
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Activity Notifications */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Activity Notifications</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">Inventory Transfers</label>
+                      <p className="text-xs text-muted-foreground">
+                        Notify when items are transferred between locations
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">Production Consumption</label>
+                      <p className="text-xs text-muted-foreground">
+                        Notify when items are consumed for production
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">New Components Added</label>
+                      <p className="text-xs text-muted-foreground">
+                        Notify when new components are added to inventory
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Notification Timing */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Notification Timing</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Check Frequency</label>
+                    <Select defaultValue="30">
+                      <SelectTrigger className="wb-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="15">Every 15 seconds</SelectItem>
+                        <SelectItem value="30">Every 30 seconds</SelectItem>
+                        <SelectItem value="60">Every minute</SelectItem>
+                        <SelectItem value="300">Every 5 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Quiet Hours</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="time"
+                        defaultValue="22:00"
+                        className="wb-input flex-1"
+                      />
+                      <span className="text-sm text-muted-foreground">to</span>
+                      <Input
+                        type="time"
+                        defaultValue="06:00"
+                        className="wb-input flex-1"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Reduce notifications during these hours
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Test Notifications */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Test Notifications</h4>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="wb-btn-secondary">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Test Low Stock Alert
+                  </Button>
+                  <Button variant="outline" className="wb-btn-secondary">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Test Activity Alert
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
