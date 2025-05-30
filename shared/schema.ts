@@ -32,10 +32,39 @@ export const components = pgTable("components", {
   updatedBy: integer("updated_by").references(() => users.id),
 });
 
+// Facilities table for multi-facility support
+export const facilities = pgTable("facilities", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  code: varchar("code", { length: 50 }).notNull().unique(), // Facility code like "MAIN", "WEST", "EAST"
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 50 }),
+  zipCode: varchar("zip_code", { length: 20 }),
+  country: varchar("country", { length: 100 }).default("USA"),
+  phone: varchar("phone", { length: 20 }),
+  email: varchar("email", { length: 255 }),
+  managerName: varchar("manager_name", { length: 255 }),
+  timezone: varchar("timezone", { length: 50 }).default("America/New_York"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const inventoryLocations = pgTable("inventory_locations", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull().unique(),
+  facilityId: integer("facility_id").references(() => facilities.id).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
+  locationType: varchar("location_type", { length: 50 }).default("warehouse"), // warehouse, production, staging, quarantine
+  aisle: varchar("aisle", { length: 20 }),
+  rack: varchar("rack", { length: 20 }),
+  shelf: varchar("shelf", { length: 20 }),
+  bin: varchar("bin", { length: 20 }),
+  maxCapacity: integer("max_capacity"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const inventoryItems = pgTable("inventory_items", {
@@ -115,7 +144,16 @@ export const userRelations = relations(users, ({ many }) => ({
   uploadedPhotos: many(componentPhotos),
 }));
 
-export const inventoryLocationRelations = relations(inventoryLocations, ({ many }) => ({
+// Facility relations
+export const facilityRelations = relations(facilities, ({ many }) => ({
+  inventoryLocations: many(inventoryLocations),
+}));
+
+export const inventoryLocationRelations = relations(inventoryLocations, ({ many, one }) => ({
+  facility: one(facilities, {
+    fields: [inventoryLocations.facilityId],
+    references: [facilities.id],
+  }),
   inventoryItems: many(inventoryItems),
   transactionsFrom: many(inventoryTransactions, { relationName: "fromLocation" }),
   transactionsTo: many(inventoryTransactions, { relationName: "toLocation" }),
@@ -178,8 +216,16 @@ export const registerSchema = insertUserSchema.extend({
   path: ["confirmPassword"],
 });
 
+export const insertFacilitySchema = createInsertSchema(facilities).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertInventoryLocationSchema = createInsertSchema(inventoryLocations).omit({
   id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
@@ -202,6 +248,8 @@ export const transferItemSchema = z.object({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type Facility = typeof facilities.$inferSelect;
+export type InsertFacility = z.infer<typeof insertFacilitySchema>;
 export type Component = typeof components.$inferSelect;
 export type InsertComponent = z.infer<typeof insertComponentSchema>;
 export type ComponentPhoto = typeof componentPhotos.$inferSelect;

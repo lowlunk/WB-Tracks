@@ -1,5 +1,6 @@
 import {
   components,
+  facilities,
   inventoryLocations,
   inventoryItems,
   inventoryTransactions,
@@ -7,6 +8,8 @@ import {
   componentPhotos,
   type Component,
   type InsertComponent,
+  type Facility,
+  type InsertFacility,
   type ComponentPhoto,
   type InsertComponentPhoto,
   type InventoryLocation,
