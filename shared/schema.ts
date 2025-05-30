@@ -37,6 +37,7 @@ export const facilities = pgTable("facilities", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   code: varchar("code", { length: 50 }).notNull().unique(), // Facility code like "MAIN", "WEST", "EAST"
+  description: text("description"),
   address: text("address"),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 50 }),

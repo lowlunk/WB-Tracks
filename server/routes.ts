@@ -320,11 +320,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facility API routes
+  app.get("/api/facilities", async (req, res) => {
+    try {
+      const facilities = await storage.getAllFacilities();
+      res.json(facilities);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch facilities" });
+    }
+  });
+
+  app.get("/api/facilities/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const facility = await storage.getFacility(id);
+      
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      
+      res.json(facility);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch facility" });
+    }
+  });
+
+  app.post("/api/facilities", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertFacilitySchema.parse(req.body);
+      const facility = await storage.createFacility(validatedData);
+      res.status(201).json(facility);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid facility data" });
+    }
+  });
+
+  app.put("/api/facilities/:id", requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertFacilitySchema.partial().parse(req.body);
+      const facility = await storage.updateFacility(id, validatedData);
+      res.json(facility);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid facility data" });
+    }
+  });
+
+  app.delete("/api/facilities/:id", requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteFacility(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete facility" });
+    }
+  });
+
   // Location API routes
   app.get("/api/locations", async (req, res) => {
     try {
-      const locations = await storage.getAllLocations();
-      res.json(locations);
+      const facilityId = req.query.facilityId as string;
+      
+      if (facilityId) {
+        const locations = await storage.getLocationsByFacility(parseInt(facilityId));
+        res.json(locations);
+      } else {
+        const locations = await storage.getAllLocations();
+        res.json(locations);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch locations" });
     }

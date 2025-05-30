@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3 } from "lucide-react";
+import FacilityManagement from "@/components/facility-management";
 
 
 export default function Settings() {
@@ -379,6 +380,9 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Facility Management */}
+          <FacilityManagement />
 
           {/* Logout Section */}
           <Card className="border-red-200 dark:border-red-800">
