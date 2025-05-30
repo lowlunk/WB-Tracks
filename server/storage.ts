@@ -36,8 +36,17 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
+  getAllUsers(): Promise<User[]>;
   loginUser(username: string): Promise<User | undefined>;
   updateLastLogin(id: number): Promise<void>;
+
+  // User group methods
+  getAllUserGroups(): Promise<UserGroup[]>;
+  getUserGroup(id: number): Promise<UserGroup | undefined>;
+  createUserGroup(group: InsertUserGroup): Promise<UserGroup>;
+  updateUserGroup(id: number, group: Partial<InsertUserGroup>): Promise<UserGroup>;
+  deleteUserGroup(id: number): Promise<void>;
 
   // Component methods
   getAllComponents(): Promise<Component[]>;
@@ -141,6 +150,41 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ lastLogin: new Date() })
       .where(eq(users.id, id));
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  // User group methods
+  async getAllUserGroups(): Promise<UserGroup[]> {
+    return await db.select().from(userGroups);
+  }
+
+  async getUserGroup(id: number): Promise<UserGroup | undefined> {
+    const [group] = await db.select().from(userGroups).where(eq(userGroups.id, id));
+    return group;
+  }
+
+  async createUserGroup(group: InsertUserGroup): Promise<UserGroup> {
+    const [newGroup] = await db.insert(userGroups).values(group).returning();
+    return newGroup;
+  }
+
+  async updateUserGroup(id: number, group: Partial<InsertUserGroup>): Promise<UserGroup> {
+    const [updatedGroup] = await db.update(userGroups)
+      .set({ ...group, updatedAt: new Date() })
+      .where(eq(userGroups.id, id))
+      .returning();
+    return updatedGroup;
+  }
+
+  async deleteUserGroup(id: number): Promise<void> {
+    await db.delete(userGroups).where(eq(userGroups.id, id));
   }
 
   async getAllComponents(): Promise<Component[]> {
