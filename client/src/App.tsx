@@ -26,6 +26,7 @@ import { AlertTriangle, Package, TrendingDown, Bell, X } from "lucide-react";
 import { useNotifications, type StoredNotification } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import { useTheme } from "@/hooks/useTheme";
 
 // Enhanced notification content component with persistent storage
 function NotificationContent() {
@@ -105,6 +106,9 @@ function Router() {
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { showTour, completeTour, startTour } = useOnboarding();
+  
+  // Initialize global theme management
+  useTheme();
 
   const handleScanClick = () => {
     setShowScanner(true);

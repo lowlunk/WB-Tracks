@@ -99,15 +99,20 @@ export default function Settings() {
     lowStockThreshold: 5,
   });
 
-  // Apply dark mode changes to the document
+  // Apply dark mode changes to the document and persist globally
   useEffect(() => {
     if (userSettings.darkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      localStorage.setItem('wb-tracks-theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      localStorage.setItem('wb-tracks-theme', 'light');
     }
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('themeChanged', { 
+      detail: { theme: userSettings.darkMode ? 'dark' : 'light' } 
+    }));
   }, [userSettings.darkMode]);
 
   // Load theme from localStorage on component mount
