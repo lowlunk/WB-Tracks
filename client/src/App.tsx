@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import MainInventory from "@/pages/main-inventory";
 import LineInventory from "@/pages/line-inventory";
+import Inventory from "@/pages/inventory";
 import AdminDashboard from "@/pages/admin";
 import Settings from "@/pages/settings";
 import Login from "@/pages/login";
@@ -124,6 +125,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/main-inventory" component={MainInventory} />
           <Route path="/line-inventory" component={LineInventory} />
+          <Route path="/inventory" component={Inventory} />
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/settings" component={Settings} />
           <Route path="/login" component={Login} />

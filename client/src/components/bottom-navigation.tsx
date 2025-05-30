@@ -4,6 +4,8 @@ import {
   Home, 
   Warehouse, 
   Factory, 
+  Package,
+  Shield,
   BarChart3 
 } from "lucide-react";
 
@@ -30,16 +32,22 @@ export default function BottomNavigation() {
       active: location === "/line-inventory",
     },
     {
-      href: "/reports",
-      icon: BarChart3,
-      label: "Reports",
-      active: location === "/reports",
+      href: "/inventory",
+      icon: Package,
+      label: "Inventory",
+      active: location === "/inventory",
+    },
+    {
+      href: "/admin",
+      icon: Shield,
+      label: "Admin",
+      active: location === "/admin",
     },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--wb-surface))] border-t border-gray-200 dark:border-gray-700 lg:hidden z-40 wb-production-safe">
-      <div className="grid grid-cols-4 h-16">
+      <div className="grid grid-cols-5 h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
