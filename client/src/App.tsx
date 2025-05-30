@@ -69,9 +69,22 @@ function Router() {
       )}
 
       {showNotifications && (
-        <NotificationSystem
-          className={showNotifications ? 'fixed inset-0 z-50' : 'hidden'}
-        />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Notifications</h2>
+              <button 
+                onClick={() => setShowNotifications(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[60vh]">
+              <NotificationSystem />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
