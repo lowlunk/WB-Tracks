@@ -176,20 +176,10 @@ export default function TransferModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg mx-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              <ArrowRightLeft className="h-5 w-5" />
-              Transfer Items
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClose}
-              className="wb-focus-visible"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+            <ArrowRightLeft className="h-5 w-5" />
+            Transfer Items
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
