@@ -7,7 +7,8 @@ import {
   Bell, 
   Settings, 
   Wifi,
-  QrCode
+  QrCode,
+  Shield
 } from "lucide-react";
 
 interface HeaderProps {
@@ -61,6 +62,15 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
                 className={location === "/line-inventory" ? "wb-btn-accent" : ""}
               >
                 Line Inventory
+              </Button>
+            </Link>
+            <Link href="/admin">
+              <Button 
+                variant={location === "/admin" ? "default" : "ghost"}
+                className={`${location === "/admin" ? "wb-btn-primary" : ""} flex items-center gap-1`}
+              >
+                <Shield className="h-4 w-4" />
+                Admin
               </Button>
             </Link>
           </nav>
