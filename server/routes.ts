@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: isProduction, // Use secure cookies in production (HTTPS)
+      secure: isExternallyHosted, // Use secure cookies only for external hosted domains
       maxAge: sessionTtl,
       sameSite: 'lax',
       domain: undefined, // Let browser handle domain
