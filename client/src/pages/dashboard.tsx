@@ -3,26 +3,28 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import InventoryCard from "@/components/inventory-card";
-import ComponentTable from "@/components/component-table";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import BarcodeScanner from "@/components/barcode-scanner";
 import TransferModal from "@/components/transfer-modal";
-import FloatingActionButton from "@/components/floating-action-button";
+import ConsumeModal from "@/components/consume-modal";
 import AddComponentDialog from "@/components/add-component-dialog";
-import { useWebSocket } from "@/hooks/use-websocket";
-import { 
-  Package, 
-  Warehouse, 
-  Factory, 
-  AlertTriangle, 
-  QrCode, 
-  ArrowRightLeft, 
+import { useWebSocket } from "@/hooks/useWebSocket";
+import {
+  QrCode,
+  ArrowRightLeft,
   Plus,
-  TrendingUp,
   Activity,
-  Zap
+  Package,
+  Warehouse,
+  Search,
+  AlertTriangle,
+  Download,
+  TrendingUp,
+  TrendingDown,
+  Zap,
+  Clock
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -30,31 +32,78 @@ export default function Dashboard() {
   const [showScanner, setShowScanner] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showAddComponent, setShowAddComponent] = useState(false);
+  const [showConsumedInventory, setShowConsumedInventory] = useState(false);
+  const [showConsumeModal, setShowConsumeModal] = useState(false);
 
   // Connect to WebSocket for real-time updates
   useWebSocket();
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  // Data queries
+  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
+  });
+
+  const { data: components } = useQuery({
+    queryKey: ["/api/components"],
   });
 
   const { data: recentActivity, isLoading: activityLoading } = useQuery({
     queryKey: ["/api/dashboard/recent-activity"],
   });
 
-  const { data: components, isLoading: componentsLoading } = useQuery({
-    queryKey: ["/api/components", searchQuery],
-    queryFn: ({ queryKey }) => {
-      const [url, search] = queryKey;
-      return fetch(search ? `${url}?search=${encodeURIComponent(search)}` : url, {
-        credentials: "include",
-      }).then(res => res.json());
-    },
-  });
-
   const { data: lowStockItems } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
+    refetchInterval: 30000,
   });
+
+  const { data: consumedTransactions } = useQuery({
+    queryKey: ["/api/transactions/consumed"],
+    enabled: showConsumedInventory,
+  });
+
+  // Handle Generate Report functionality
+  const handleGenerateReport = () => {
+    const reportData = {
+      timestamp: new Date().toISOString(),
+      components: components?.length || 0,
+      mainInventoryTotal: dashboardStats?.mainInventoryTotal || 0,
+      lineInventoryTotal: dashboardStats?.lineInventoryTotal || 0,
+      lowStockItems: lowStockItems?.length || 0,
+      recentActivity: recentActivity?.slice(0, 10) || []
+    };
+
+    const csvContent = [
+      'WB-Tracks Inventory Report',
+      `Generated: ${new Date().toLocaleString()}`,
+      '',
+      'Summary:',
+      `Total Components,${reportData.components}`,
+      `Main Inventory Total,${reportData.mainInventoryTotal}`,
+      `Line Inventory Total,${reportData.lineInventoryTotal}`,
+      `Low Stock Alerts,${reportData.lowStockItems}`,
+      '',
+      'Recent Activity:',
+      'Type,Component,Quantity,Location,Date',
+      ...reportData.recentActivity.map((activity: any) => 
+        `${activity.transactionType},${activity.component?.componentNumber || 'N/A'},${activity.quantity},${activity.fromLocation?.name || activity.toLocation?.name || 'N/A'},${new Date(activity.createdAt).toLocaleString()}`
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wb-tracks-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleScanResult = (result: any) => {
+    console.log("Scanned:", result);
+    setShowScanner(false);
+  };
 
   if (statsLoading) {
     return (
@@ -68,82 +117,86 @@ export default function Dashboard() {
     );
   }
 
+  const lowStockAlerts = lowStockItems?.length || 0;
+
   return (
-    <div className="wb-container py-6">
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="wb-card border-l-4 border-l-[hsl(var(--wb-primary))]">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Components</p>
-                <p className="text-3xl font-bold text-[hsl(var(--wb-on-surface))]">
-                  {stats?.totalComponents || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-[hsl(var(--wb-primary))]/10 rounded-full">
-                <Package className="h-6 w-6 text-[hsl(var(--wb-primary))]" />
-              </div>
-            </div>
+    <div className="wb-container py-6 space-y-8">
+      {/* Low Stock Alerts */}
+      {lowStockAlerts > 0 && (
+        <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800 dark:text-orange-200">
+            <strong>{lowStockAlerts}</strong> items are running low on stock in both Main and Line inventory locations.
+            <Button 
+              variant="link" 
+              className="p-0 h-auto ml-2 text-orange-700 hover:text-orange-900"
+              onClick={() => setShowConsumedInventory(true)}
+            >
+              View Details
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="wb-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Components</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.totalComponents || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Active in system
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="wb-card border-l-4 border-l-[hsl(var(--wb-secondary))]">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Main Inventory</p>
-                <p className="text-3xl font-bold text-[hsl(var(--wb-on-surface))]">
-                  {stats?.mainInventoryTotal || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-[hsl(var(--wb-secondary))]/10 rounded-full">
-                <Warehouse className="h-6 w-6 text-[hsl(var(--wb-secondary))]" />
-              </div>
-            </div>
+        <Card className="wb-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Main Inventory</CardTitle>
+            <Warehouse className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.mainInventoryTotal || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Items in main storage
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="wb-card border-l-4 border-l-[hsl(var(--wb-accent))]">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Line Inventory</p>
-                <p className="text-3xl font-bold text-[hsl(var(--wb-on-surface))]">
-                  {stats?.lineInventoryTotal || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-[hsl(var(--wb-accent))]/10 rounded-full">
-                <Factory className="h-6 w-6 text-[hsl(var(--wb-accent))]" />
-              </div>
-            </div>
+        <Card className="wb-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Line Inventory</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.lineInventoryTotal || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Items on production line
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="wb-card border-l-4 border-l-[hsl(var(--wb-error))]">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Low Stock Alerts</p>
-                <p className="text-3xl font-bold text-[hsl(var(--wb-on-surface))]">
-                  {stats?.lowStockAlerts || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-[hsl(var(--wb-error))]/10 rounded-full">
-                <AlertTriangle className="h-6 w-6 text-[hsl(var(--wb-error))]" />
-              </div>
-            </div>
+        <Card className="wb-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{lowStockAlerts}</div>
+            <p className="text-xs text-muted-foreground">
+              Items need restocking
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick Actions */}
-      <Card className="wb-card mb-8">
+      <Card className="wb-card">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Quick Actions
-          </CardTitle>
+          <CardTitle className="text-xl font-semibold">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -164,48 +217,65 @@ export default function Dashboard() {
             </Button>
 
             <Button
-              onClick={() => setShowAddComponent(true)}
-              variant="outline"
-              className="wb-touch-target min-h-[120px] flex-col gap-3 border-[hsl(var(--wb-accent))] text-[hsl(var(--wb-accent))] hover:bg-[hsl(var(--wb-accent))]/10"
+              onClick={() => setShowConsumeModal(true)}
+              className="wb-touch-target min-h-[120px] flex-col gap-3 bg-orange-500 hover:bg-orange-600 text-white"
             >
-              <Plus className="h-8 w-8" />
-              <span className="text-lg font-medium">Add New Item</span>
+              <Zap className="h-8 w-8" />
+              <span className="text-lg font-medium">Consume Items</span>
             </Button>
 
             <Button
+              onClick={handleGenerateReport}
               variant="outline"
               className="wb-touch-target min-h-[120px] flex-col gap-3"
             >
-              <Activity className="h-8 w-8" />
+              <Download className="h-8 w-8" />
               <span className="text-lg font-medium">Generate Report</span>
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Inventory Locations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <InventoryCard
-          title="Main Inventory"
-          description="Central storage area"
-          icon={Warehouse}
-          locationId={1}
-          type="main"
-          onTransfer={() => setShowTransferModal(true)}
-        />
+      {/* Inventory Management Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="wb-card">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Add New Component
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => setShowAddComponent(true)}
+              className="wb-btn-accent w-full wb-touch-target"
+            >
+              Add Component
+            </Button>
+          </CardContent>
+        </Card>
 
-        <InventoryCard
-          title="Line Inventory"
-          description="Production line stock"
-          icon={Factory}
-          locationId={2}
-          type="line"
-          onTransfer={() => setShowTransferModal(true)}
-        />
+        <Card className="wb-card">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Consumed Inventory
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => setShowConsumedInventory(true)}
+              variant="outline"
+              className="w-full wb-touch-target"
+            >
+              View Consumed Items
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Activity */}
-      <Card className="wb-card mb-8">
+      <Card className="wb-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -228,118 +298,139 @@ export default function Dashboard() {
             <div className="space-y-4">
               {recentActivity?.slice(0, 5).map((activity: any) => (
                 <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    activity.transactionType === 'transfer' ? 'bg-blue-100 dark:bg-blue-900' :
-                    activity.transactionType === 'add' ? 'bg-green-100 dark:bg-green-900' :
-                    activity.transactionType === 'consume' ? 'bg-orange-100 dark:bg-orange-900' :
-                    'bg-red-100 dark:bg-red-900'
-                  }`}>
-                    {activity.transactionType === 'transfer' && <ArrowRightLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
-                    {activity.transactionType === 'add' && <Plus className="h-4 w-4 text-green-600 dark:text-green-400" />}
-                    {activity.transactionType === 'consume' && <Zap className="h-4 w-4 text-orange-600 dark:text-orange-400" />}
-                    {activity.transactionType === 'remove' && <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />}
+                  <div className="flex-shrink-0">
+                    {activity.transactionType === 'transfer' && (
+                      <ArrowRightLeft className="h-6 w-6 text-blue-500" />
+                    )}
+                    {activity.transactionType === 'add' && (
+                      <Plus className="h-6 w-6 text-green-500" />
+                    )}
+                    {activity.transactionType === 'consume' && (
+                      <Zap className="h-6 w-6 text-orange-500" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium capitalize">
-                        {activity.transactionType === 'transfer' ? 'Transfer Items' :
-                         activity.transactionType === 'add' ? 'Add To Inventory' :
-                         activity.transactionType === 'consume' ? 'Consume From Inventory' :
-                         'Remove From Inventory'}
-                      </span>
-                      <Badge variant="secondary" className="wb-badge-success">
-                        Completed
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {activity.component.componentNumber} - {activity.component.description} ({activity.quantity} units)
+                    <p className="text-sm font-medium">
+                      {activity.transactionType === 'transfer' && 'Transfer'}
+                      {activity.transactionType === 'add' && 'Added'}
+                      {activity.transactionType === 'consume' && 'Consumed'}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(activity.createdAt).toLocaleString()}
+                    <p className="text-sm text-muted-foreground">
+                      {activity.component?.componentNumber} - {activity.quantity} units
                     </p>
                   </div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(activity.createdAt).toLocaleDateString()}
+                  </div>
                 </div>
-              )) || (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No recent activity</p>
-                </div>
-              )}
+              ))}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Component Database */}
-      <Card className="wb-card">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <CardTitle className="text-xl font-semibold">Component Database</CardTitle>
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-              <div className="relative">
-                <Input
-                  placeholder="Search components..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="wb-input w-full sm:w-80"
-                />
+      {/* Consumed Inventory Modal */}
+      {showConsumedInventory && (
+        <Card className="fixed inset-4 z-50 overflow-auto bg-white dark:bg-gray-900 shadow-2xl rounded-lg">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Zap className="h-5 w-5 text-orange-500" />
+              Consumed Inventory Tracking
+            </CardTitle>
+            <Button
+              variant="ghost"
+              onClick={() => setShowConsumedInventory(false)}
+              className="h-8 w-8 p-0"
+            >
+              ×
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Today's Consumption</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">
+                      {consumedTransactions?.filter((t: any) => 
+                        new Date(t.createdAt).toDateString() === new Date().toDateString()
+                      ).length || 0}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">This Week</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">
+                      {consumedTransactions?.filter((t: any) => {
+                        const date = new Date(t.createdAt);
+                        const weekAgo = new Date();
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        return date >= weekAgo;
+                      }).length || 0}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Total Consumed</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">
+                      {consumedTransactions?.length || 0}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <Button 
-                onClick={() => setShowAddComponent(true)}
-                className="wb-btn-primary"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Component
-              </Button>
+
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {consumedTransactions?.map((transaction: any) => (
+                  <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Zap className="h-5 w-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">{transaction.component?.componentNumber}</p>
+                        <p className="text-sm text-muted-foreground">{transaction.component?.description}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">{transaction.quantity} units</div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(transaction.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ComponentTable
-            components={components || []}
-            isLoading={componentsLoading}
-            onEdit={(component) => console.log('Edit:', component)}
-            onTransfer={() => setShowTransferModal(true)}
-            onViewDetails={(component) => console.log('View details:', component)}
-          />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Modals */}
-      {showScanner && (
-        <BarcodeScanner
-          isOpen={showScanner}
-          onClose={() => setShowScanner(false)}
-          onScan={(result) => {
-            console.log('Scanned:', result);
-            setShowScanner(false);
-          }}
-        />
-      )}
+      <BarcodeScanner
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={handleScanResult}
+      />
 
-      {showTransferModal && (
-        <TransferModal
-          isOpen={showTransferModal}
-          onClose={() => setShowTransferModal(false)}
-          onTransfer={(transfer) => {
-            console.log('Transfer:', transfer);
-            setShowTransferModal(false);
-          }}
-        />
-      )}
+      <TransferModal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+      />
 
-      {showAddComponent && (
-        <AddComponentDialog
-          isOpen={showAddComponent}
-          onClose={() => setShowAddComponent(false)}
-        />
-      )}
+      <ConsumeModal
+        isOpen={showConsumeModal}
+        onClose={() => setShowConsumeModal(false)}
+      />
 
-      {/* Floating Action Button */}
-      <FloatingActionButton
-        onScan={() => setShowScanner(true)}
-        onTransfer={() => setShowTransferModal(true)}
-        onAddItem={() => setShowAddComponent(true)}
+      <AddComponentDialog
+        isOpen={showAddComponent}
+        onClose={() => setShowAddComponent(false)}
       />
     </div>
   );
