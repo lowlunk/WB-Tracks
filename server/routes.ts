@@ -88,19 +88,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password required" });
       }
 
-      const user = await storage.loginUser(username);
+      // Get user from database
+      const user = await storage.getUserByUsername(username);
       
       if (!user || !user.isActive) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // For demo purposes, check simple passwords or actual hashed passwords
-      const validPassword = (username === 'admin' && password === 'admin123') ||
-                           (username === 'user' && password === 'user123') ||
-                           await bcrypt.compare(password, user.password || '');
+      // For demo credentials, check hardcoded passwords
+      let validPassword = false;
+      if ((username === 'admin' && password === 'admin123') || 
+          (username === 'user' && password === 'user123')) {
+        validPassword = true;
+      } else if (user.password) {
+        // For other users, check hashed password
+        validPassword = await bcrypt.compare(password, user.password);
+      }
 
       if (!validPassword) {
         return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "Authentication failed" });
       }
 
       // Update last login
