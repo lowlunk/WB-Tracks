@@ -64,29 +64,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     tableName: "sessions",
   });
 
-  // Only use secure cookies for external hosted domains (like replit.app), not for local networks
-  const isExternallyHosted = process.env.REPLIT_DOMAINS?.includes('.replit.app') || 
-                            process.env.NODE_ENV === 'production';
-  
-  console.log('Environment check:');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('REPLIT_DOMAINS:', process.env.REPLIT_DOMAINS);
-  console.log('isExternallyHosted:', isExternallyHosted);
-  console.log('Will use secure cookies:', isExternallyHosted);
-  
-  app.use(session({
-    store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'wb-tracks-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: isExternallyHosted, // Use secure cookies only for external hosted domains
-      maxAge: sessionTtl,
-      sameSite: 'lax',
-      domain: undefined, // Let browser handle domain
-    },
-  }));
+  // Dynamic session configuration based on request
+  app.use((req, res, next) => {
+    const isSecureRequest = req.hostname.includes('replit.app') || req.protocol === 'https';
+    
+    // Set up session middleware dynamically
+    const sessionMiddleware = session({
+      store: sessionStore,
+      secret: process.env.SESSION_SECRET || 'wb-tracks-secret-key',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: isSecureRequest,
+        maxAge: sessionTtl,
+        sameSite: isSecureRequest ? 'none' : 'lax'
+      }
+    });
+    
+    sessionMiddleware(req, res, next);
+  });
 
   // Initialize default data
   await storage.initializeDefaultData();
