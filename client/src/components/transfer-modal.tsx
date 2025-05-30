@@ -103,13 +103,7 @@ export default function TransferModal({
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: any) => {
-      return await apiRequest("/api/transactions/transfer", {
-        method: "POST",
-        body: JSON.stringify(transferData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      return await apiRequest("/api/transactions/transfer", transferData);
     },
     onSuccess: (data) => {
       toast({
