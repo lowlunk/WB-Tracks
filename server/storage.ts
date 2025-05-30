@@ -27,7 +27,7 @@ import {
   type RegisterData,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -641,6 +641,14 @@ export class DatabaseStorage implements IStorage {
       defaultFacility = facility;
     } else {
       defaultFacility = existingFacilities[0];
+    }
+
+    // Handle existing locations without facilityId (migration)
+    const locationsWithoutFacility = await db.select().from(inventoryLocations).where(isNull(inventoryLocations.facilityId));
+    if (locationsWithoutFacility.length > 0) {
+      await db.update(inventoryLocations)
+        .set({ facilityId: defaultFacility.id })
+        .where(isNull(inventoryLocations.facilityId));
     }
 
     // Create default locations if they don't exist

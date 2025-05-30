@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertComponentSchema, transferItemSchema, insertInventoryTransactionSchema, loginSchema, registerSchema } from "@shared/schema";
+import { insertComponentSchema, insertFacilitySchema, transferItemSchema, insertInventoryTransactionSchema, loginSchema, registerSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
