@@ -28,9 +28,13 @@ export default function Login() {
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      // Invalidate auth queries and redirect to dashboard
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      setLocation("/");
+      // Clear all cache and refetch auth state
+      queryClient.clear();
+      
+      // Small delay to ensure session is properly set
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
     },
     onError: (error: any) => {
       toast({
