@@ -126,6 +126,14 @@ function Router() {
   // Debug logging
   console.log('Auth State:', { user, isLoading, isAuthenticated, location });
 
+  // Redirect authenticated users away from login/register pages
+  useEffect(() => {
+    if (isAuthenticated && (location === '/login' || location === '/register')) {
+      console.log('Redirecting authenticated user to dashboard');
+      navigate('/');
+    }
+  }, [isAuthenticated, location, navigate]);
+
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { showTour, completeTour } = useOnboarding();
