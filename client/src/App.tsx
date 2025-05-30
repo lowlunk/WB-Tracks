@@ -22,16 +22,19 @@ import NotificationSystem from "@/components/notification-system";
 import OnboardingTour from "@/components/onboarding-tour";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Package, TrendingDown, Bell } from "lucide-react";
+import { AlertTriangle, Package, TrendingDown, Bell, X } from "lucide-react";
+import { useNotifications, type StoredNotification } from "@/hooks/useNotifications";
+import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
-// Simple notification content component for the modal
+// Enhanced notification content component with persistent storage
 function NotificationContent() {
   const { data: lowStockItems } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
     refetchInterval: 30000,
   });
 
-  const notifications = [];
+  const { notifications, addNotification, markAsSeen, removeNotification, markAllAsSeen } = useNotifications();
   
   // Convert low stock items to notifications
   if (lowStockItems && Array.isArray(lowStockItems)) {
