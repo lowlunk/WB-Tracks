@@ -64,14 +64,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     tableName: "sessions",
   });
 
-  // Determine if we're in production (HTTPS)
-  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.REPLIT_DOMAINS;
+  // Only use secure cookies for external hosted domains (like replit.app), not for local networks
+  const isExternallyHosted = process.env.REPLIT_DOMAINS?.includes('.replit.app') || 
+                            process.env.NODE_ENV === 'production';
   
   console.log('Environment check:');
   console.log('NODE_ENV:', process.env.NODE_ENV);
   console.log('REPLIT_DOMAINS:', process.env.REPLIT_DOMAINS);
-  console.log('isProduction:', isProduction);
-  console.log('Will use secure cookies:', isProduction);
+  console.log('isExternallyHosted:', isExternallyHosted);
+  console.log('Will use secure cookies:', isExternallyHosted);
   
   app.use(session({
     store: sessionStore,
