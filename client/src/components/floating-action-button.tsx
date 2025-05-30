@@ -4,19 +4,22 @@ import {
   QrCode, 
   Plus, 
   ArrowRightLeft,
-  X
+  X,
+  Printer
 } from "lucide-react";
 
 interface FloatingActionButtonProps {
   onScan: () => void;
   onTransfer: () => void;
   onAddItem?: () => void;
+  onPrintLabel?: () => void;
 }
 
 export default function FloatingActionButton({ 
   onScan, 
   onTransfer, 
-  onAddItem 
+  onAddItem,
+  onPrintLabel
 }: FloatingActionButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -70,6 +73,17 @@ export default function FloatingActionButton({
                 >
                   <Plus className="h-5 w-5 text-[hsl(var(--wb-accent))]" />
                   <span className="text-sm font-medium">Add New Item</span>
+                </Button>
+              )}
+
+              {/* Print Label Action (if provided) */}
+              {onPrintLabel && (
+                <Button
+                  onClick={() => handleAction(onPrintLabel)}
+                  className="flex items-center space-x-3 bg-[hsl(var(--wb-surface))] hover:bg-gray-50 dark:hover:bg-gray-800 text-[hsl(var(--wb-on-surface))] px-4 py-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 transition-all hover:scale-105 wb-touch-target"
+                >
+                  <Printer className="h-5 w-5 text-[hsl(var(--wb-accent))]" />
+                  <span className="text-sm font-medium">Print Label</span>
                 </Button>
               )}
             </div>
