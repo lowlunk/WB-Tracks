@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation, useRouter } from "wouter";
+import { Switch, Route, useLocation, Link } from "wouter";
 import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
@@ -121,7 +121,7 @@ function NotificationContent() {
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location] = useLocation();
-  const navigate = useRouter()[1];
+
   const [showScanner, setShowScanner] = useState(false);
   const { showTour, completeTour } = useOnboarding();
   const { theme } = useTheme();
@@ -172,7 +172,7 @@ function Router() {
           <Header 
             onScanClick={() => setShowScanner(true)}
             onNotificationClick={() => {/* Notification panel functionality */}}
-            onSettingsClick={() => navigate('/settings')}
+            onSettingsClick={() => window.location.href = '/settings'}
           />
         )}
         
