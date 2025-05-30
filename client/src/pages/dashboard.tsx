@@ -421,6 +421,7 @@ export default function Dashboard() {
       <TransferModal
         isOpen={showTransferModal}
         onClose={() => setShowTransferModal(false)}
+        onTransfer={() => {}}
       />
 
       <ConsumeModal

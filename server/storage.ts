@@ -92,6 +92,7 @@ export interface IStorage {
   removeItemsFromInventory(componentId: number, locationId: number, quantity: number, notes?: string): Promise<InventoryTransaction>;
   consumeItems(consume: ConsumeItem): Promise<InventoryTransaction>;
   getRecentTransactions(limit?: number): Promise<(InventoryTransaction & { component: Component; fromLocation?: InventoryLocation; toLocation?: InventoryLocation })[]>;
+  getConsumedTransactions(): Promise<(InventoryTransaction & { component: Component; location: InventoryLocation })[]>;
 
   // Dashboard stats
   getDashboardStats(): Promise<{
@@ -615,6 +616,30 @@ export class DatabaseStorage implements IStorage {
     }
 
     return result;
+  }
+
+  async getConsumedTransactions(): Promise<(InventoryTransaction & { component: Component; location: InventoryLocation })[]> {
+    const transactions = await db
+      .select({
+        id: inventoryTransactions.id,
+        componentId: inventoryTransactions.componentId,
+        fromLocationId: inventoryTransactions.fromLocationId,
+        toLocationId: inventoryTransactions.toLocationId,
+        quantity: inventoryTransactions.quantity,
+        transactionType: inventoryTransactions.transactionType,
+        notes: inventoryTransactions.notes,
+        createdAt: inventoryTransactions.createdAt,
+        createdBy: inventoryTransactions.createdBy,
+        component: components,
+        location: inventoryLocations,
+      })
+      .from(inventoryTransactions)
+      .innerJoin(components, eq(inventoryTransactions.componentId, components.id))
+      .innerJoin(inventoryLocations, eq(inventoryTransactions.fromLocationId, inventoryLocations.id))
+      .where(eq(inventoryTransactions.transactionType, 'consume'))
+      .orderBy(desc(inventoryTransactions.createdAt));
+
+    return transactions;
   }
 
   async getDashboardStats(): Promise<{

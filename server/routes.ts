@@ -501,7 +501,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(transaction);
     } catch (error: any) {
-      res.status(400).json({ message: error.message || "Add transaction failed" });
+      res.status(400).json({ message: error.message || "Consume transaction failed" });
+    }
+  });
+
+  // Get consumed transactions for tracking
+  app.get("/api/transactions/consumed", async (req, res) => {
+    try {
+      const consumedTransactions = await storage.getConsumedTransactions();
+      res.json(consumedTransactions);
+    } catch (error) {
+      console.error("Error fetching consumed transactions:", error);
+      res.status(500).json({ message: "Failed to fetch consumed transactions" });
     }
   });
 
