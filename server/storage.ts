@@ -53,8 +53,17 @@ export interface IStorage {
   deleteComponentPhoto(id: number): Promise<void>;
   setPrimaryPhoto(componentId: number, photoId: number): Promise<void>;
 
+  // Facility methods
+  getAllFacilities(): Promise<Facility[]>;
+  getFacility(id: number): Promise<Facility | undefined>;
+  getFacilityByCode(code: string): Promise<Facility | undefined>;
+  createFacility(facility: InsertFacility): Promise<Facility>;
+  updateFacility(id: number, facility: Partial<InsertFacility>): Promise<Facility>;
+  deleteFacility(id: number): Promise<void>;
+
   // Location methods
   getAllLocations(): Promise<InventoryLocation[]>;
+  getLocationsByFacility(facilityId: number): Promise<InventoryLocation[]>;
   getLocation(id: number): Promise<InventoryLocation | undefined>;
   createLocation(location: InsertInventoryLocation): Promise<InventoryLocation>;
 
@@ -210,8 +219,46 @@ export class DatabaseStorage implements IStorage {
     await db.delete(components).where(eq(components.id, id));
   }
 
+  // Facility methods
+  async getAllFacilities(): Promise<Facility[]> {
+    return await db.select().from(facilities);
+  }
+
+  async getFacility(id: number): Promise<Facility | undefined> {
+    const [facility] = await db.select().from(facilities).where(eq(facilities.id, id));
+    return facility || undefined;
+  }
+
+  async getFacilityByCode(code: string): Promise<Facility | undefined> {
+    const [facility] = await db.select().from(facilities).where(eq(facilities.code, code));
+    return facility || undefined;
+  }
+
+  async createFacility(facility: InsertFacility): Promise<Facility> {
+    const [newFacility] = await db.insert(facilities).values(facility).returning();
+    return newFacility;
+  }
+
+  async updateFacility(id: number, facility: Partial<InsertFacility>): Promise<Facility> {
+    const [updatedFacility] = await db
+      .update(facilities)
+      .set({ ...facility, updatedAt: new Date() })
+      .where(eq(facilities.id, id))
+      .returning();
+    return updatedFacility;
+  }
+
+  async deleteFacility(id: number): Promise<void> {
+    await db.delete(facilities).where(eq(facilities.id, id));
+  }
+
+  // Location methods
   async getAllLocations(): Promise<InventoryLocation[]> {
     return await db.select().from(inventoryLocations);
+  }
+
+  async getLocationsByFacility(facilityId: number): Promise<InventoryLocation[]> {
+    return await db.select().from(inventoryLocations).where(eq(inventoryLocations.facilityId, facilityId));
   }
 
   async getLocation(id: number): Promise<InventoryLocation | undefined> {
@@ -580,13 +627,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   async initializeDefaultData(): Promise<void> {
+    // Create default facility if it doesn't exist
+    const existingFacilities = await db.select().from(facilities);
+    let defaultFacility: Facility;
+    
+    if (existingFacilities.length === 0) {
+      const [facility] = await db.insert(facilities).values({
+        name: 'Main Production Facility',
+        code: 'MAIN-001',
+        description: 'Primary production facility',
+        address: 'Production Floor',
+      }).returning();
+      defaultFacility = facility;
+    } else {
+      defaultFacility = existingFacilities[0];
+    }
+
     // Create default locations if they don't exist
     const existingLocations = await db.select().from(inventoryLocations);
     
     if (existingLocations.length === 0) {
       await db.insert(inventoryLocations).values([
-        { name: 'Main Inventory', description: 'Central storage area (150 feet from production line)' },
-        { name: 'Line Inventory', description: 'Production line stock' },
+        { 
+          name: 'Main Inventory', 
+          description: 'Central storage area (150 feet from production line)',
+          facilityId: defaultFacility.id,
+          locationType: 'storage'
+        },
+        { 
+          name: 'Line Inventory', 
+          description: 'Production line stock',
+          facilityId: defaultFacility.id,
+          locationType: 'production'
+        },
       ]);
     }
 

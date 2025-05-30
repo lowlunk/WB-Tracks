@@ -53,7 +53,7 @@ export const facilities = pgTable("facilities", {
 
 export const inventoryLocations = pgTable("inventory_locations", {
   id: serial("id").primaryKey(),
-  facilityId: integer("facility_id").references(() => facilities.id).notNull(),
+  facilityId: integer("facility_id").references(() => facilities.id),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   locationType: varchar("location_type", { length: 50 }).default("warehouse"), // warehouse, production, staging, quarantine
