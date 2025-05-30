@@ -345,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/facilities", requireAuth, async (req, res) => {
+  app.post("/api/facilities", async (req, res) => {
     try {
       const validatedData = insertFacilitySchema.parse(req.body);
       const facility = await storage.createFacility(validatedData);
@@ -355,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/facilities/:id", requireAuth, async (req, res) => {
+  app.put("/api/facilities/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertFacilitySchema.partial().parse(req.body);
@@ -366,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/facilities/:id", requireAuth, async (req, res) => {
+  app.delete("/api/facilities/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteFacility(id);
