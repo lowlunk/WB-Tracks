@@ -103,11 +103,7 @@ export default function Login() {
             </Button>
           </form>
           
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Demo Credentials:</p>
-            <p><strong>Admin:</strong> admin / admin123</p>
-            <p><strong>User:</strong> user / user123</p>
-          </div>
+
         </CardContent>
       </Card>
     </div>
