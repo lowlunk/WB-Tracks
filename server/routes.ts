@@ -298,12 +298,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/components/:id", requireAuth, async (req, res) => {
+  app.put("/api/components/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const userId = (req.session as any).userId;
       const validatedData = insertComponentSchema.partial().parse(req.body);
-      const component = await storage.updateComponent(id, validatedData, userId);
+      const component = await storage.updateComponent(id, validatedData);
       res.json(component);
     } catch (error) {
       res.status(400).json({ message: "Failed to update component" });

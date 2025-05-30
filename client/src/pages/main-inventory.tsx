@@ -7,13 +7,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ComponentTable from "@/components/component-table";
 import TransferModal from "@/components/transfer-modal";
 import AddComponentDialog from "@/components/add-component-dialog";
-import { Warehouse, Search, Plus, ArrowRightLeft } from "lucide-react";
+import AddInventoryDialog from "@/components/add-inventory-dialog";
+import { Warehouse, Search, Plus, ArrowRightLeft, Package } from "lucide-react";
 
 export default function MainInventory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedComponentForTransfer, setSelectedComponentForTransfer] = useState<any>(null);
   const [showAddComponent, setShowAddComponent] = useState(false);
+  const [showAddInventory, setShowAddInventory] = useState(false);
 
   const { data: inventory, isLoading } = useQuery({
     queryKey: ["/api/inventory?locationId=1"],
@@ -56,7 +58,14 @@ export default function MainInventory() {
             className="wb-btn-secondary"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Items
+            New Component
+          </Button>
+          <Button 
+            onClick={() => setShowAddInventory(true)}
+            className="wb-btn-secondary"
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Add Inventory
           </Button>
         </div>
       </div>
@@ -164,6 +173,12 @@ export default function MainInventory() {
           onClose={() => setShowAddComponent(false)}
         />
       )}
+
+      {/* Add Inventory Dialog */}
+      <AddInventoryDialog
+        isOpen={showAddInventory}
+        onClose={() => setShowAddInventory(false)}
+      />
     </div>
   );
 }
