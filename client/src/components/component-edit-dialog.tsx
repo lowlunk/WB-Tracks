@@ -44,6 +44,7 @@ export default function ComponentEditDialog({ isOpen, onClose, component }: Comp
   });
 
   const [photos, setPhotos] = useState<string[]>([]);
+  const [showQRGenerator, setShowQRGenerator] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -304,20 +305,31 @@ export default function ComponentEditDialog({ isOpen, onClose, component }: Comp
                 </div>
               </div>
 
-              {/* Photo Management */}
+              {/* Photo Management & QR Code */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Photos</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadPhotoMutation.isPending}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Photo
-                  </Button>
+                  <h3 className="text-lg font-semibold">Photos & QR Code</h3>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowQRGenerator(true)}
+                    >
+                      <QrCode className="h-4 w-4 mr-2" />
+                      Generate QR
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadPhotoMutation.isPending}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Photo
+                    </Button>
+                  </div>
                 </div>
                 
                 <input
@@ -373,6 +385,14 @@ export default function ComponentEditDialog({ isOpen, onClose, component }: Comp
             </Button>
           </DialogFooter>
         </form>
+
+        {/* QR Code Generator */}
+        <QRCodeGenerator
+          isOpen={showQRGenerator}
+          onClose={() => setShowQRGenerator(false)}
+          componentNumber={component.componentNumber}
+          description={component.description}
+        />
       </DialogContent>
     </Dialog>
   );
