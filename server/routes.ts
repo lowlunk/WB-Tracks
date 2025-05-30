@@ -468,6 +468,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Data export routes for Power BI integration
+  app.get('/api/export/dashboard-data', async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      const recentTransactions = await storage.getRecentTransactions(50);
+      const lowStockItems = await storage.getLowStockItems();
+      const allInventory = await storage.getAllInventoryItems();
+      
+      const exportData = {
+        timestamp: new Date().toISOString(),
+        summary: stats,
+        inventory: allInventory.map(item => ({
+          componentNumber: item.component.componentNumber,
+          description: item.component.description,
+          location: item.location.name,
+          quantity: item.quantity,
+          minStockLevel: item.minStockLevel,
+          category: item.component.category,
+          supplier: item.component.supplier,
+          unitPrice: item.component.unitPrice,
+          lastUpdated: new Date().toISOString()
+        })),
+        transactions: recentTransactions.map(tx => ({
+          id: tx.id,
+          componentNumber: tx.component.componentNumber,
+          type: tx.transactionType,
+          quantity: tx.quantity,
+          fromLocation: tx.fromLocation?.name || null,
+          toLocation: tx.toLocation?.name || null,
+          timestamp: tx.createdAt,
+          notes: tx.notes
+        })),
+        alerts: lowStockItems.map(item => ({
+          componentNumber: item.component.componentNumber,
+          description: item.component.description,
+          location: item.location.name,
+          currentStock: item.quantity,
+          minStockLevel: item.minStockLevel,
+          urgency: item.quantity === 0 ? 'critical' : 'warning'
+        }))
+      };
+      
+      res.json(exportData);
+    } catch (error) {
+      console.error('Export error:', error);
+      res.status(500).json({ message: 'Failed to export data' });
+    }
+  });
+
+  // CSV export for Power BI
+  app.get('/api/export/csv', async (req, res) => {
+    try {
+      const { type } = req.query;
+      let csvData = '';
+      
+      if (type === 'inventory') {
+        const inventory = await storage.getAllInventoryItems();
+        csvData = 'Component Number,Description,Location,Quantity,Min Stock Level,Category,Supplier,Unit Price,Last Updated\n';
+        inventory.forEach(item => {
+          csvData += `"${item.component.componentNumber}","${item.component.description}","${item.location.name}",${item.quantity},${item.minStockLevel},"${item.component.category || ''}","${item.component.supplier || ''}",${item.component.unitPrice || 0},"${new Date().toISOString()}"\n`;
+        });
+      } else if (type === 'transactions') {
+        const transactions = await storage.getRecentTransactions(100);
+        csvData = 'ID,Component Number,Type,Quantity,From Location,To Location,Timestamp,Notes\n';
+        transactions.forEach(tx => {
+          csvData += `${tx.id},"${tx.component.componentNumber}","${tx.type}",${tx.quantity},"${tx.fromLocation?.name || ''}","${tx.toLocation?.name || ''}","${tx.createdAt}","${tx.notes || ''}"\n`;
+        });
+      }
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${type}_export_${new Date().toISOString().split('T')[0]}.csv"`);
+      res.send(csvData);
+    } catch (error) {
+      console.error('CSV export error:', error);
+      res.status(500).json({ message: 'Failed to export CSV' });
+    }
+  });
+
   // Serve uploaded files
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 

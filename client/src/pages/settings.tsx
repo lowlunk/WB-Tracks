@@ -1,5 +1,6 @@
 import { useState } from "react";
-// import { useAuth } from "@/hooks/useAuth"; // Temporarily disabled
+import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3 } from "lucide-react";
 import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
 
