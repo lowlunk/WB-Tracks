@@ -1,53 +1,63 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Link, useLocation } from "wouter";
+import { LogIn, User } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const { login, isLoginPending } = useAuth();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await login(formData);
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      return await apiRequest('/api/login', 'POST', credentials);
+    },
+    onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Logged in successfully",
+        title: "Welcome to WB-Tracks",
+        description: "Successfully logged in",
       });
       setLocation("/");
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Login failed",
+        title: "Login Failed",
+        description: error.message || "Invalid username or password",
         variant: "destructive",
       });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.username && formData.password) {
+      loginMutation.mutate(formData);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">WB-Tracks Login</CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access the inventory system
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+            <User className="h-8 w-8 text-white" />
+          </div>
+          <CardTitle className="text-2xl font-bold">WB-Tracks</CardTitle>
+          <CardDescription>
+            Sign in to access your inventory management system
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,39 +66,42 @@ export default function Login() {
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                name="username"
                 type="text"
                 placeholder="Enter your username"
                 value={formData.username}
-                onChange={handleChange}
+                onChange={(e) => handleInputChange("username", e.target.value)}
+                disabled={loginMutation.isPending}
                 required
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                name="password"
                 type="password"
                 placeholder="Enter your password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                disabled={loginMutation.isPending}
                 required
               />
             </div>
+            
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoginPending}
+              disabled={loginMutation.isPending || !formData.username || !formData.password}
             >
-              {isLoginPending ? "Signing in..." : "Sign In"}
+              <LogIn className="h-4 w-4 mr-2" />
+              {loginMutation.isPending ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            Don't have an account?{" "}
-            <Link href="/register" className="text-blue-600 hover:underline">
-              Sign up
-            </Link>
+          
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <p>Demo Credentials:</p>
+            <p><strong>Admin:</strong> admin / admin123</p>
+            <p><strong>User:</strong> user / user123</p>
           </div>
         </CardContent>
       </Card>

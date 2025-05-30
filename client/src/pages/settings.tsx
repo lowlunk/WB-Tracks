@@ -232,40 +232,18 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleUserUpdate} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={userSettings.firstName}
-                      onChange={(e) => handleSettingChange("firstName", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={userSettings.lastName}
-                      onChange={(e) => handleSettingChange("lastName", e.target.value)}
-                    />
-                  </div>
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  <p><strong>Username:</strong> {user?.username || 'Not available'}</p>
+                  <p><strong>Email:</strong> {user?.email || 'Not available'}</p>
+                  <p><strong>Role:</strong> {user?.role || 'Not available'}</p>
+                  <p><strong>Last Login:</strong> {user?.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</p>
+                  <p><strong>Account Created:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleString() : 'Unknown'}</p>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={userSettings.email}
-                    onChange={(e) => handleSettingChange("email", e.target.value)}
-                  />
-                </div>
-                
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Update Profile"}
-                </Button>
-              </form>
+                <p className="text-xs text-muted-foreground">
+                  Contact your administrator to update profile information.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
