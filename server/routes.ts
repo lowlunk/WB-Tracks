@@ -242,36 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const data = loginSchema.parse(req.body);
-      
-      // Get user
-      const user = await storage.loginUser(data.username);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
 
-      // Check password
-      const validPassword = await bcrypt.compare(data.password, user.password);
-      if (!validPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Update last login
-      await storage.updateLastLogin(user.id);
-
-      // Set session
-      (req.session as any).userId = user.id;
-      
-      // Return user without password
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(400).json({ message: "Login failed" });
-    }
-  });
 
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
