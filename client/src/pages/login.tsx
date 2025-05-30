@@ -28,13 +28,11 @@ export default function Login() {
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      // Clear all cache and refetch auth state
+      // Clear all cache and force a complete page navigation
       queryClient.clear();
       
-      // Small delay to ensure session is properly set
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 100);
+      // Force a complete page reload to ensure authentication state is refreshed
+      window.location.replace("/");
     },
     onError: (error: any) => {
       toast({
