@@ -60,7 +60,7 @@ export function useAuth() {
   return {
     user: user as User | undefined,
     isLoading: !isInitialized || userLoading,
-    isAuthenticated: !!user && !error,
+    isAuthenticated: !!user && user !== null,
     logout,
     error,
   };

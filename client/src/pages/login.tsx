@@ -28,10 +28,8 @@ export default function Login() {
         title: "Welcome to WB-Tracks",
         description: "Successfully logged in",
       });
-      // Force a complete page reload to ensure session is properly established
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1000);
+      // Immediately reload the page to refresh authentication state
+      window.location.reload();
     },
     onError: (error: any) => {
       toast({
