@@ -43,30 +43,30 @@
 }
 
 .dark {
-  --background: 240 10% 3.9%;
+  --background: 220 20% 8%; /* Deep midnight blue like Replit */
   --foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --popover: 240 10% 3.9%;
+  --muted: 220 15% 15%;
+  --muted-foreground: 220 10% 65%;
+  --popover: 220 20% 10%;
   --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
+  --card: 220 18% 12%; /* Slightly lighter for cards */
   --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+  --border: 220 15% 18%;
+  --input: 220 15% 15%;
   --primary: 207 90% 54%;
   --primary-foreground: 211 100% 99%;
-  --secondary: 240 3.7% 15.9%;
+  --secondary: 220 15% 18%;
   --secondary-foreground: 0 0% 98%;
-  --accent: 240 3.7% 15.9%;
+  --accent: 220 15% 20%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --ring: 240 4.9% 83.9%;
+  --ring: 220 20% 83.9%;
   --radius: 0.5rem;
 
-  /* Dark mode WB-Tracks colors */
-  --wb-background: 240 10% 3.9%; /* #0A0A0B */
-  --wb-surface: 240 10% 8%; /* #141417 */
+  /* Dark mode WB-Tracks colors - midnight blue theme */
+  --wb-background: 220 20% 8%; /* Deep midnight blue */
+  --wb-surface: 220 18% 12%; /* Slightly lighter surface */
   --wb-on-surface: 0 0% 98%; /* #FAFAFA */
   --wb-on-background: 0 0% 98%; /* #FAFAFA */
 }

@@ -47,8 +47,10 @@ export default function AdminDashboard() {
   const { isAdmin, isLoading } = useUserRole();
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
+  const [isAssignGroupDialogOpen, setIsAssignGroupDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null);
+  const [assigningUser, setAssigningUser] = useState<User | null>(null);
 
   // Show loading state while checking user role
   if (isLoading) {
@@ -331,6 +333,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAssignToGroup = (user: User) => {
+    setAssigningUser(user);
+    setIsAssignGroupDialogOpen(true);
+  };
+
   const togglePermission = (permission: string) => {
     setGroupFormData(prev => ({
       ...prev,
@@ -557,6 +564,13 @@ export default function AdminDashboard() {
                               onClick={() => handleEditUser(user)}
                             >
                               <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAssignToGroup(user)}
+                            >
+                              <Users className="h-3 w-3" />
                             </Button>
                             <Button
                               size="sm"
@@ -805,6 +819,77 @@ export default function AdminDashboard() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign User to Group Dialog */}
+      <Dialog open={isAssignGroupDialogOpen} onOpenChange={setIsAssignGroupDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign User to Groups: {assigningUser?.username}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Select which groups this user should be assigned to:
+            </p>
+            {groupsLoading ? (
+              <div className="text-center py-4">Loading groups...</div>
+            ) : groups && groups.length > 0 ? (
+              <div className="space-y-2">
+                {groups.map((group: UserGroup) => (
+                  <div key={group.id} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`group-${group.id}`}
+                      // For now, we'll show all groups as unchecked
+                      // In a full implementation, we'd check current user group memberships
+                    />
+                    <Label htmlFor={`group-${group.id}`} className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4" />
+                      <span className="font-medium">{group.name}</span>
+                      {group.description && (
+                        <span className="text-sm text-muted-foreground">
+                          - {group.description}
+                        </span>
+                      )}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No groups available</p>
+                <p className="text-sm">Create groups first to assign users</p>
+              </div>
+            )}
+            <div className="flex justify-end space-x-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setIsAssignGroupDialogOpen(false);
+                  setAssigningUser(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="button"
+                onClick={() => {
+                  // For now, just close the dialog
+                  // In a full implementation, we'd save the group assignments
+                  toast({
+                    title: "Feature Coming Soon",
+                    description: "User group assignment functionality will be implemented in the next update",
+                  });
+                  setIsAssignGroupDialogOpen(false);
+                  setAssigningUser(null);
+                }}
+              >
+                Save Assignments
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
