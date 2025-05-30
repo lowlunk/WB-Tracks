@@ -65,7 +65,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Determine if we're in production (HTTPS)
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DOMAINS;
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.REPLIT_DOMAINS;
+  
+  console.log('Environment check:');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('REPLIT_DOMAINS:', process.env.REPLIT_DOMAINS);
+  console.log('isProduction:', isProduction);
+  console.log('Will use secure cookies:', isProduction);
   
   app.use(session({
     store: sessionStore,
