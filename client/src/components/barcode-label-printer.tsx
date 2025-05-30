@@ -25,6 +25,7 @@ interface LabelData {
   quantity: number;
   includeQR: boolean;
   includeLogo: boolean;
+  barcodeType: string;
 }
 
 const LABEL_SIZES = [
@@ -32,6 +33,17 @@ const LABEL_SIZES = [
   { value: "30334", label: "Multi-Purpose (2.25\" x 1.25\")", width: "162px", height: "90px" },
   { value: "30336", label: "File Folder (0.6\" x 3.4\")", width: "245px", height: "43px" },
   { value: "custom", label: "Custom Size", width: "200px", height: "100px" },
+];
+
+const BARCODE_TYPES = [
+  { value: "code128", label: "Code 128 (General purpose)", description: "Most versatile, handles numbers and text" },
+  { value: "code39", label: "Code 39 (Alphanumeric)", description: "Widely supported, letters and numbers" },
+  { value: "ean13", label: "EAN-13 (Product codes)", description: "Standard for retail products" },
+  { value: "upc", label: "UPC-A (US products)", description: "Common in North America" },
+  { value: "code93", label: "Code 93 (Compact)", description: "Higher density than Code 39" },
+  { value: "itf", label: "ITF (Interleaved 2 of 5)", description: "For numeric data only" },
+  { value: "datamatrix", label: "Data Matrix (2D)", description: "Small size, high data capacity" },
+  { value: "pdf417", label: "PDF417 (2D)", description: "High capacity 2D barcode" },
 ];
 
 export default function BarcodeLabelPrinter({ 
@@ -49,6 +61,7 @@ export default function BarcodeLabelPrinter({
     quantity: 1,
     includeQR: true,
     includeLogo: true,
+    barcodeType: "code128",
   });
 
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -345,20 +358,41 @@ export default function BarcodeLabelPrinter({
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="labelSize">Label Size</Label>
-              <Select value={labelData.labelSize} onValueChange={(value) => setLabelData({ ...labelData, labelSize: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LABEL_SIZES.map((size) => (
-                    <SelectItem key={size.value} value={size.value}>
-                      {size.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="labelSize">Label Size</Label>
+                <Select value={labelData.labelSize} onValueChange={(value) => setLabelData({ ...labelData, labelSize: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LABEL_SIZES.map((size) => (
+                      <SelectItem key={size.value} value={size.value}>
+                        {size.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="barcodeType">Barcode Type</Label>
+                <Select value={labelData.barcodeType} onValueChange={(value) => setLabelData({ ...labelData, barcodeType: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BARCODE_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{type.label}</span>
+                          <span className="text-xs text-gray-500">{type.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="flex gap-4">
