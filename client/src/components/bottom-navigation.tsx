@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useUserRole } from "@/hooks/useUserRole";
 import { 
   Home, 
   Warehouse, 
@@ -11,6 +12,7 @@ import {
 
 export default function BottomNavigation() {
   const [location] = useLocation();
+  const { isAdmin } = useUserRole();
 
   const navItems = [
     {
@@ -37,17 +39,17 @@ export default function BottomNavigation() {
       label: "Inventory",
       active: location === "/inventory",
     },
-    {
+    ...(isAdmin ? [{
       href: "/admin",
       icon: Shield,
       label: "Admin",
       active: location === "/admin",
-    },
+    }] : []),
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--wb-surface))] border-t border-gray-200 dark:border-gray-700 lg:hidden z-40 wb-production-safe">
-      <div className="grid grid-cols-5 h-16">
+      <div className={`grid ${isAdmin ? 'grid-cols-5' : 'grid-cols-4'} h-16`}>
         {navItems.map((item) => {
           const Icon = item.icon;
           return (

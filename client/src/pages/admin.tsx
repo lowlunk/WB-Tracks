@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, UserPlus, Edit2, Trash2, Crown, Settings } from "lucide-react";
+import { Shield, Users, UserPlus, Edit2, Trash2, Crown, Settings, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useUserRole } from "@/hooks/useUserRole";
 import type { User, UserGroup, InsertUserGroup } from "@shared/schema";
 
 interface UserFormData {
@@ -43,10 +44,41 @@ const AVAILABLE_PERMISSIONS = [
 ];
 
 export default function AdminDashboard() {
+  const { isAdmin, isLoading } = useUserRole();
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null);
+
+  // Show loading state while checking user role
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--wb-primary))]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card className="max-w-md mx-auto mt-16">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h2 className="text-lg font-semibold mb-2">Access Denied</h2>
+              <p className="text-muted-foreground">
+                You don't have permission to access the Admin section. Only administrators can view this page.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   const [userFormData, setUserFormData] = useState<UserFormData>({
     username: "",
     email: "",
