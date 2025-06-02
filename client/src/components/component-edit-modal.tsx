@@ -310,58 +310,80 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
               className="hidden"
             />
 
-            <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-              {photos.map((photo: ComponentPhoto) => (
-                <div key={photo.id} className="relative group">
-                  <img
-                    src={photo.imageUrl}
-                    alt={photo.caption || "Component photo"}
-                    className="w-full h-32 object-cover rounded-lg border"
-                  />
+            {photos.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                {photos.map((photo: ComponentPhoto) => (
+                  <div key={photo.id} className="relative group">
+                    <img
+                      src={photo.imageUrl}
+                      alt={photo.caption || "Component photo"}
+                      className="w-full h-32 object-cover rounded-lg border"
+                      onError={(e) => {
+                        // Hide broken images
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
 
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg">
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={photo.isPrimary ? "default" : "secondary"}
-                        onClick={() => setPrimaryMutation.mutate(photo.id)}
-                        disabled={setPrimaryMutation.isPending}
-                      >
-                        <Star className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deletePhotoMutation.mutate(photo.id)}
-                        disabled={deletePhotoMutation.isPending}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg">
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={photo.isPrimary ? "default" : "secondary"}
+                          onClick={() => setPrimaryMutation.mutate(photo.id)}
+                          disabled={setPrimaryMutation.isPending}
+                        >
+                          <Star className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deletePhotoMutation.mutate(photo.id)}
+                          disabled={deletePhotoMutation.isPending}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        {photo.caption || `Photo ${photos.indexOf(photo) + 1}`}
+                      </p>
                     </div>
                   </div>
+                ))}
 
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                      {photo.caption || `Photo ${photos.indexOf(photo) + 1}`}
-                    </p>
+                {photos.length < 3 && (
+                  <div 
+                    className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                    <span className="text-xs text-gray-500">
+                      Add {photos.length === 0 ? 'Label' : photos.length === 1 ? 'Product' : 'Box'} Photo
+                    </span>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className="mb-4">
+                  <Upload className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600" />
                 </div>
-              ))}
-
-              {photos.length < 3 && (
-                <div 
-                  className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                <p className="text-sm mb-4">No photos uploaded yet</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="h-6 w-6 text-gray-400 mb-2" />
-                  <span className="text-xs text-gray-500">
-                    Add {photos.length === 0 ? 'Label' : photos.length === 1 ? 'Product' : 'Box'} Photo
-                  </span>
-                </div>
-              )}
-            </div>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload First Photo
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
