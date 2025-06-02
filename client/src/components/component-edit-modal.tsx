@@ -54,6 +54,11 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
     enabled: isOpen && !!componentId,
   });
 
+  // Filter out any invalid photos - only show photos with valid image URLs
+  const validPhotos = Array.isArray(photos) ? photos.filter((photo: any) => 
+    photo && photo.imageUrl && photo.imageUrl.trim() !== '' && photo.imageUrl !== 'Component photo'
+  ) : [];
+
   // Update component mutation
   const updateComponentMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -310,9 +315,9 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
               className="hidden"
             />
 
-            {photos.length > 0 ? (
+            {validPhotos.length > 0 ? (
               <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-                {photos.map((photo: ComponentPhoto) => (
+                {validPhotos.map((photo: any) => (
                   <div key={photo.id} className="relative group">
                     <img
                       src={photo.imageUrl}
@@ -349,20 +354,20 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
 
                     <div className="mt-2">
                       <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                        {photo.caption || `Photo ${photos.indexOf(photo) + 1}`}
+                        {photo.caption || `Photo ${validPhotos.indexOf(photo) + 1}`}
                       </p>
                     </div>
                   </div>
                 ))}
 
-                {photos.length < 3 && (
+                {validPhotos.length < 3 && (
                   <div 
                     className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="h-6 w-6 text-gray-400 mb-2" />
                     <span className="text-xs text-gray-500">
-                      Add {photos.length === 0 ? 'Label' : photos.length === 1 ? 'Product' : 'Box'} Photo
+                      Add {validPhotos.length === 0 ? 'Label' : validPhotos.length === 1 ? 'Product' : 'Box'} Photo
                     </span>
                   </div>
                 )}
