@@ -170,11 +170,18 @@ export default function ComponentTable({
               >
                 <TableCell>
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                      <Package className="h-4 w-4 text-gray-500" />
+                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center relative">
+                      <Package className="h-5 w-5 text-gray-500" />
+                      {/* Small indicator for photos - you can expand this later */}
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full opacity-0" />
                     </div>
-                    <div className="font-medium text-[hsl(var(--wb-on-surface))]">
-                      {component.componentNumber}
+                    <div>
+                      <div className="font-medium text-[hsl(var(--wb-on-surface))]">
+                        {component.componentNumber}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Ready for photos
+                      </div>
                     </div>
                   </div>
                 </TableCell>

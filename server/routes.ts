@@ -447,6 +447,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/components/:id/photos", requireAuth, async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.id);
+      const photos = await storage.getComponentPhotos(componentId);
+      
+      // Delete all photos for this component
+      for (const photo of photos) {
+        await storage.deleteComponentPhoto(photo.id);
+      }
+      
+      res.json({ message: "All photos deleted successfully", deletedCount: photos.length });
+    } catch (error) {
+      console.error("Error deleting all component photos:", error);
+      res.status(500).json({ message: "Failed to delete photos" });
+    }
+  });
+
   app.put("/api/components/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

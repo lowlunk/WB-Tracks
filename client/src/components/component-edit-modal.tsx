@@ -18,7 +18,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     componentNumber: "",
     description: "",
@@ -95,7 +95,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append("image", file);
-      
+
       const response = await fetch(`/api/components/${componentId}/photos`, {
         method: "POST",
         body: formData,
@@ -139,6 +139,13 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
         description: "Photo deleted successfully",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete photo",
+        variant: "destructive",
+      });
+    },
   });
 
   // Set primary photo mutation
@@ -156,6 +163,13 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
       toast({
         title: "Success",
         description: "Primary photo updated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to set primary photo",
+        variant: "destructive",
       });
     },
   });
@@ -197,7 +211,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
         <DialogHeader>
           <DialogTitle>Edit Component: {component?.componentNumber}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Component Details Form */}
           <div className="space-y-4">
@@ -212,7 +226,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -224,7 +238,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
@@ -235,7 +249,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                     onChange={handleChange}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="supplier">Supplier</Label>
                   <Input
@@ -246,7 +260,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="unitPrice">Unit Price ($)</Label>
                 <Input
@@ -258,7 +272,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                   onChange={handleChange}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea
@@ -287,7 +301,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                 Upload Photo
               </Button>
             </div>
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -295,7 +309,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
               onChange={handleFileSelect}
               className="hidden"
             />
-            
+
             <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
               {photos.map((photo: ComponentPhoto) => (
                 <div key={photo.id} className="relative group">
@@ -304,7 +318,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                     alt={photo.caption || "Component photo"}
                     className="w-full h-32 object-cover rounded-lg border"
                   />
-                  
+
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg">
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1">
                       <Button
@@ -327,26 +341,24 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                       </Button>
                     </div>
                   </div>
-                  
-                  {photo.isPrimary && (
-                    <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs">
-                      Primary
-                    </div>
-                  )}
-                  
-                  {photo.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-2 rounded-b-lg text-sm">
-                      {photo.caption}
-                    </div>
-                  )}
+
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                      {photo.caption || `Photo ${photos.indexOf(photo) + 1}`}
+                    </p>
+                  </div>
                 </div>
               ))}
-              
-              {photos.length === 0 && (
-                <div className="col-span-2 text-center py-8 text-gray-500">
-                  <Camera className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No photos uploaded yet</p>
-                  <p className="text-sm">Click "Upload Photo" to add images</p>
+
+              {photos.length < 3 && (
+                <div 
+                  className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                  <span className="text-xs text-gray-500">
+                    Add {photos.length === 0 ? 'Label' : photos.length === 1 ? 'Product' : 'Box'} Photo
+                  </span>
                 </div>
               )}
             </div>
