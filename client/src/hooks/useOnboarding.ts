@@ -9,12 +9,13 @@ export function useOnboarding() {
     if (isAuthenticated && user) {
       // Check if user has completed onboarding
       const hasCompletedOnboarding = localStorage.getItem(`onboarding-completed-${user.id}`);
+      const hasSkippedOnboarding = localStorage.getItem(`onboarding-skipped-${user.id}`);
       
-      if (!hasCompletedOnboarding) {
+      if (!hasCompletedOnboarding && !hasSkippedOnboarding) {
         // Show tour after a brief delay for better UX
         const timer = setTimeout(() => {
           setShowTour(true);
-        }, 1000);
+        }, 1500);
         
         return () => clearTimeout(timer);
       }
@@ -29,19 +30,24 @@ export function useOnboarding() {
     setShowTour(false);
     if (user) {
       localStorage.setItem(`onboarding-completed-${user.id}`, "true");
+      localStorage.setItem(`onboarding-completion-date-${user.id}`, new Date().toISOString());
     }
   };
 
   const skipTour = () => {
     setShowTour(false);
     if (user) {
-      localStorage.setItem(`onboarding-completed-${user.id}`, "true");
+      localStorage.setItem(`onboarding-skipped-${user.id}`, "true");
+      localStorage.setItem(`onboarding-skip-date-${user.id}`, new Date().toISOString());
     }
   };
 
   const resetOnboarding = () => {
     if (user) {
       localStorage.removeItem(`onboarding-completed-${user.id}`);
+      localStorage.removeItem(`onboarding-skipped-${user.id}`);
+      localStorage.removeItem(`onboarding-completion-date-${user.id}`);
+      localStorage.removeItem(`onboarding-skip-date-${user.id}`);
     }
   };
 

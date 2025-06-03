@@ -24,156 +24,158 @@ interface TourStep {
 const tourSteps: TourStep[] = [
   {
     id: "welcome",
-    title: "Welcome to WB-Tracks",
-    description: "Your complete inventory management solution for tracking components between main inventory and production line locations.",
+    title: "🎯 Welcome to WB-Tracks",
+    description: "Let's take a quick tour! WB-Tracks helps you track components between your main storage and production lines. Think of it as your digital inventory assistant that knows where everything is and when it's running low.",
     element: "body",
     position: "bottom",
     type: "observe",
     category: "basic",
     icon: "play",
-    duration: 3000
+    duration: 4000
   },
   {
-    id: "header",
-    title: "Navigation Header",
-    description: "Quick access to notifications, barcode scanning, and user settings. The notification bell shows low stock alerts and activity updates.",
-    element: "header",
+    id: "purpose",
+    title: "🏭 Why WB-Tracks?",
+    description: "Perfect for manufacturing environments where you need to move components from main storage to production lines, track what's consumed, and always know your stock levels in real-time.",
+    element: "body",
     position: "bottom",
     type: "observe",
     category: "basic",
     icon: "eye",
-    interactive: true
+    duration: 3500
   },
   {
-    id: "notifications",
-    title: "Smart Notifications",
-    description: "Real-time alerts for low stock, transfers, and system updates. Click the bell to see notification history and configure preferences.",
-    element: "[data-tour='notifications']",
-    position: "bottom",
-    type: "click",
-    category: "basic",
-    icon: "target",
-    action: "Try clicking the notification bell",
-    interactive: true
-  },
-  {
-    id: "dashboard",
-    title: "Dashboard Overview",
-    description: "See real-time inventory statistics, recent activity, and system alerts. Monitor total components and stock levels across all locations.",
+    id: "dashboard-intro",
+    title: "📊 Your Command Center",
+    description: "This dashboard shows everything at a glance: total components, inventory levels, and recent activity. It's your starting point for daily operations.",
     element: "[data-tour='dashboard-stats']",
     position: "bottom",
     type: "observe",
     category: "basic",
-    icon: "eye"
+    icon: "eye",
+    duration: 3000
   },
   {
-    id: "quick-actions",
-    title: "Quick Action Center",
-    description: "Access frequently used features instantly: scan barcodes, transfer items, consume inventory, and add new components.",
+    id: "navigation-basics",
+    title: "🧭 Easy Navigation",
+    description: "Use these tabs at the bottom to move around. Dashboard (home), Main Inventory (storage), Line Inventory (production), All Inventory (everything), and Admin (settings).",
+    element: "nav",
+    position: "top",
+    type: "observe",
+    category: "basic",
+    icon: "hand",
+    action: "Notice the five main sections",
+    duration: 3000
+  },
+  {
+    id: "quick-actions-intro",
+    title: "⚡ Quick Actions",
+    description: "These floating buttons give you instant access to your most common tasks. Hover over them to see what each one does!",
     element: "[data-tour='quick-actions']",
     position: "left",
     type: "hover",
     category: "basic",
     icon: "zap",
-    action: "Hover over the action buttons to see their functions",
+    action: "Hover over each button to see its function",
     interactive: true
   },
   {
-    id: "navigation",
-    title: "Bottom Navigation",
-    description: "Switch between Dashboard, Main Inventory, Line Inventory, All Inventory, and Admin sections using these tabs.",
-    element: "nav",
-    position: "top",
-    type: "click",
-    category: "basic",
-    icon: "hand",
-    action: "Try clicking different navigation tabs"
-  },
-  {
-    id: "barcode-scanning",
-    title: "Barcode Scanning Power",
-    description: "Use camera-based scanning to quickly find components, add inventory, or process transfers. Supports multiple barcode formats and QR codes.",
+    id: "scanning-power",
+    title: "📱 Barcode Magic",
+    description: "The camera icon opens a barcode scanner. Point your device's camera at any barcode to instantly find components, add stock, or process transfers. It's like having superpowers!",
     element: "[data-tour='scan-button']",
     position: "bottom",
     type: "click",
-    category: "advanced",
+    category: "basic",
     icon: "target",
-    action: "Click to test barcode scanning",
+    action: "Click to see the barcode scanner in action",
     interactive: true
   },
   {
-    id: "main-inventory",
-    title: "Main Inventory Hub",
-    description: "Central storage management with search, filtering, and bulk operations. View stock levels, component details, and transaction history.",
+    id: "main-inventory-concept",
+    title: "🏪 Main Inventory = Your Warehouse",
+    description: "Main Inventory is your central storage area. This is where you keep the bulk of your components before they're needed on production lines.",
     element: "[data-tour='main-inventory']",
     position: "top",
     type: "click",
     category: "basic",
     icon: "hand",
-    action: "Navigate to Main Inventory to explore features"
+    action: "Click to explore your main storage area"
   },
   {
-    id: "line-inventory",
-    title: "Production Line Control",
-    description: "Real-time production inventory tracking with consumption logging, transfer requests, and low stock alerts for line operations.",
+    id: "line-inventory-concept",
+    title: "🔧 Line Inventory = Production Floor",
+    description: "Line Inventory shows what's currently on your production lines. When workers need components, you transfer them from Main to Line inventory.",
     element: "[data-tour='line-inventory']",
     position: "top",
     type: "click",
     category: "basic",
     icon: "hand",
-    action: "Switch to Line Inventory to see production stock"
+    action: "Click to see your production line stock"
   },
   {
-    id: "component-management",
-    title: "Component Lifecycle",
-    description: "Complete component management: create, edit, photo uploads, barcode generation, and detailed tracking with full audit trails.",
-    element: "[data-tour='add-component']",
-    position: "left",
-    type: "click",
-    category: "advanced",
-    icon: "hand",
-    action: "Try adding a new component",
-    interactive: true
-  },
-  {
-    id: "transfers",
-    title: "Smart Transfers",
-    description: "Seamless inventory movement between locations with real-time updates, automatic stock adjustments, and complete transaction logging.",
+    id: "transfer-workflow",
+    title: "🔄 Moving Components Around",
+    description: "Transfers move components between locations. Use the transfer button to move items from Main to Line inventory when production needs them.",
     element: "[data-tour='transfer-button']",
     position: "left",
     type: "click",
-    category: "advanced",
+    category: "basic",
     icon: "hand",
-    action: "Practice transferring inventory",
+    action: "Click to practice transferring components",
     interactive: true
   },
   {
-    id: "consume-tracking",
-    title: "Production Consumption",
-    description: "Track production usage separately from transfers. Monitor what's consumed, by whom, and for which projects with detailed reporting.",
+    id: "consumption-tracking",
+    title: "📉 Tracking What Gets Used",
+    description: "Consumption is different from transfers. When components are actually used in production (consumed), track it here. This helps you understand usage patterns.",
     element: "[data-tour='consume-button']",
     position: "left",
     type: "click",
-    category: "advanced",
+    category: "basic",
     icon: "zap",
-    action: "Learn about consumption tracking"
+    action: "Click to learn about consumption tracking"
+  },
+  {
+    id: "adding-components",
+    title: "➕ Adding New Components",
+    description: "When you get new components or need to add existing ones to the system, use the plus button. You can even take photos and generate barcodes!",
+    element: "[data-tour='add-component']",
+    position: "left",
+    type: "click",
+    category: "basic",
+    icon: "hand",
+    action: "Try adding a new component to see how it works",
+    interactive: true
   },
   {
     id: "search-and-filter",
-    title: "Advanced Search",
-    description: "Powerful search capabilities across components, locations, and transactions. Use filters to find exactly what you need quickly.",
+    title: "🔍 Finding Components Fast",
+    description: "Use the search box to quickly find any component. You can search by part number, description, or any other detail. Much faster than scrolling through lists!",
     element: "[data-tour='search']",
     position: "bottom",
     type: "input",
-    category: "advanced",
+    category: "basic",
     icon: "target",
     action: "Try searching for a component",
     interactive: true
   },
   {
-    id: "admin",
-    title: "Administrative Control",
-    description: "Complete system administration: user management, facility setup, permissions, and system configuration for enterprise deployment.",
+    id: "notifications-system",
+    title: "🔔 Stay Informed",
+    description: "The notification bell alerts you to important events like low stock levels, completed transfers, and system updates. Never miss critical inventory issues!",
+    element: "[data-tour='notifications']",
+    position: "bottom",
+    type: "click",
+    category: "basic",
+    icon: "target",
+    action: "Click the bell to see your notifications",
+    interactive: true
+  },
+  {
+    id: "admin-features",
+    title: "⚙️ Administrative Control",
+    description: "Admin section lets you manage users, set up facilities, configure the system, and access advanced features. This is where you customize WB-Tracks for your operation.",
     element: "[data-tour='admin-tab']",
     position: "top",
     type: "click",
@@ -182,15 +184,37 @@ const tourSteps: TourStep[] = [
     action: "Explore admin features (admin users only)"
   },
   {
+    id: "daily-workflow",
+    title: "📅 Your Daily Workflow",
+    description: "Here's a typical day: Check dashboard for alerts → Scan barcodes to find components → Transfer items to production lines → Track consumption → Add new inventory as needed. Simple!",
+    element: "body",
+    position: "bottom",
+    type: "observe",
+    category: "basic",
+    icon: "eye",
+    duration: 4000
+  },
+  {
+    id: "mobile-friendly",
+    title: "📱 Works Everywhere",
+    description: "WB-Tracks works great on phones, tablets, and computers. Use your phone to scan barcodes on the production floor, then check reports on your computer. Same data, everywhere!",
+    element: "body",
+    position: "bottom",
+    type: "observe",
+    category: "basic",
+    icon: "eye",
+    duration: 3000
+  },
+  {
     id: "completion",
-    title: "Ready to Start!",
-    description: "You're all set to use WB-Tracks effectively. Remember: scan for speed, transfer for flow, and monitor for control. Happy tracking!",
+    title: "🚀 You're Ready!",
+    description: "That's it! You now know the basics of WB-Tracks. Start by exploring the Main Inventory, try scanning a barcode, and don't forget to check notifications regularly. Happy tracking! 🎉",
     element: "body",
     position: "bottom",
     type: "observe",
     category: "basic",
     icon: "checkCircle",
-    duration: 2000
+    duration: 3000
   }
 ];
 
@@ -282,11 +306,26 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
       clearTimeout(timeoutRef.current);
     }
     
+    // Add a small celebration for completed interactions
+    if (currentStepData.interactive && isInteracting) {
+      const confetti = document.createElement('div');
+      confetti.innerHTML = '🎉';
+      confetti.style.position = 'fixed';
+      confetti.style.left = '50%';
+      confetti.style.top = '50%';
+      confetti.style.fontSize = '2rem';
+      confetti.style.zIndex = '9999';
+      confetti.style.animation = 'fadeOut 1s ease-out forwards';
+      document.body.appendChild(confetti);
+      setTimeout(() => confetti.remove(), 1000);
+    }
+    
     if (currentStep < filteredSteps.length - 1) {
       setCurrentStep(currentStep + 1);
       setIsInteracting(false);
     } else {
       localStorage.setItem('wb-tracks-tour-completed', 'true');
+      localStorage.setItem('wb-tracks-tour-completion-date', new Date().toISOString());
       onClose();
     }
   };
@@ -504,10 +543,20 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
                 <motion.p 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-gray-600 dark:text-gray-300"
+                  className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed"
                 >
                   {currentStepData.description}
                 </motion.p>
+
+                {/* Progress indicator for observe steps */}
+                {currentStepData.type === 'observe' && currentStepData.duration && !isPaused && (
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: currentStepData.duration / 1000, ease: 'linear' }}
+                    className="h-1 bg-blue-500 rounded-full mt-2"
+                  />
+                )}
                 
                 {currentStepData.action && (
                   <motion.div 

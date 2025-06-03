@@ -97,6 +97,38 @@
   }
 
   .wb-btn-secondary {
+
+/* Tour animations */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+@keyframes tourPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+  }
+}
+
+.tour-highlight {
+  animation: tourPulse 2s infinite;
+}
+
+/* Enhanced tour card styling */
+.tour-card {
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
     @apply bg-[hsl(var(--wb-secondary))] text-[hsl(var(--wb-on-secondary))] hover:bg-[hsl(var(--wb-secondary-dark))] transition-colors;
   }
 
