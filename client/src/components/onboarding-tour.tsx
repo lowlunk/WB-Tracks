@@ -387,36 +387,85 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
     if (!highlightElement) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
 
     const rect = highlightElement.getBoundingClientRect();
-    const tooltipWidth = 400;
-    const tooltipHeight = 200;
+    const tooltipWidth = Math.min(400, viewportWidth * 0.9); // Responsive width
+    const tooltipHeight = 300; // Increased to account for actual content height
+    const margin = 20;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
     let top = 0;
     let left = 0;
+    let actualPosition = currentStepData.position;
 
+    // Calculate initial position based on preferred position
     switch (currentStepData.position) {
       case 'top':
-        top = rect.top - tooltipHeight - 20;
+        top = rect.top - tooltipHeight - margin;
         left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
         break;
       case 'bottom':
-        top = rect.bottom + 20;
+        top = rect.bottom + margin;
         left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
         break;
       case 'left':
         top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-        left = rect.left - tooltipWidth - 20;
+        left = rect.left - tooltipWidth - margin;
         break;
       case 'right':
         top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
-        left = rect.right + 20;
+        left = rect.right + margin;
         break;
     }
 
-    // Keep tooltip within viewport
-    top = Math.max(20, Math.min(top, window.innerHeight - tooltipHeight - 20));
-    left = Math.max(20, Math.min(left, window.innerWidth - tooltipWidth - 20));
+    // Check if tooltip would go outside viewport and adjust position
+    const wouldOverflowTop = top < margin;
+    const wouldOverflowBottom = top + tooltipHeight > viewportHeight - margin;
+    const wouldOverflowLeft = left < margin;
+    const wouldOverflowRight = left + tooltipWidth > viewportWidth - margin;
 
-    return { top: `${top}px`, left: `${left}px` };
+    // Try alternative positions if current position doesn't fit
+    if (wouldOverflowTop || wouldOverflowBottom || wouldOverflowLeft || wouldOverflowRight) {
+      // Try bottom position
+      if (currentStepData.position !== 'bottom' && rect.bottom + margin + tooltipHeight <= viewportHeight - margin) {
+        top = rect.bottom + margin;
+        left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        actualPosition = 'bottom';
+      }
+      // Try top position
+      else if (currentStepData.position !== 'top' && rect.top - margin - tooltipHeight >= margin) {
+        top = rect.top - tooltipHeight - margin;
+        left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        actualPosition = 'top';
+      }
+      // Try right position
+      else if (currentStepData.position !== 'right' && rect.right + margin + tooltipWidth <= viewportWidth - margin) {
+        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+        left = rect.right + margin;
+        actualPosition = 'right';
+      }
+      // Try left position
+      else if (currentStepData.position !== 'left' && rect.left - margin - tooltipWidth >= margin) {
+        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+        left = rect.left - tooltipWidth - margin;
+        actualPosition = 'left';
+      }
+      // Fallback: center on screen if no position works
+      else {
+        top = viewportHeight / 2 - tooltipHeight / 2;
+        left = viewportWidth / 2 - tooltipWidth / 2;
+        actualPosition = 'center';
+      }
+    }
+
+    // Final boundary enforcement to absolutely ensure tooltip stays in viewport
+    top = Math.max(margin, Math.min(top, viewportHeight - tooltipHeight - margin));
+    left = Math.max(margin, Math.min(left, viewportWidth - tooltipWidth - margin));
+
+    return { 
+      top: `${top}px`, 
+      left: `${left}px`,
+      position: actualPosition
+    };
   };
 
   const getHighlightStyle = () => {
@@ -489,7 +538,7 @@ export default function OnboardingTour({ isOpen, onClose, mode = "complete" }: O
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <Card 
-              className="absolute w-96 bg-white dark:bg-gray-800 shadow-2xl z-52 border-0 overflow-hidden"
+              className="absolute w-96 max-w-[90vw] bg-white dark:bg-gray-800 shadow-2xl z-52 border-0 overflow-hidden"
               style={getTooltipPosition()}
             >
               {/* Progress Bar at Top */}
