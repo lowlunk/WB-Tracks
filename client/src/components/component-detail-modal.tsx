@@ -63,10 +63,16 @@ export default function ComponentDetailModal({
         throw new Error('Failed to fetch photos');
       }
       const data = await response.json();
-      console.log('Photos data:', data);
+      console.log('Photos data:', data, 'Length:', data.length, 'Type:', typeof data);
+      // Force empty array if no valid photos
+      if (!Array.isArray(data) || data.length === 0) {
+        return [];
+      }
       return data;
     },
     enabled: isOpen && !!componentId,
+    staleTime: 0,
+    cacheTime: 0,
   });
 
   // Fetch inventory data for this component
@@ -414,7 +420,7 @@ export default function ComponentDetailModal({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {(photos as any[]).map((photo: any) => (
+                    {photos.filter((photo: any) => photo && photo.id).map((photo: any) => (
                       <div key={photo.id} className="relative group">
                         <img
                           src={photo.imageUrl}
