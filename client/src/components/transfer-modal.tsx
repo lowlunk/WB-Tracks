@@ -64,6 +64,10 @@ export default function TransferModal({
     queryKey: ["/api/locations"],
   });
 
+  const { data: facilities } = useQuery({
+    queryKey: ["/api/facilities"],
+  });
+
   const { data: inventory } = useQuery({
     queryKey: ["/api/inventory"],
   });
@@ -233,11 +237,14 @@ export default function TransferModal({
                 </SelectTrigger>
                 <SelectContent>
                   {locations?.filter((loc: any) => loc.id.toString() !== fromLocationId)
-                    .map((location: any) => (
-                    <SelectItem key={location.id} value={location.id.toString()}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
+                    .map((location: any) => {
+                      const facility = facilities?.find((f: any) => f.id === location.facilityId);
+                      return (
+                        <SelectItem key={location.id} value={location.id.toString()}>
+                          {location.name} {facility ? `(${facility.name})` : ''}
+                        </SelectItem>
+                      );
+                    })}
                 </SelectContent>
               </Select>
             </div>

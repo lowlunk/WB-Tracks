@@ -26,6 +26,8 @@ import {
   Zap,
   Clock
 } from "lucide-react";
+import AddInventoryDialog from "@/components/add-inventory-dialog";
+import ComponentDetailModal from "@/components/component-detail-modal";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +36,7 @@ export default function Dashboard() {
   const [showAddComponent, setShowAddComponent] = useState(false);
   const [showConsumedInventory, setShowConsumedInventory] = useState(false);
   const [showConsumeModal, setShowConsumeModal] = useState(false);
+  const [viewingComponent, setViewingComponent] = useState<any>(null);
 
   // Connect to WebSocket for real-time updates
   useWebSocket();
@@ -301,50 +304,31 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-4">
               {recentActivity?.slice(0, 5).map((activity: any) => (
-                <div 
+                <Card 
                   key={activity.id} 
-                  className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                  onClick={() => {
-                    // You could add detailed view logic here
-                    console.log('Activity details:', activity);
-                  }}
+                  className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => setViewingComponent({ id: activity.componentId })}
                 >
-                  <div className="flex-shrink-0">
-                    {activity.transactionType === 'transfer' && (
-                      <ArrowRightLeft className="h-6 w-6 text-blue-500" />
-                    )}
-                    {activity.transactionType === 'add' && (
-                      <Plus className="h-6 w-6 text-green-500" />
-                    )}
-                    {activity.transactionType === 'consume' && (
-                      <Zap className="h-6 w-6 text-orange-500" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">
-                      {activity.transactionType === 'transfer' && 'Transfer'}
-                      {activity.transactionType === 'add' && 'Added'}
-                      {activity.transactionType === 'consume' && 'Consumed'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {activity.component?.componentNumber} - {activity.quantity} units
-                    </p>
-                    {activity.notes && (
-                      <p className="text-xs text-gray-500 mt-1">{activity.notes}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(activity.createdAt).toLocaleDateString()}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      {getActivityIcon(activity.transactionType)}
+                      <div>
+                        <p className="font-medium text-sm">
+                          {activity.component?.componentNumber}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {activity.component?.description} - {activity.quantity} units
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(activity.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(activity.createdAt).toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {activity.quantity}
+                    </Badge>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
@@ -455,6 +439,19 @@ export default function Dashboard() {
         isOpen={showAddComponent}
         onClose={() => setShowAddComponent(false)}
       />
+
+      <AddInventoryDialog
+        isOpen={showAddInventory}
+        onClose={() => setShowAddInventory(false)}
+      />
+
+      {viewingComponent && (
+        <ComponentDetailModal
+          isOpen={!!viewingComponent}
+          onClose={() => setViewingComponent(null)}
+          componentId={viewingComponent.id}
+        />
+      )}
     </div>
   );
 }

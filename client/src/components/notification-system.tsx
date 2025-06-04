@@ -99,6 +99,10 @@ export default function NotificationSystem({ className = "" }: NotificationSyste
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
   const unacknowledgedCount = notifications.filter(n => !n.acknowledged).length;
   const criticalCount = notifications.filter(n => n.severity === 'critical' && !n.acknowledged).length;
 
@@ -217,7 +221,7 @@ export default function NotificationSystem({ className = "" }: NotificationSyste
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setNotifications([])}
+                  onClick={clearAllNotifications}
                   className="w-full text-sm"
                 >
                   Clear All

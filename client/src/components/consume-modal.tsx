@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -31,6 +32,7 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
   const [selectedLocationId, setSelectedLocationId] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("1");
   const [notes, setNotes] = useState<string>("");
+  const [isWaste, setIsWaste] = useState<boolean>(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -133,7 +135,8 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
       componentId: parseInt(selectedComponentId),
       locationId: parseInt(selectedLocationId),
       quantity: quantityNum,
-      notes: notes || "Used in production",
+      notes: isWaste ? `[WASTE] ${notes || "Marked as waste"}` : (notes || "Used in production"),
+      isWaste,
     });
   };
 
@@ -142,6 +145,7 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
     setSelectedLocationId("");
     setQuantity("1");
     setNotes("");
+    setIsWaste(false);
     onClose();
   };
 
@@ -259,6 +263,18 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
             )}
           </div>
 
+          {/* Waste Checkbox */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="waste"
+              checked={isWaste}
+              onCheckedChange={setIsWaste}
+            />
+            <Label htmlFor="waste" className="text-sm">
+              Mark as waste (lost, damaged, or discarded)
+            </Label>
+          </div>
+
           {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Production Notes</Label>
@@ -266,7 +282,7 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., Used for Order #12345, Mold A production"
+              placeholder={isWaste ? "e.g., Dropped on floor, damaged during handling" : "e.g., Used for Order #12345, Mold A production"}
               className="wb-focus-visible"
               rows={3}
             />

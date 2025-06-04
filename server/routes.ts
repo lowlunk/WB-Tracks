@@ -91,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Find or create the admin user (cbryson)
       let user = await storage.getUserByUsername("cbryson");
-      
+
       if (!user) {
         // Create the admin user if it doesn't exist
         user = await storage.createUser({
@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create session
       (req.session as any).userId = user.id;
-      
+
       res.json({ 
         message: "Auto-login successful", 
         user: {
@@ -135,14 +135,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password required" });
       }
 
       // Get user from database
       const user = await storage.getUserByUsername(username);
-      
+
       if (!user || !user.isActive) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -173,17 +173,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Login - Session before:', (req as any).session);
       (req as any).session.userId = user.id;
       console.log('Login - Session after setting userId:', (req as any).session);
-      
+
       // Force session save before responding
       (req as any).session.save((err: any) => {
         if (err) {
           console.error('Session save error:', err);
           return res.status(500).json({ message: "Session save failed" });
         }
-        
+
         console.log('Login - Session saved successfully');
         console.log('Login - Final session state:', (req as any).session);
-        
+
         res.json({ 
           message: "Login successful",
           user: {
@@ -226,16 +226,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Session check - sessionID:", (req as any).sessionID);
       console.log("Session check - session:", (req as any).session);
       console.log("Session check - userId:", (req as any).session?.userId);
-      
+
       const userId = (req as any).session?.userId;
-      
+
       if (!userId) {
         console.log("No userId in session");
         return res.status(401).json({ message: "Not authenticated" });
       }
 
       const user = await storage.getUser(userId);
-      
+
       if (!user || !user.isActive) {
         console.log("User not found or inactive:", user);
         return res.status(401).json({ message: "User not found or inactive" });
@@ -261,7 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const data = registerSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(data.username);
       if (existingUser) {
@@ -270,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 10);
-      
+
       // Create user
       const user = await storage.createUser({
         username: data.username,
@@ -282,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set session
       (req.session as any).userId = user.id;
-      
+
       // Return user without password
       const { password, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
@@ -347,7 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/components", async (req, res) => {
     try {
       const query = req.query.search as string;
-      
+
       if (query) {
         const components = await storage.searchComponents(query);
         res.json(components);
@@ -364,11 +364,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const component = await storage.getComponent(id);
-      
+
       if (!component) {
         return res.status(404).json({ message: "Component not found" });
       }
-      
+
       res.json(component);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch component" });
@@ -402,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const componentId = parseInt(req.params.id);
       const userId = (req.session as any).userId;
-      
+
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
       }
@@ -451,12 +451,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const componentId = parseInt(req.params.id);
       const photos = await storage.getComponentPhotos(componentId);
-      
+
       // Delete all photos for this component
       for (const photo of photos) {
         await storage.deleteComponentPhoto(photo.id);
       }
-      
+
       res.json({ message: "All photos deleted successfully", deletedCount: photos.length });
     } catch (error) {
       console.error("Error deleting all component photos:", error);
@@ -468,15 +468,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const userId = (req.session as any).userId;
-      
+
       console.log("Updating component:", id, "with data:", req.body);
-      
+
       const validatedData = insertComponentSchema.partial().parse(req.body);
       console.log("Validated data:", validatedData);
-      
+
       const component = await storage.updateComponent(id, validatedData, userId);
       console.log("Updated component:", component);
-      
+
       res.json(component);
     } catch (error) {
       console.error("Component update error:", error);
@@ -511,11 +511,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const facility = await storage.getFacility(id);
-      
+
       if (!facility) {
         return res.status(404).json({ message: "Facility not found" });
       }
-      
+
       res.json(facility);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch facility" });
@@ -557,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/locations", async (req, res) => {
     try {
       const facilityId = req.query.facilityId as string;
-      
+
       if (facilityId) {
         const locations = await storage.getLocationsByFacility(parseInt(facilityId));
         res.json(locations);
@@ -574,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/inventory", async (req, res) => {
     try {
       const locationId = req.query.locationId as string;
-      
+
       if (locationId) {
         const inventory = await storage.getInventoryByLocation(parseInt(locationId));
         res.json(inventory);
@@ -601,11 +601,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const componentId = parseInt(req.params.componentId);
       const locationId = parseInt(req.params.locationId);
       const { quantity } = req.body;
-      
+
       if (typeof quantity !== 'number' || quantity < 0) {
         return res.status(400).json({ message: "Invalid quantity" });
       }
-      
+
       const updatedItem = await storage.updateInventoryQuantity(componentId, locationId, quantity);
       res.json(updatedItem);
     } catch (error) {
@@ -618,7 +618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = transferItemSchema.parse(req.body);
       const transaction = await storage.transferItems(validatedData);
-      
+
       // Broadcast transfer event via WebSocket
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -628,7 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }));
         }
       });
-      
+
       res.status(201).json(transaction);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Transfer failed" });
@@ -638,13 +638,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/transactions/add", async (req, res) => {
     try {
       const { componentId, locationId, quantity, notes } = req.body;
-      
+
       if (!componentId || !locationId || !quantity || quantity <= 0) {
         return res.status(400).json({ message: "Invalid transaction data" });
       }
-      
+
       const transaction = await storage.addItemsToInventory(componentId, locationId, quantity, notes);
-      
+
       // Broadcast add event via WebSocket
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -654,19 +654,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }));
         }
       });
-      
+
       res.status(201).json(transaction);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Add transaction failed" });
     }
   });
 
+  // Consume items endpoint
   app.post("/api/transactions/consume", async (req, res) => {
     try {
+      const { componentId, locationId, quantity, notes, isWaste } = req.body;
+
       const { consumeItemSchema } = await import("@shared/schema");
       const validatedData = consumeItemSchema.parse(req.body);
-      const transaction = await storage.consumeItems(validatedData);
-      
+      const transaction = await storage.consumeItems(validatedData, isWaste);
+
       // Broadcast consume event via WebSocket
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -676,7 +679,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }));
         }
       });
-      
+
       res.status(201).json(transaction);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Consume transaction failed" });
@@ -697,13 +700,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/transactions/remove", async (req, res) => {
     try {
       const { componentId, locationId, quantity, notes } = req.body;
-      
+
       if (!componentId || !locationId || !quantity || quantity <= 0) {
         return res.status(400).json({ message: "Invalid transaction data" });
       }
-      
+
       const transaction = await storage.removeItemsFromInventory(componentId, locationId, quantity, notes);
-      
+
       // Broadcast remove event via WebSocket
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -713,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }));
         }
       });
-      
+
       res.status(201).json(transaction);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Remove transaction failed" });
@@ -724,17 +727,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/barcode/lookup", async (req, res) => {
     try {
       const { barcode } = req.body;
-      
+
       if (!barcode) {
         return res.status(400).json({ message: "Barcode is required" });
       }
-      
+
       const component = await storage.getComponentByNumber(barcode);
-      
+
       if (!component) {
         return res.status(404).json({ message: "Component not found" });
       }
-      
+
       res.json(component);
     } catch (error) {
       res.status(500).json({ message: "Barcode lookup failed" });
@@ -748,7 +751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const recentTransactions = await storage.getRecentTransactions(50);
       const lowStockItems = await storage.getLowStockItems();
       const allInventory = await storage.getAllInventoryItems();
-      
+
       const exportData = {
         timestamp: new Date().toISOString(),
         summary: stats,
@@ -782,7 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           urgency: item.quantity === 0 ? 'critical' : 'warning'
         }))
       };
-      
+
       res.json(exportData);
     } catch (error) {
       console.error('Export error:', error);
@@ -795,10 +798,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const componentId = parseInt(req.params.componentId);
       const transactions = await storage.getRecentTransactions(50);
-      
+
       // Filter transactions for this specific component
       const componentTransactions = transactions.filter(t => t.componentId === componentId);
-      
+
       res.json(componentTransactions);
     } catch (error) {
       console.error("Error fetching component transactions:", error);
@@ -810,10 +813,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const componentId = parseInt(req.params.componentId);
       const allInventory = await storage.getAllInventoryItems();
-      
+
       // Filter inventory items for this specific component
       const componentInventory = allInventory.filter(item => item.componentId === componentId);
-      
+
       res.json(componentInventory);
     } catch (error) {
       console.error("Error fetching component inventory:", error);
@@ -826,7 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type } = req.query;
       let csvData = '';
-      
+
       if (type === 'inventory') {
         const inventory = await storage.getAllInventoryItems();
         csvData = 'Component Number,Description,Location,Quantity,Min Stock Level,Category,Supplier,Unit Price,Last Updated\n';
@@ -840,7 +843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           csvData += `${tx.id},"${tx.component.componentNumber}","${tx.transactionType}",${tx.quantity},"${tx.fromLocation?.name || ''}","${tx.toLocation?.name || ''}","${tx.createdAt}","${tx.notes || ''}"\n`;
         });
       }
-      
+
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="${type}_export_${new Date().toISOString().split('T')[0]}.csv"`);
       res.send(csvData);
@@ -864,7 +867,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/users", async (req, res) => {
     try {
       const { username, email, firstName, lastName, role, isActive, password } = req.body;
-      
+
       if (!username || !email || !password) {
         return res.status(400).json({ error: "Username, email, and password are required" });
       }
@@ -905,7 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const userData = req.body;
-      
+
       const updatedUser = await storage.updateUser(id, userData);
       res.json(updatedUser);
     } catch (error) {
@@ -955,7 +958,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const groupData = req.body;
-      
+
       const updatedGroup = await storage.updateUserGroup(id, groupData);
       res.json(updatedGroup);
     } catch (error) {
@@ -969,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get some low stock items for testing
       const lowStockItems = await storage.getLowStockItems();
-      
+
       // Create a test notification
       const testNotification = {
         id: `test-low-${Date.now()}`,
@@ -1020,7 +1023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const componentId = parseInt(req.params.id);
       const photos = await storage.getComponentPhotos(componentId);
-      
+
       // Check if files actually exist on disk
       const photoStatus = [];
       for (const photo of photos) {
@@ -1032,14 +1035,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error) {
           fileExists = false;
         }
-        
+
         photoStatus.push({
           ...photo,
           fileExists,
           fullPath: filePath
         });
       }
-      
+
       res.json({
         componentId,
         totalPhotos: photos.length,
@@ -1074,14 +1077,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   wss.on('connection', (ws) => {
     console.log('WebSocket client connected');
-    
+
     // Send initial connection confirmation
     ws.send(JSON.stringify({ type: 'CONNECTED', data: { message: 'Connected to WB-Tracks' } }));
-    
+
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
     });
-    
+
     ws.on('error', (error) => {
       console.error('WebSocket error:', error);
     });
