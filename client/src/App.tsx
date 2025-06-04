@@ -1,3 +1,4 @@
+
 import { Switch, Route, useLocation, Link } from "wouter";
 import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
@@ -113,8 +114,6 @@ function NotificationContent() {
           </Button>
         </Alert>
       )}
-
-
     </div>
   );
 }
@@ -122,7 +121,6 @@ function NotificationContent() {
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
-
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { showTour, completeTour } = useOnboarding();
@@ -138,14 +136,7 @@ function Router() {
     }
   }, [theme]);
 
-  // Redirect to login if not authenticated and not loading
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && location !== '/login' && location !== '/register') {
-      console.log('Not authenticated, redirecting to login');
-      navigate('/login', { replace: true });
-    }
-  }, [isLoading, isAuthenticated, location, navigate]);
-
+  // Show loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -157,7 +148,7 @@ function Router() {
     );
   }
 
-  // Show login page if not authenticated
+  // Show auth pages if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -166,7 +157,9 @@ function Router() {
             <Switch>
               <Route path="/login" component={Login} />
               <Route path="/register" component={Register} />
-              <Route component={Login} />
+              <Route>
+                <Login />
+              </Route>
             </Switch>
           </div>
         </main>
@@ -199,8 +192,18 @@ function Router() {
             <Route path="/inventory" component={Inventory} />
             <Route path="/admin" component={AdminDashboard} />
             <Route path="/settings" component={Settings} />
-            <Route path="/login" component={() => { navigate('/'); return null; }} />
-            <Route path="/register" component={() => { navigate('/'); return null; }} />
+            <Route path="/login">
+              {() => {
+                navigate('/');
+                return null;
+              }}
+            </Route>
+            <Route path="/register">
+              {() => {
+                navigate('/');
+                return null;
+              }}
+            </Route>
             <Route component={NotFound} />
           </Switch>
         </div>

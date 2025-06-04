@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -17,7 +18,6 @@ interface User {
 export function useAuth() {
   const queryClient = useQueryClient();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
 
   const autoLoginMutation = useMutation({
     mutationFn: async () => {
@@ -37,7 +37,6 @@ export function useAuth() {
       return data.user;
     },
     onSuccess: (userData) => {
-      // Set the user data directly in the cache
       queryClient.setQueryData(["/api/auth/user"], userData);
     },
   });
@@ -53,35 +52,25 @@ export function useAuth() {
         });
         
         if (res.status === 401) {
-          // If not authenticated, try auto-login once
-          if (!autoLoginAttempted) {
-            setAutoLoginAttempted(true);
-            try {
-              const userData = await autoLoginMutation.mutateAsync();
-              setIsInitialized(true);
-              return userData;
-            } catch (autoLoginError) {
-              console.log("Auto-login failed");
-              setIsInitialized(true);
-              return null;
-            }
+          // Try auto-login once
+          try {
+            const userData = await autoLoginMutation.mutateAsync();
+            return userData;
+          } catch (autoLoginError) {
+            console.log("Auto-login failed, user not authenticated");
+            return null;
           }
-          setIsInitialized(true);
-          return null;
         }
         
         if (!res.ok) {
           console.error(`Auth check failed: ${res.status}: ${res.statusText}`);
-          setIsInitialized(true);
           return null;
         }
         
         const userData = await res.json();
-        setIsInitialized(true);
         return userData;
       } catch (error) {
         console.error("Auth check error:", error);
-        setIsInitialized(true);
         return null;
       }
     },
@@ -91,11 +80,11 @@ export function useAuth() {
     mutationFn: () => apiRequest("/api/logout", "POST"),
     onSuccess: () => {
       queryClient.clear();
-      setAutoLoginAttempted(false);
       window.location.reload();
     },
   });
 
+  // Set initialized when auth check is complete
   useEffect(() => {
     if (!userLoading && !autoLoginMutation.isPending) {
       setIsInitialized(true);
@@ -108,7 +97,7 @@ export function useAuth() {
 
   return {
     user: user as User | undefined,
-    isLoading: !isInitialized || userLoading || autoLoginMutation.isPending,
+    isLoading: !isInitialized,
     isAuthenticated: !!user,
     logout,
     error,
