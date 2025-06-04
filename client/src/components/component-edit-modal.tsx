@@ -421,15 +421,17 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            {readOnly ? "Close" : "Cancel"}
           </Button>
-          <Button 
-            type="button" 
-            onClick={handleSubmit}
-            disabled={updateComponentMutation.isPending}
-          >
-            {updateComponentMutation.isPending ? "Saving..." : "Save Changes"}
-          </Button>
+          {!readOnly && (
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              disabled={updateComponentMutation.isPending}
+            >
+              {updateComponentMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
