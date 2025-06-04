@@ -33,24 +33,23 @@ export function useAuth() {
         throw new Error("Auto-login failed");
       }
       
-      return await res.json();
+      const data = await res.json();
+      return data.user;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: (userData) => {
+      // Set the user data directly in the cache
+      queryClient.setQueryData(["/api/auth/user"], userData);
     },
   });
 
   const { data: user, isLoading: userLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       try {
         const res = await fetch("/api/auth/user", {
           credentials: "include",
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
         });
         
         if (res.status === 401) {
@@ -58,19 +57,11 @@ export function useAuth() {
           if (!autoLoginAttempted) {
             setAutoLoginAttempted(true);
             try {
-              await autoLoginMutation.mutateAsync();
-              // After successful auto-login, refetch user data
-              const retryRes = await fetch("/api/auth/user", {
-                credentials: "include",
-                headers: {
-                  'Cache-Control': 'no-cache',
-                },
-              });
-              if (retryRes.ok) {
-                return await retryRes.json();
-              }
+              const userData = await autoLoginMutation.mutateAsync();
+              return userData;
             } catch (autoLoginError) {
-              console.log("Auto-login failed, user needs to login manually");
+              console.log("Auto-login failed");
+              return null;
             }
           }
           return null;
@@ -93,7 +84,6 @@ export function useAuth() {
     onSuccess: () => {
       queryClient.clear();
       setAutoLoginAttempted(false);
-      // Just refresh the page instead of redirecting to login
       window.location.reload();
     },
   });
@@ -111,7 +101,7 @@ export function useAuth() {
   return {
     user: user as User | undefined,
     isLoading: !isInitialized || userLoading || autoLoginMutation.isPending,
-    isAuthenticated: !!user && user !== null,
+    isAuthenticated: !!user,
     logout,
     error,
   };

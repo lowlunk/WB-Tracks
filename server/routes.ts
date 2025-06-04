@@ -72,10 +72,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      domain: process.env.NODE_ENV === 'production' ? '.wbtracks.xyz' : undefined
+      sameSite: 'lax'
     }
   }));
 
@@ -112,31 +111,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update last login
       await storage.updateLastLogin(user.id);
 
-      // Create session and save it explicitly
+      // Create session
       (req.session as any).userId = user.id;
       
-      // Force session save
-      (req.session as any).save((err: any) => {
-        if (err) {
-          console.error('Auto-login session save error:', err);
-          return res.status(500).json({ message: "Session save failed" });
+      console.log("Auto-login successful for user:", user.username);
+      res.json({ 
+        message: "Auto-login successful", 
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+          lastLogin: new Date().toISOString()
         }
-        
-        console.log("Auto-login successful for user:", user.username);
-        res.json({ 
-          message: "Auto-login successful", 
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            isActive: user.isActive,
-            createdAt: user.createdAt,
-            lastLogin: new Date().toISOString()
-          }
-        });
       });
     } catch (error) {
       console.error("Auto-login error:", error);
@@ -181,36 +172,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update last login
       await storage.updateLastLogin(user.id);
 
-      // Set session and save it explicitly
-      console.log('Login - Setting userId in session:', user.id);
-      console.log('Login - Session before:', (req as any).session);
+      // Set session
       (req as any).session.userId = user.id;
-      console.log('Login - Session after setting userId:', (req as any).session);
       
-      // Force session save before responding
-      (req as any).session.save((err: any) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return res.status(500).json({ message: "Session save failed" });
+      res.json({ 
+        message: "Login successful",
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+          lastLogin: new Date().toISOString()
         }
-        
-        console.log('Login - Session saved successfully');
-        console.log('Login - Final session state:', (req as any).session);
-        
-        res.json({ 
-          message: "Login successful",
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            isActive: user.isActive,
-            createdAt: user.createdAt,
-            lastLogin: new Date().toISOString()
-          }
-        });
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -236,21 +213,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
-      console.log("Session check - sessionID:", (req as any).sessionID);
-      console.log("Session check - session:", (req as any).session);
-      console.log("Session check - userId:", (req as any).session?.userId);
-      
       const userId = (req as any).session?.userId;
       
       if (!userId) {
-        console.log("No userId in session");
         return res.status(401).json({ message: "Not authenticated" });
       }
 
       const user = await storage.getUser(userId);
       
       if (!user || !user.isActive) {
-        console.log("User not found or inactive:", user);
         return res.status(401).json({ message: "User not found or inactive" });
       }
 
@@ -271,70 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/register", async (req, res) => {
-    try {
-      const data = registerSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(data.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      
-      // Create user
-      const user = await storage.createUser({
-        username: data.username,
-        email: data.email,
-        password: hashedPassword,
-        firstName: data.firstName,
-        lastName: data.lastName,
-      });
-
-      // Set session
-      (req.session as any).userId = user.id;
-      
-      // Return user without password
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(400).json({ message: "Registration failed" });
-    }
-  });
-
-
-
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.json({ message: "Logged out successfully" });
-    });
-  });
-
-  app.get("/api/auth/user", async (req, res) => {
-    try {
-      const userId = (req.session as any).userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
-      }
-
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      console.error("Get user error:", error);
-      res.status(500).json({ message: "Failed to get user" });
-    }
-  });
+  
 
   // Dashboard API routes
   app.get("/api/dashboard/stats", async (req, res) => {

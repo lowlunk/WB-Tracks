@@ -123,17 +123,6 @@ function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
 
-  // Debug logging
-  console.log('Auth State:', { user, isLoading, isAuthenticated, location });
-
-  // Only redirect if we're certain about authentication state
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && (location === '/login' || location === '/register')) {
-      console.log('Redirecting authenticated user to dashboard');
-      navigate('/');
-    }
-  }, [isAuthenticated, isLoading, location, navigate]);
-
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { showTour, completeTour } = useOnboarding();
@@ -160,16 +149,17 @@ function Router() {
     );
   }
 
-  // If authentication failed and no user, show login page
-  if (!isLoading && !isAuthenticated && !user && (location === '/' || location === '/dashboard')) {
+  // If not authenticated after loading completes, the auto-login handles this
+  if (!isLoading && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Login />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Connecting...</p>
+        </div>
       </div>
     );
   }
-
-  // No login screen - auto-login handles authentication
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
