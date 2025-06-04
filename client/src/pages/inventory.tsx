@@ -19,6 +19,7 @@ import AddComponentDialog from "@/components/add-component-dialog";
 import AddInventoryDialog from "@/components/add-inventory-dialog";
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
 import BarcodeScanner from "@/components/barcode-scanner";
+import ConsumedComponentsModal from "@/components/consumed-components-modal";
 import { 
   Search,
   Package,
@@ -355,6 +356,13 @@ export default function Inventory() {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScanResult}
+      />
+
+      <ConsumedComponentsModal
+        isOpen={showConsumedComponents}
+        onClose={() => setShowConsumedComponents(false)}
+        consumedTransactions={consumedTransactions}
+        isLoading={consumedLoading}
       />
     </div>
   );
