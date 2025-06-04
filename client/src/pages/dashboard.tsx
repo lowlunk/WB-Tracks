@@ -29,6 +29,22 @@ import {
 import AddInventoryDialog from "@/components/add-inventory-dialog";
 import ComponentDetailModal from "@/components/component-detail-modal";
 
+// Helper function to get activity icons
+const getActivityIcon = (transactionType: string) => {
+  switch (transactionType) {
+    case 'add':
+      return <TrendingUp className="h-4 w-4 text-green-500" />;
+    case 'remove':
+      return <TrendingDown className="h-4 w-4 text-red-500" />;
+    case 'transfer':
+      return <ArrowRightLeft className="h-4 w-4 text-blue-500" />;
+    case 'consume':
+      return <Zap className="h-4 w-4 text-orange-500" />;
+    default:
+      return <Activity className="h-4 w-4 text-gray-500" />;
+  }
+};
+
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showScanner, setShowScanner] = useState(false);
