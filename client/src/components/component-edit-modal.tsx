@@ -12,9 +12,10 @@ interface ComponentEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   componentId: number;
+  readOnly?: boolean;
 }
 
-export default function ComponentEditModal({ isOpen, onClose, componentId }: ComponentEditModalProps) {
+export default function ComponentEditModal({ isOpen, onClose, componentId, readOnly = false }: ComponentEditModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,17 +37,18 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
 
   // Update form data when component data is loaded
   useEffect(() => {
-    if (component) {
+    if (component && isOpen) {
+      const comp = component as any;
       setFormData({
-        componentNumber: (component as any).componentNumber || "",
-        description: (component as any).description || "",
-        category: (component as any).category || "",
-        supplier: (component as any).supplier || "",
-        unitPrice: (component as any).unitPrice?.toString() || "",
-        notes: (component as any).notes || "",
+        componentNumber: comp.componentNumber || "",
+        description: comp.description || "",
+        category: comp.category || "",
+        supplier: comp.supplier || "",
+        unitPrice: comp.unitPrice?.toString() || "",
+        notes: comp.notes || "",
       });
     }
-  }, [component]);
+  }, [component, isOpen]);
 
   // Fetch component photos
   const { data: photos = [] } = useQuery({

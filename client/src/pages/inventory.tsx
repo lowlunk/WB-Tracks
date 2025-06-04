@@ -39,6 +39,7 @@ export default function Inventory() {
   const [selectedFacility, setSelectedFacility] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [editingComponent, setEditingComponent] = useState<Component | null>(null);
+  const [viewingComponent, setViewingComponent] = useState<Component | null>(null);
   const [transferComponent, setTransferComponent] = useState<Component | null>(null);
   const [isAddComponentOpen, setIsAddComponentOpen] = useState(false);
   const [isAddInventoryOpen, setIsAddInventoryOpen] = useState(false);
@@ -293,7 +294,7 @@ export default function Inventory() {
             showLocationFilter={false}
             onEdit={setEditingComponent}
             onTransfer={handleTransfer}
-            onViewDetails={setEditingComponent}
+            onViewDetails={setViewingComponent}
           />
         </CardContent>
       </Card>
@@ -304,6 +305,15 @@ export default function Inventory() {
           isOpen={!!editingComponent}
           onClose={() => setEditingComponent(null)}
           componentId={editingComponent.id}
+        />
+      )}
+
+      {viewingComponent && (
+        <ComponentEditModal
+          isOpen={!!viewingComponent}
+          onClose={() => setViewingComponent(null)}
+          componentId={viewingComponent.id}
+          readOnly={true}
         />
       )}
 
