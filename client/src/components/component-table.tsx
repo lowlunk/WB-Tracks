@@ -329,22 +329,86 @@ export default function ComponentTable({
               Previous
             </Button>
             <div className="flex items-center space-x-1">
-              {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`wb-focus-visible ${
-                      currentPage === pageNum ? "wb-btn-primary" : ""
-                    }`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
+              {(() => {
+                const maxVisiblePages = 5;
+                const halfVisible = Math.floor(maxVisiblePages / 2);
+                let startPage = Math.max(1, currentPage - halfVisible);
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                
+                // Adjust start page if we're near the end
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                
+                const pages = [];
+                
+                // Add first page and ellipsis if needed
+                if (startPage > 1) {
+                  pages.push(
+                    <Button
+                      key={1}
+                      variant={currentPage === 1 ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(1)}
+                      className={`wb-focus-visible ${
+                        currentPage === 1 ? "wb-btn-primary" : ""
+                      }`}
+                    >
+                      1
+                    </Button>
+                  );
+                  if (startPage > 2) {
+                    pages.push(
+                      <span key="ellipsis1" className="px-2 text-muted-foreground">
+                        ...
+                      </span>
+                    );
+                  }
+                }
+                
+                // Add visible page range
+                for (let i = startPage; i <= endPage; i++) {
+                  pages.push(
+                    <Button
+                      key={i}
+                      variant={currentPage === i ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(i)}
+                      className={`wb-focus-visible ${
+                        currentPage === i ? "wb-btn-primary" : ""
+                      }`}
+                    >
+                      {i}
+                    </Button>
+                  );
+                }
+                
+                // Add ellipsis and last page if needed
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pages.push(
+                      <span key="ellipsis2" className="px-2 text-muted-foreground">
+                        ...
+                      </span>
+                    );
+                  }
+                  pages.push(
+                    <Button
+                      key={totalPages}
+                      variant={currentPage === totalPages ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      className={`wb-focus-visible ${
+                        currentPage === totalPages ? "wb-btn-primary" : ""
+                      }`}
+                    >
+                      {totalPages}
+                    </Button>
+                  );
+                }
+                
+                return pages;
+              })()}
             </div>
             <Button
               variant="outline"
