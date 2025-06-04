@@ -200,12 +200,14 @@ export default function ComponentDetailModal({
 
   const comp = component as any;
   const inventoryItemsArray = Array.isArray(inventoryItems) ? inventoryItems : [];
+  
+  // Calculate stock levels for this specific component only
   const totalMainStock = inventoryItemsArray
-    .filter((item: any) => item.location?.name === "Main Inventory")
+    .filter((item: any) => item.componentId === componentId && item.location?.name === "Main Inventory")
     .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
     
   const totalLineStock = inventoryItemsArray
-    .filter((item: any) => item.location?.name === "Line Inventory")
+    .filter((item: any) => item.componentId === componentId && item.location?.name === "Line Inventory")
     .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
 
   return (
