@@ -668,7 +668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { consumeItemSchema } = await import("@shared/schema");
       const validatedData = consumeItemSchema.parse(req.body);
-      const transaction = await storage.consumeItems(validatedData, isWaste);
+      const transaction = await storage.consumeItems(validatedData);
 
       // Broadcast consume event via WebSocket
       wss.clients.forEach((client) => {
