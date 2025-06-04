@@ -18,7 +18,6 @@ import TransferModal from "@/components/transfer-modal";
 import AddComponentDialog from "@/components/add-component-dialog";
 import AddInventoryDialog from "@/components/add-inventory-dialog";
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
-import FloatingActionButton from "@/components/floating-action-button";
 import BarcodeScanner from "@/components/barcode-scanner";
 import { 
   Search,
@@ -151,12 +150,7 @@ export default function Inventory() {
     <div className="container mx-auto p-4 pb-20 lg:pb-4 space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inventory Overview</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Comprehensive view of all inventory across facilities
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inventory</h1>
         <div className="flex gap-2">
           <Button onClick={() => setIsAddComponentOpen(true)} className="wb-focus-visible">
             <Plus className="h-4 w-4 mr-2" />
@@ -164,142 +158,132 @@ export default function Inventory() {
           </Button>
           <Button onClick={() => setIsAddInventoryOpen(true)} variant="outline" className="wb-focus-visible">
             <Package className="h-4 w-4 mr-2" />
-            Add Inventory
+            Add Stock
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Components</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{components?.length || 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Inventory Items</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {inventory?.reduce((sum: number, item: InventoryItemWithDetails) => sum + item.quantity, 0) || 0}
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Components</p>
+                <p className="text-2xl font-bold">{components?.length || 0}</p>
+              </div>
+              <Package className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{lowStockItems?.length || 0}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Items</p>
+                <p className="text-2xl font-bold">
+                  {inventory?.reduce((sum: number, item: InventoryItemWithDetails) => sum + item.quantity, 0) || 0}
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-muted-foreground" />
+            </div>
           </CardContent>
         </Card>
 
+        {lowStockItems?.length > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Low Stock</p>
+                  <p className="text-2xl font-bold text-red-600">{lowStockItems.length}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Facilities</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{facilities?.length || 0}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Facilities</p>
+                <p className="text-2xl font-bold">{facilities?.length || 0}</p>
+              </div>
+              <Building2 className="h-8 w-8 text-muted-foreground" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filter Inventory</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search components..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 wb-focus-visible"
-              />
-            </div>
+      {/* Search and Filters */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search components by number, description, or category..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 wb-focus-visible"
+          />
+        </div>
 
-            <Select value={selectedFacility} onValueChange={setSelectedFacility}>
-              <SelectTrigger className="wb-focus-visible">
-                <SelectValue placeholder="Select facility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Facilities</SelectItem>
-                {facilities?.map((facility: Facility) => (
-                  <SelectItem key={facility.id} value={facility.id.toString()}>
-                    {facility.name}
+        <div className="flex gap-2">
+          <Select value={selectedFacility} onValueChange={setSelectedFacility}>
+            <SelectTrigger className="wb-focus-visible w-48">
+              <SelectValue placeholder="All Facilities" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Facilities</SelectItem>
+              {facilities?.map((facility: Facility) => (
+                <SelectItem key={facility.id} value={facility.id.toString()}>
+                  {facility.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <SelectTrigger className="wb-focus-visible w-48">
+              <SelectValue placeholder="All Locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locations
+                ?.filter((location: InventoryLocation) => 
+                  selectedFacility === "all" || location.facilityId === parseInt(selectedFacility)
+                )
+                ?.map((location: InventoryLocation) => (
+                  <SelectItem key={location.id} value={location.id.toString()}>
+                    {location.name}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-              <SelectTrigger className="wb-focus-visible">
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations
-                  ?.filter((location: InventoryLocation) => 
-                    selectedFacility === "all" || location.facilityId === parseInt(selectedFacility)
-                  )
-                  ?.map((location: InventoryLocation) => (
-                    <SelectItem key={location.id} value={location.id.toString()}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Low Stock Alerts */}
-      {lowStockItems?.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              Low Stock Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {lowStockItems?.slice(0, 6).map((item: InventoryItemWithDetails) => (
-                <div key={`${item.componentId}-${item.locationId}`} className="p-3 border rounded-lg">
-                  <div className="font-medium">{item.component?.description}</div>
-                  <div className="text-sm text-muted-foreground">{item.component?.componentNumber}</div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-sm">{item.location?.name}</span>
-                    <Badge variant="destructive">{item.quantity} left</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Inventory Table */}
+      {/* Component Inventory Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>All Components</CardTitle>
-            <Badge variant="outline">
-              {filteredComponents.length} of {components?.length || 0} components
-            </Badge>
+            <CardTitle>Component Inventory</CardTitle>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline">
+                {componentsWithInventory.length} components
+              </Badge>
+              <div className="flex gap-2">
+                <Button onClick={() => setIsScannerOpen(true)} variant="outline" size="sm">
+                  <Search className="h-4 w-4 mr-1" />
+                  Scan
+                </Button>
+                <Button onClick={() => handlePrintLabel()} variant="outline" size="sm">
+                  Print Labels
+                </Button>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -314,14 +298,6 @@ export default function Inventory() {
         </CardContent>
       </Card>
 
-      {/* Floating Action Button */}
-      <FloatingActionButton
-        onScan={() => setIsScannerOpen(true)}
-        onTransfer={() => setTransferComponent(null)}
-        onAddItem={() => setIsAddComponentOpen(true)}
-        onPrintLabel={() => handlePrintLabel()}
-      />
-
       {/* Modals and Dialogs */}
       {editingComponent && (
         <ComponentEditModal
@@ -335,7 +311,8 @@ export default function Inventory() {
         <TransferModal
           isOpen={transferComponent !== null}
           onClose={() => setTransferComponent(null)}
-          preSelectedComponent={transferComponent || undefined}
+          onTransfer={() => {}}
+          defaultComponentId={transferComponent?.id}
         />
       )}
 
