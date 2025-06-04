@@ -285,7 +285,8 @@ export default function ComponentTable({
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}
