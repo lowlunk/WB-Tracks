@@ -370,6 +370,35 @@ export default function ComponentTable({
           console.log("Printing label:", labelData);
         }}
       />
+
+      {/* Component Detail Modal */}
+      {detailComponent && (
+        <ComponentDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setDetailComponent(null);
+          }}
+          componentId={detailComponent.id}
+          onEdit={() => {
+            setIsDetailModalOpen(false);
+            setEditComponent(detailComponent);
+            setIsEditModalOpen(true);
+          }}
+        />
+      )}
+
+      {/* Component Edit Modal */}
+      {editComponent && (
+        <ComponentEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditComponent(null);
+          }}
+          componentId={editComponent.id}
+        />
+      )}
     </div>
   );
 }
