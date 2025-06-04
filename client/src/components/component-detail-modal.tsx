@@ -57,6 +57,15 @@ export default function ComponentDetailModal({
   // Fetch component photos
   const { data: photos = [], isLoading: photosLoading } = useQuery({
     queryKey: ["/api/components", componentId, "photos"],
+    queryFn: async () => {
+      const response = await fetch(`/api/components/${componentId}/photos`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch photos');
+      }
+      const data = await response.json();
+      console.log('Photos data:', data);
+      return data;
+    },
     enabled: isOpen && !!componentId,
   });
 
