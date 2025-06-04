@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
@@ -20,7 +19,7 @@ export function useAuth() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const autoLoginMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<User> => {
       const res = await fetch("/api/auto-login", {
         method: "POST",
         headers: {
@@ -36,7 +35,7 @@ export function useAuth() {
       const data = await res.json();
       return data.user;
     },
-    onSuccess: (userData) => {
+    onSuccess: (userData: User) => {
       queryClient.setQueryData(["/api/auth/user"], userData);
     },
   });
@@ -45,7 +44,7 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     retry: false,
     staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
+    queryFn: async (): Promise<User | null> => {
       try {
         const res = await fetch("/api/auth/user", {
           credentials: "include",
@@ -77,7 +76,16 @@ export function useAuth() {
   });
 
   const logoutMutation = useMutation({
-    mutationFn: () => apiRequest("/api/logout", "POST"),
+    mutationFn: async () => {
+      const res = await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Logout failed");
+      }
+      return res.json();
+    },
     onSuccess: () => {
       queryClient.clear();
       window.location.reload();
