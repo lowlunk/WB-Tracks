@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [showAddComponent, setShowAddComponent] = useState(false);
   const [showConsumedInventory, setShowConsumedInventory] = useState(false);
   const [showConsumeModal, setShowConsumeModal] = useState(false);
+  const [showAddInventory, setShowAddInventory] = useState(false);
   const [viewingComponent, setViewingComponent] = useState<any>(null);
 
   // Connect to WebSocket for real-time updates
