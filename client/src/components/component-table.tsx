@@ -33,6 +33,7 @@ interface Component {
   id: number;
   componentNumber: string;
   description: string;
+  plateNumber?: string;
   mainStock?: number;
   lineStock?: number;
 }
@@ -144,6 +145,7 @@ export default function ComponentTable({
             <TableRow>
               <TableHead className="font-semibold">Component</TableHead>
               <TableHead className="font-semibold">Description</TableHead>
+              <TableHead className="font-semibold">Plate Number</TableHead>
               {showLocationFilter && (
                 <>
                   <TableHead className="font-semibold">Main Stock</TableHead>
@@ -182,6 +184,11 @@ export default function ComponentTable({
                 <TableCell>
                   <div className="text-sm text-[hsl(var(--wb-on-surface))] max-w-md">
                     {component.description}
+                  </div>
+                </TableCell>
+                 <TableCell>
+                  <div className="text-sm text-[hsl(var(--wb-on-surface))] max-w-md">
+                    {component.plateNumber || ''}
                   </div>
                 </TableCell>
                 {showLocationFilter && (

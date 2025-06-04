@@ -23,6 +23,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
   const [formData, setFormData] = useState({
     componentNumber: "",
     description: "",
+    plateNumber: "",
     category: "",
     supplier: "",
     unitPrice: "",
@@ -42,6 +43,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
       setFormData({
         componentNumber: comp.componentNumber || "",
         description: comp.description || "",
+        plateNumber: comp.plateNumber || "",
         category: comp.category || "",
         supplier: comp.supplier || "",
         unitPrice: comp.unitPrice?.toString() || "",
@@ -247,6 +249,18 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   rows={3}
                   disabled={readOnly}
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="plateNumber">Plate Number</Label>
+                <Input
+                  id="plateNumber"
+                  name="plateNumber"
+                  value={formData.plateNumber}
+                  onChange={handleChange}
+                  disabled={readOnly}
+                  placeholder="Optional plate number"
                 />
               </div>
 

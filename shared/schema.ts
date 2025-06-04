@@ -39,6 +39,7 @@ export const components = pgTable("components", {
   id: serial("id").primaryKey(),
   componentNumber: varchar("component_number", { length: 50 }).notNull().unique(),
   description: text("description").notNull(),
+  plateNumber: varchar("plate_number", { length: 50 }),
   imageUrl: text("image_url"),
   category: text("category"),
   supplier: text("supplier"),

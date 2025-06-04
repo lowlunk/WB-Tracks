@@ -16,7 +16,7 @@ interface AddComponentDialogProps {
 export default function AddComponentDialog({ isOpen, onClose }: AddComponentDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [formData, setFormData] = useState({
     componentNumber: "",
     description: "",
@@ -64,7 +64,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.componentNumber || !formData.description) {
       toast({
         title: "Error",
@@ -73,7 +73,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
       });
       return;
     }
-    
+
     createComponentMutation.mutate(formData);
   };
 
@@ -88,6 +88,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
     setFormData({
       componentNumber: "",
       description: "",
+      plateNumber: "",
       category: "",
       supplier: "",
       unitPrice: "",
@@ -105,7 +106,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
             Add New Component
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -119,7 +120,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Input
@@ -131,7 +132,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">Description *</Label>
             <Textarea
@@ -144,7 +145,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
               required
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="supplier">Supplier</Label>
@@ -156,7 +157,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
                 placeholder="e.g., Acme Corp"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="unitPrice">Unit Price ($)</Label>
               <Input
@@ -171,7 +172,7 @@ export default function AddComponentDialog({ isOpen, onClose }: AddComponentDial
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea

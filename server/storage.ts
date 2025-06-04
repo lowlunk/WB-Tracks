@@ -85,7 +85,7 @@ export interface IStorage {
   getInventoryByLocation(locationId: number): Promise<InventoryItemWithDetails[]>;
   getInventoryItem(componentId: number, locationId: number): Promise<InventoryItemWithDetails | undefined>;
   updateInventoryQuantity(componentId: number, locationId: number, quantity: number): Promise<InventoryItem>;
-  
+
   // Transaction methods
   transferItems(transfer: TransferItem): Promise<InventoryTransaction>;
   addItemsToInventory(componentId: number, locationId: number, quantity: number, notes?: string): Promise<InventoryTransaction>;
@@ -256,7 +256,7 @@ export class DatabaseStorage implements IStorage {
         .update(componentPhotos)
         .set({ isPrimary: false })
         .where(eq(componentPhotos.componentId, componentId));
-      
+
       // Set the selected photo as primary
       await tx
         .update(componentPhotos)
@@ -372,7 +372,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(components, eq(inventoryItems.componentId, components.id))
       .innerJoin(inventoryLocations, eq(inventoryItems.locationId, inventoryLocations.id))
       .where(and(eq(inventoryItems.componentId, componentId), eq(inventoryItems.locationId, locationId)));
-    
+
     return item || undefined;
   }
 
@@ -382,7 +382,7 @@ export class DatabaseStorage implements IStorage {
       .set({ quantity, lastUpdated: new Date() })
       .where(and(eq(inventoryItems.componentId, componentId), eq(inventoryItems.locationId, locationId)))
       .returning();
-    
+
     if (!updatedItem) {
       // Create new inventory item if it doesn't exist
       const [newItem] = await db
@@ -391,7 +391,7 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return newItem;
     }
-    
+
     return updatedItem;
   }
 
@@ -402,7 +402,7 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(inventoryItems)
         .where(and(eq(inventoryItems.componentId, transfer.componentId), eq(inventoryItems.locationId, transfer.fromLocationId)));
-      
+
       if (!fromItem || fromItem.quantity < transfer.quantity) {
         throw new Error("Insufficient quantity in source location");
       }
@@ -539,7 +539,7 @@ export class DatabaseStorage implements IStorage {
   async consumeItems(consume: ConsumeItem): Promise<InventoryTransaction> {
     return await db.transaction(async (tx) => {
       const { componentId, locationId, quantity, notes } = consume;
-      
+
       // Check current quantity
       const [existingItem] = await tx
         .select()
@@ -649,7 +649,7 @@ export class DatabaseStorage implements IStorage {
     lowStockAlerts: number;
   }> {
     const [totalComponents] = await db.select({ count: sql`count(*)` }).from(components);
-    
+
     const mainLocation = await db.select().from(inventoryLocations).where(eq(inventoryLocations.name, 'Main Inventory'));
     const lineLocation = await db.select().from(inventoryLocations).where(eq(inventoryLocations.name, 'Line Inventory'));
 
@@ -743,7 +743,7 @@ export class DatabaseStorage implements IStorage {
     // Create default facility if it doesn't exist
     const existingFacilities = await db.select().from(facilities);
     let defaultFacility: Facility;
-    
+
     if (existingFacilities.length === 0) {
       const [facility] = await db.insert(facilities).values({
         name: 'Main Production Facility',
@@ -766,7 +766,7 @@ export class DatabaseStorage implements IStorage {
 
     // Create default locations if they don't exist
     const existingLocations = await db.select().from(inventoryLocations);
-    
+
     if (existingLocations.length === 0) {
       await db.insert(inventoryLocations).values([
         { 
@@ -786,7 +786,7 @@ export class DatabaseStorage implements IStorage {
 
     // Create components from the uploaded list if they don't exist
     const existingComponents = await db.select().from(components);
-    
+
     if (existingComponents.length === 0) {
       const componentData = [
         { componentNumber: "217520", description: "351X119MM 2OZ BRIGADE 6MCA 0SE" },

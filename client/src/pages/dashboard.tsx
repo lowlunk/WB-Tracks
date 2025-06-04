@@ -282,7 +282,11 @@ export default function Dashboard() {
               <Activity className="h-5 w-5" />
               Recent Activity
             </CardTitle>
-            <Button variant="ghost" className="text-[hsl(var(--wb-primary))]">
+            <Button 
+              variant="ghost" 
+              className="text-[hsl(var(--wb-primary))]"
+              onClick={() => setShowConsumedInventory(true)}
+            >
               View All Activity
             </Button>
           </div>
@@ -297,7 +301,14 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-4">
               {recentActivity?.slice(0, 5).map((activity: any) => (
-                <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div 
+                  key={activity.id} 
+                  className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  onClick={() => {
+                    // You could add detailed view logic here
+                    console.log('Activity details:', activity);
+                  }}
+                >
                   <div className="flex-shrink-0">
                     {activity.transactionType === 'transfer' && (
                       <ArrowRightLeft className="h-6 w-6 text-blue-500" />
@@ -318,9 +329,20 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">
                       {activity.component?.componentNumber} - {activity.quantity} units
                     </p>
+                    {activity.notes && (
+                      <p className="text-xs text-gray-500 mt-1">{activity.notes}</p>
+                    )}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {new Date(activity.createdAt).toLocaleDateString()}
+                  <div className="text-right">
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(activity.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(activity.createdAt).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
                   </div>
                 </div>
               ))}
