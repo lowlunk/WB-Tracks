@@ -142,7 +142,7 @@ function Router() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated && location !== '/login' && location !== '/register') {
       console.log('Not authenticated, redirecting to login');
-      navigate('/login');
+      navigate('/login', { replace: true });
     }
   }, [isLoading, isAuthenticated, location, navigate]);
 
@@ -158,7 +158,7 @@ function Router() {
   }
 
   // Show login page if not authenticated
-  if (!isAuthenticated && (location === '/login' || location === '/register')) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <main className="flex flex-col min-h-screen">
@@ -166,7 +166,7 @@ function Router() {
             <Switch>
               <Route path="/login" component={Login} />
               <Route path="/register" component={Register} />
-              <Route component={() => <Login />} />
+              <Route component={Login} />
             </Switch>
           </div>
         </main>

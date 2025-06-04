@@ -58,25 +58,30 @@ export function useAuth() {
             setAutoLoginAttempted(true);
             try {
               const userData = await autoLoginMutation.mutateAsync();
+              setIsInitialized(true);
               return userData;
             } catch (autoLoginError) {
-              console.log("Auto-login failed, redirecting to login");
-              // Don't throw error, just return null to show login page
+              console.log("Auto-login failed");
+              setIsInitialized(true);
               return null;
             }
           }
+          setIsInitialized(true);
           return null;
         }
         
         if (!res.ok) {
           console.error(`Auth check failed: ${res.status}: ${res.statusText}`);
+          setIsInitialized(true);
           return null;
         }
         
-        return await res.json();
+        const userData = await res.json();
+        setIsInitialized(true);
+        return userData;
       } catch (error) {
         console.error("Auth check error:", error);
-        // Return null instead of throwing to prevent app crashes
+        setIsInitialized(true);
         return null;
       }
     },
