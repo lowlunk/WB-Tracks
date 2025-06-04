@@ -46,6 +46,7 @@ export default function Inventory() {
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [printComponent, setPrintComponent] = useState<Component | undefined>();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [showConsumedComponents, setShowConsumedComponents] = useState(false);
 
   // Fetch all data
   const { data: components = [], isLoading: componentsLoading } = useQuery({
@@ -66,6 +67,11 @@ export default function Inventory() {
 
   const { data: lowStockItems = [] } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
+  });
+
+  // Fetch consumed components
+  const { data: consumedTransactions = [], isLoading: consumedLoading } = useQuery({
+    queryKey: ["/api/transactions/consumed"],
   });
 
   const isLoading = componentsLoading || inventoryLoading;
@@ -166,12 +172,15 @@ export default function Inventory() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          onClick={() => setShowConsumedComponents(true)}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Components</p>
-                <p className="text-2xl font-bold">{components?.length || 0}</p>
+                <p className="text-sm text-muted-foreground">Consumed Components</p>
+                <p className="text-2xl font-bold">{consumedTransactions?.length || 0}</p>
               </div>
               <Package className="h-8 w-8 text-muted-foreground" />
             </div>
