@@ -60,7 +60,8 @@ export function useAuth() {
               const userData = await autoLoginMutation.mutateAsync();
               return userData;
             } catch (autoLoginError) {
-              console.log("Auto-login failed");
+              console.log("Auto-login failed, redirecting to login");
+              // Don't throw error, just return null to show login page
               return null;
             }
           }
@@ -68,12 +69,14 @@ export function useAuth() {
         }
         
         if (!res.ok) {
-          throw new Error(`${res.status}: ${res.statusText}`);
+          console.error(`Auth check failed: ${res.status}: ${res.statusText}`);
+          return null;
         }
         
         return await res.json();
       } catch (error) {
         console.error("Auth check error:", error);
+        // Return null instead of throwing to prevent app crashes
         return null;
       }
     },

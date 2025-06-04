@@ -138,6 +138,14 @@ function Router() {
     }
   }, [theme]);
 
+  // Redirect to login if not authenticated and not loading
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && location !== '/login' && location !== '/register') {
+      console.log('Not authenticated, redirecting to login');
+      navigate('/login');
+    }
+  }, [isLoading, isAuthenticated, location, navigate]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -149,37 +157,39 @@ function Router() {
     );
   }
 
-  // If not authenticated after loading completes, the auto-login handles this
-  if (!isLoading && !isAuthenticated) {
+  // Show login page if not authenticated
+  if (!isAuthenticated && (location === '/login' || location === '/register')) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Connecting...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <main className="flex flex-col min-h-screen">
+          <div className="flex-1">
+            <Switch>
+              <Route path="/login" component={Login} />
+              <Route path="/register" component={Register} />
+              <Route component={() => <Login />} />
+            </Switch>
+          </div>
+        </main>
       </div>
     );
   }
 
+  // For authenticated users, show the full app
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Notification Banner Area */}
-      {location !== '/login' && location !== '/register' && (
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <div className="max-w-7xl mx-auto px-4 py-2">
-            <NotificationContent />
-          </div>
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <NotificationContent />
         </div>
-      )}
+      </div>
 
       <main className="flex flex-col min-h-screen">
-        {location !== '/login' && location !== '/register' && (
-          <Header 
-            onScanClick={() => setShowScanner(true)}
-            onNotificationClick={() => setShowNotifications(!showNotifications)}
-            onSettingsClick={() => navigate('/settings')}
-          />
-        )}
+        <Header 
+          onScanClick={() => setShowScanner(true)}
+          onNotificationClick={() => setShowNotifications(!showNotifications)}
+          onSettingsClick={() => navigate('/settings')}
+        />
 
         <div className="flex-1 pb-16 md:pb-0">
           <Switch>
@@ -189,13 +199,13 @@ function Router() {
             <Route path="/inventory" component={Inventory} />
             <Route path="/admin" component={AdminDashboard} />
             <Route path="/settings" component={Settings} />
+            <Route path="/login" component={() => { navigate('/'); return null; }} />
+            <Route path="/register" component={() => { navigate('/'); return null; }} />
             <Route component={NotFound} />
           </Switch>
         </div>
 
-        {location !== '/login' && location !== '/register' && (
-          <BottomNavigation />
-        )}
+        <BottomNavigation />
       </main>
 
       <BarcodeScanner

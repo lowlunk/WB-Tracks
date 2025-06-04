@@ -91,21 +91,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Auto-login attempt started");
       
-      // Find or create the admin user (cbryson)
-      let user = await storage.getUserByUsername("cbryson");
+      // Try to find existing admin user first
+      let user = await storage.getUserByUsername("admin");
       
       if (!user) {
-        console.log("Creating admin user cbryson");
+        console.log("Admin user not found, trying cbryson");
+        user = await storage.getUserByUsername("cbryson");
+      }
+      
+      if (!user) {
+        console.log("Creating default admin user");
         // Create the admin user if it doesn't exist
         user = await storage.createUser({
-          username: "cbryson",
-          email: "cbryson@wb-tracks.local",
-          firstName: "Chris",
-          lastName: "Bryson",
+          username: "admin",
+          email: "admin@wb-tracks.local",
+          firstName: "Admin",
+          lastName: "User",
           role: "admin",
           isActive: true,
           password: await bcrypt.hash("admin123", 10)
         });
+      }
+
+      if (!user.isActive) {
+        console.log("User found but inactive");
+        return res.status(401).json({ message: "User account is inactive" });
       }
 
       // Update last login
@@ -113,6 +123,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create session
       (req.session as any).userId = user.id;
+      
+      // Save session explicitly
+      await new Promise((resolve, reject) => {
+        (req.session as any).save((err: any) => {
+          if (err) reject(err);
+          else resolve(true);
+        });
+      });
       
       console.log("Auto-login successful for user:", user.username);
       res.json({ 
@@ -129,9 +147,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastLogin: new Date().toISOString()
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Auto-login error:", error);
-      res.status(500).json({ message: "Auto-login failed", error: error.message });
+      res.status(500).json({ message: "Auto-login failed", error: error?.message || "Unknown error" });
     }
   });
 
