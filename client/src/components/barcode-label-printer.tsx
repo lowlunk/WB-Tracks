@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,10 +53,10 @@ export default function BarcodeLabelPrinter({
   onPrint 
 }: BarcodeLabelPrinterProps) {
   const [labelData, setLabelData] = useState<LabelData>({
-    componentNumber: component?.componentNumber || "",
-    description: component?.description || "",
-    category: component?.category || "",
-    supplier: component?.supplier || "",
+    componentNumber: "",
+    description: "",
+    category: "",
+    supplier: "",
     labelSize: "30252",
     quantity: 1,
     includeQR: true,
@@ -67,6 +67,19 @@ export default function BarcodeLabelPrinter({
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Update label data when component changes
+  useEffect(() => {
+    if (component) {
+      setLabelData(prev => ({
+        ...prev,
+        componentNumber: component.componentNumber || "",
+        description: component.description || "",
+        category: component.category || "",
+        supplier: component.supplier || "",
+      }));
+    }
+  }, [component]);
 
   const selectedLabelSize = LABEL_SIZES.find(size => size.value === labelData.labelSize);
 

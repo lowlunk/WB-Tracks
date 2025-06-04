@@ -288,7 +288,7 @@ export default function ComponentTable({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onViewDetails(component)}
+                      onClick={() => handleComponentClick(component)}
                       className="wb-focus-visible"
                       title="View Details"
                     >
