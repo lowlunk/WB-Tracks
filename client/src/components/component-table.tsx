@@ -62,17 +62,25 @@ export default function ComponentTable({
 
   const [printingComponent, setPrintingComponent] = useState<Component | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [detailComponent, setDetailComponent] = useState<Component | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [editComponent, setEditComponent] = useState<Component | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const handleEditClick = (component: Component) => {
-    if (onEdit) {
-      onEdit(component);
-    }
+    setEditComponent(component);
+    setIsEditModalOpen(true);
   };
 
   const handlePrintClick = (component: Component) => {
     setPrintingComponent(component);
     setIsPrintModalOpen(true);
+  };
+
+  const handleComponentClick = (component: Component) => {
+    setDetailComponent(component);
+    setIsDetailModalOpen(true);
   };
 
 
@@ -175,9 +183,13 @@ export default function ComponentTable({
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full opacity-0" />
                     </div>
                     <div>
-                      <div className="font-medium text-[hsl(var(--wb-on-surface))]">
+                      <Button
+                        variant="ghost"
+                        className="p-0 h-auto font-medium text-[hsl(var(--wb-on-surface))] hover:text-blue-600 hover:underline"
+                        onClick={() => handleComponentClick(component)}
+                      >
                         {component.componentNumber}
-                      </div>
+                      </Button>
                       <div className="text-xs text-gray-500">
                         Ready for photos
                       </div>

@@ -778,6 +778,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Component-specific transaction and inventory endpoints
+  app.get("/api/transactions/component/:componentId", async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.componentId);
+      const transactions = await storage.getRecentTransactions(50);
+      
+      // Filter transactions for this specific component
+      const componentTransactions = transactions.filter(t => t.componentId === componentId);
+      
+      res.json(componentTransactions);
+    } catch (error) {
+      console.error("Error fetching component transactions:", error);
+      res.status(500).json({ message: "Failed to fetch component transactions" });
+    }
+  });
+
+  app.get("/api/inventory/component/:componentId", async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.componentId);
+      const allInventory = await storage.getAllInventoryItems();
+      
+      // Filter inventory items for this specific component
+      const componentInventory = allInventory.filter(item => item.componentId === componentId);
+      
+      res.json(componentInventory);
+    } catch (error) {
+      console.error("Error fetching component inventory:", error);
+      res.status(500).json({ message: "Failed to fetch component inventory" });
+    }
+  });
+
   // CSV export for Power BI
   app.get('/api/export/csv', async (req, res) => {
     try {

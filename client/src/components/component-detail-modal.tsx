@@ -199,11 +199,12 @@ export default function ComponentDetailModal({
   if (!component) return null;
 
   const comp = component as any;
-  const totalMainStock = inventoryItems
+  const inventoryItemsArray = Array.isArray(inventoryItems) ? inventoryItems : [];
+  const totalMainStock = inventoryItemsArray
     .filter((item: any) => item.location?.name === "Main Inventory")
     .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
     
-  const totalLineStock = inventoryItems
+  const totalLineStock = inventoryItemsArray
     .filter((item: any) => item.location?.name === "Line Inventory")
     .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
 
@@ -321,11 +322,11 @@ export default function ComponentDetailModal({
                   <div className="flex items-center justify-center h-32">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                   </div>
-                ) : inventoryItems.length === 0 ? (
+                ) : inventoryItemsArray.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No inventory found for this component</p>
                 ) : (
                   <div className="space-y-3">
-                    {inventoryItems.map((item: any) => (
+                    {inventoryItemsArray.map((item: any) => (
                       <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <MapPin className="h-4 w-4 text-gray-500" />
@@ -375,7 +376,7 @@ export default function ComponentDetailModal({
                   <div className="flex items-center justify-center h-32">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                   </div>
-                ) : photos.length === 0 ? (
+                ) : !Array.isArray(photos) || photos.length === 0 ? (
                   <div className="text-center py-12">
                     <Camera className="h-16 w-16 mx-auto mb-4 text-gray-400" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
@@ -387,7 +388,7 @@ export default function ComponentDetailModal({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {photos.map((photo: any) => (
+                    {(photos as any[]).map((photo: any) => (
                       <div key={photo.id} className="relative group">
                         <img
                           src={photo.imageUrl}
@@ -436,11 +437,11 @@ export default function ComponentDetailModal({
                   <div className="flex items-center justify-center h-32">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                   </div>
-                ) : transactions.length === 0 ? (
+                ) : !Array.isArray(transactions) || transactions.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No recent activity found</p>
                 ) : (
                   <div className="space-y-3">
-                    {transactions.map((transaction: any) => (
+                    {(transactions as any[]).map((transaction: any) => (
                       <div key={transaction.id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getTransactionColor(transaction.type)} bg-current bg-opacity-10`}>
                           {getTransactionIcon(transaction.type)}
