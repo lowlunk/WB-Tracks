@@ -27,46 +27,12 @@ import NotificationSystem from "@/components/notification-system";
 import NotificationPanel from "@/components/notification-panel";
 import OnboardingTour from "@/components/onboarding-tour";
 
-// Error Fallback Component
-function ErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center p-8">
-        <div className="mb-4">
-          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto" />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-          Application Error
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Something went wrong. Please try refreshing the page.
-        </p>
-        <div className="space-x-4">
-          <Button onClick={resetError}>Try Again</Button>
-          <Button variant="outline" onClick={() => window.location.reload()}>
-            Refresh Page
-          </Button>
-        </div>
-        <details className="mt-6 text-left">
-          <summary className="cursor-pointer text-sm text-gray-500">
-            Error Details
-          </summary>
-          <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto">
-            {error.message}
-          </pre>
-        </details>
-      </div>
-    </div>
-  );
-}
-
 // Enhanced notification content component with dismissible banner
 function NotificationContent() {
   const [dismissedBanners, setDismissedBanners] = useState<Set<string>>(new Set());
   const { data: lowStockItems } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
     refetchInterval: 30000,
-    retry: 1,
   });
 
   // Show dismissible banner for critical low stock items
@@ -147,6 +113,8 @@ function NotificationContent() {
           </Button>
         </Alert>
       )}
+
+
     </div>
   );
 }
@@ -154,6 +122,18 @@ function NotificationContent() {
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
+
+  // Debug logging
+  console.log('Auth State:', { user, isLoading, isAuthenticated, location });
+
+  // Only redirect if we're certain about authentication state
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && (location === '/login' || location === '/register')) {
+      console.log('Redirecting authenticated user to dashboard');
+      navigate('/');
+    }
+  }, [isAuthenticated, isLoading, location, navigate]);
+
   const [showScanner, setShowScanner] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { showTour, completeTour } = useOnboarding();
@@ -169,7 +149,6 @@ function Router() {
     }
   }, [theme]);
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -181,41 +160,27 @@ function Router() {
     );
   }
 
-  // Show auth pages if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <main className="flex flex-col min-h-screen">
-          <div className="flex-1">
-            <Switch>
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route>
-                <Login />
-              </Route>
-            </Switch>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  // No login screen - auto-login handles authentication
 
-  // For authenticated users, show the full app
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Notification Banner Area */}
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <NotificationContent />
+      {location !== '/login' && location !== '/register' && (
+        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="max-w-7xl mx-auto px-4 py-2">
+            <NotificationContent />
+          </div>
         </div>
-      </div>
+      )}
 
       <main className="flex flex-col min-h-screen">
-        <Header 
-          onScanClick={() => setShowScanner(true)}
-          onNotificationClick={() => setShowNotifications(!showNotifications)}
-          onSettingsClick={() => navigate('/settings')}
-        />
+        {location !== '/login' && location !== '/register' && (
+          <Header 
+            onScanClick={() => setShowScanner(true)}
+            onNotificationClick={() => setShowNotifications(!showNotifications)}
+            onSettingsClick={() => navigate('/settings')}
+          />
+        )}
 
         <div className="flex-1 pb-16 md:pb-0">
           <Switch>
@@ -225,23 +190,13 @@ function Router() {
             <Route path="/inventory" component={Inventory} />
             <Route path="/admin" component={AdminDashboard} />
             <Route path="/settings" component={Settings} />
-            <Route path="/login">
-              {() => {
-                navigate('/');
-                return null;
-              }}
-            </Route>
-            <Route path="/register">
-              {() => {
-                navigate('/');
-                return null;
-              }}
-            </Route>
             <Route component={NotFound} />
           </Switch>
         </div>
 
-        <BottomNavigation />
+        {location !== '/login' && location !== '/register' && (
+          <BottomNavigation />
+        )}
       </main>
 
       <BarcodeScanner
@@ -271,13 +226,11 @@ function Router() {
 
 export default function App() {
   return (
-    
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Router />
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }

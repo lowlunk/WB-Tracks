@@ -72,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Allow both secure and non-secure for compatibility
       maxAge: sessionTtl,
       sameSite: 'lax'
     }
@@ -89,33 +89,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auto-login endpoint - automatically logs in as admin user
   app.post("/api/auto-login", async (req, res) => {
     try {
-      console.log("Auto-login attempt started");
-      
-      // Try to find existing admin user first
-      let user = await storage.getUserByUsername("admin");
+      // Find or create the admin user (cbryson)
+      let user = await storage.getUserByUsername("cbryson");
       
       if (!user) {
-        console.log("Admin user not found, trying cbryson");
-        user = await storage.getUserByUsername("cbryson");
-      }
-      
-      if (!user) {
-        console.log("Creating default admin user");
         // Create the admin user if it doesn't exist
         user = await storage.createUser({
-          username: "admin",
-          email: "admin@wb-tracks.local",
-          firstName: "Admin",
-          lastName: "User",
+          username: "cbryson",
+          email: "cbryson@wb-tracks.local",
+          firstName: "Chris",
+          lastName: "Bryson",
           role: "admin",
           isActive: true,
           password: await bcrypt.hash("admin123", 10)
         });
-      }
-
-      if (!user.isActive) {
-        console.log("User found but inactive");
-        return res.status(401).json({ message: "User account is inactive" });
       }
 
       // Update last login
@@ -124,15 +111,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create session
       (req.session as any).userId = user.id;
       
-      // Save session explicitly
-      await new Promise((resolve, reject) => {
-        (req.session as any).save((err: any) => {
-          if (err) reject(err);
-          else resolve(true);
-        });
-      });
-      
-      console.log("Auto-login successful for user:", user.username);
       res.json({ 
         message: "Auto-login successful", 
         user: {
@@ -147,9 +125,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastLogin: new Date().toISOString()
         }
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Auto-login error:", error);
-      res.status(500).json({ message: "Auto-login failed", error: error?.message || "Unknown error" });
+      res.status(500).json({ message: "Auto-login failed" });
     }
   });
 
@@ -190,22 +168,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update last login
       await storage.updateLastLogin(user.id);
 
-      // Set session
+      // Set session and save it explicitly
+      console.log('Login - Setting userId in session:', user.id);
+      console.log('Login - Session before:', (req as any).session);
       (req as any).session.userId = user.id;
+      console.log('Login - Session after setting userId:', (req as any).session);
       
-      res.json({ 
-        message: "Login successful",
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt,
-          lastLogin: new Date().toISOString()
+      // Force session save before responding
+      (req as any).session.save((err: any) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: "Session save failed" });
         }
+        
+        console.log('Login - Session saved successfully');
+        console.log('Login - Final session state:', (req as any).session);
+        
+        res.json({ 
+          message: "Login successful",
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            lastLogin: new Date().toISOString()
+          }
+        });
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -231,15 +223,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
+      console.log("Session check - sessionID:", (req as any).sessionID);
+      console.log("Session check - session:", (req as any).session);
+      console.log("Session check - userId:", (req as any).session?.userId);
+      
       const userId = (req as any).session?.userId;
       
       if (!userId) {
+        console.log("No userId in session");
         return res.status(401).json({ message: "Not authenticated" });
       }
 
       const user = await storage.getUser(userId);
       
       if (!user || !user.isActive) {
+        console.log("User not found or inactive:", user);
         return res.status(401).json({ message: "User not found or inactive" });
       }
 
@@ -260,7 +258,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const data = registerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(data.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      
+      // Create user
+      const user = await storage.createUser({
+        username: data.username,
+        email: data.email,
+        password: hashedPassword,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+
+      // Set session
+      (req.session as any).userId = user.id;
+      
+      // Return user without password
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(400).json({ message: "Registration failed" });
+    }
+  });
+
+
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user" });
+    }
+  });
 
   // Dashboard API routes
   app.get("/api/dashboard/stats", async (req, res) => {

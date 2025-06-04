@@ -17,9 +17,10 @@ interface User {
 export function useAuth() {
   const queryClient = useQueryClient();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
 
   const autoLoginMutation = useMutation({
-    mutationFn: async (): Promise<User> => {
+    mutationFn: async () => {
       const res = await fetch("/api/auto-login", {
         method: "POST",
         headers: {
@@ -27,75 +28,54 @@ export function useAuth() {
         },
         credentials: "include",
       });
-
+      
       if (!res.ok) {
         throw new Error("Auto-login failed");
       }
-
-      const data = await res.json();
-      return data.user;
+      
+      return await res.json();
     },
-    onSuccess: (userData: User) => {
-      queryClient.setQueryData(["/api/auth/user"], userData);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 
   const { data: user, isLoading: userLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
-    retry: 1,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      try {
-        const res = await fetch("/api/auth/user", {
-          credentials: "include",
-        });
-
-        if (res.status === 401) {
-          // Try auto-login once
-          try {
-            if (!autoLoginMutation.isPending) {
-              const userData = await autoLoginMutation.mutateAsync();
-              return userData;
-            }
-          } catch (autoLoginError) {
-            console.log("Auto-login failed, user not authenticated");
-            return null;
-          }
+      const res = await fetch("/api/auth/user", {
+        credentials: "include",
+      });
+      
+      if (res.status === 401) {
+        // If not authenticated, try auto-login once
+        if (!autoLoginAttempted) {
+          setAutoLoginAttempted(true);
+          autoLoginMutation.mutate();
         }
-
-        if (!res.ok) {
-          console.error(`Auth check failed: ${res.status}: ${res.statusText}`);
-          return null;
-        }
-
-        const userData = await res.json();
-        return userData;
-      } catch (error) {
-        console.error("Auth check error:", error);
         return null;
       }
+      
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      
+      return await res.json();
     },
   });
 
   const logoutMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        throw new Error("Logout failed");
-      }
-      return res.json();
-    },
+    mutationFn: () => apiRequest("/api/logout", "POST"),
     onSuccess: () => {
       queryClient.clear();
+      setAutoLoginAttempted(false);
+      // Just refresh the page instead of redirecting to login
       window.location.reload();
     },
   });
 
-  // Set initialized when auth check is complete
   useEffect(() => {
     if (!userLoading && !autoLoginMutation.isPending) {
       setIsInitialized(true);
@@ -108,8 +88,8 @@ export function useAuth() {
 
   return {
     user: user as User | undefined,
-    isLoading: !isInitialized,
-    isAuthenticated: !!user,
+    isLoading: !isInitialized || userLoading || autoLoginMutation.isPending,
+    isAuthenticated: !!user && user !== null,
     logout,
     error,
   };

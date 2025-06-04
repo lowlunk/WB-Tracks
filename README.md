@@ -1,7 +1,6 @@
-
 # WB-Tracks: Advanced Local Inventory Management System
 
-WB-Tracks is a comprehensive inventory management system designed for production facilities, featuring intelligent tracking, user-centric design, and seamless operational workflows. Built specifically for manufacturing environments where parts move between main storage and production lines.
+WB-Tracks is a comprehensive inventory management system designed for production facilities, featuring intelligent tracking, user-centric design, and seamless operational workflows.
 
 ## Table of Contents
 
@@ -17,180 +16,113 @@ WB-Tracks is a comprehensive inventory management system designed for production
 
 ## Overview
 
-WB-Tracks solves the critical challenge of managing inventory between main storage areas and production lines in manufacturing facilities. The system provides real-time visibility into stock levels, automates transfer tracking, and prevents production delays caused by inventory shortages.
+WB-Tracks is built to solve the challenge of managing inventory between main storage areas and production lines in manufacturing facilities. The system supports barcode/QR code scanning for efficient tracking and provides real-time visibility into inventory levels across multiple locations.
 
 ### Key Benefits
 
-- **Real-time inventory tracking** across multiple facilities and locations with instant updates
-- **Barcode/QR code integration** for fast, accurate inventory operations that eliminate manual data entry errors
-- **Mobile-responsive design** optimized for tablets and smartphones used on factory floors
-- **Multi-facility support** for companies with multiple production sites or warehouses
-- **Role-based access control** ensuring proper permissions for different user types
-- **Low stock alerts** with configurable thresholds to prevent stockouts
-- **Comprehensive transaction history** for audit trails and production planning
-- **Dark mode support** for different lighting conditions in manufacturing environments
-
-### Real-World Use Cases
-
-**Manufacturing Floor Management:**
-- Track component consumption during production runs
-- Transfer parts from main warehouse to production lines
-- Monitor stock levels to prevent production delays
-- Generate pick lists for material handlers
-
-**Quality Control & Auditing:**
-- Complete transaction history for regulatory compliance
-- Track component batches through production
-- Identify consumption patterns for forecasting
-- Monitor inventory accuracy across locations
-
-**Multi-Site Operations:**
-- Manage inventory across multiple facilities
-- Transfer parts between locations
-- Standardize inventory processes company-wide
-- Generate consolidated reporting
+- **Real-time inventory tracking** across multiple facilities and locations
+- **Barcode/QR code integration** for fast, accurate inventory operations
+- **Mobile-responsive design** for use on tablets and smartphones
+- **Multi-facility support** for expanded operations
+- **Role-based access control** with admin and user permissions
+- **Low stock alerts** with configurable thresholds
+- **Comprehensive transaction history** and reporting
+- **Dark mode support** for different working environments
 
 ## Features
 
 ### Core Functionality
 
 #### Inventory Management
-- **Dual-location tracking**: Separate main storage and production line inventories
-- **Multi-facility support**: Scale across multiple production sites
-- **Real-time stock levels**: Automatic updates visible to all users instantly
-- **Low stock alerts**: Prevent stockouts with customizable warning thresholds
-- **Component management**: Organize parts with categories, suppliers, and detailed specifications
-
-**Practical Tips:**
-- Set low stock thresholds at 20% of typical weekly consumption
-- Use component categories to organize parts by production line or product type
-- Include supplier information for quick reordering decisions
+- **Dual-location tracking**: Main Inventory and Line Inventory
+- **Multi-facility support**: Manage inventory across multiple facilities
+- **Real-time stock levels**: Automatic updates across all connected devices
+- **Low stock alerts**: Configurable thresholds with visual notifications
+- **Component management**: Add, edit, and organize inventory items
 
 #### Transaction Management
-- **Transfer operations**: Move inventory between main storage and production lines
-- **Consumption tracking**: Record actual usage separate from transfers for accurate costing
-- **Inventory additions**: Receive new stock with proper documentation
-- **Historical tracking**: Complete audit trail of all inventory movements with timestamps
-
-**Best Practices:**
-- Always include notes in transactions for future reference
-- Use transfers for planned movements, consumption for actual usage
-- Review transaction history weekly to identify consumption patterns
+- **Transfer items**: Move inventory between locations
+- **Consume items**: Track production usage separate from transfers
+- **Add inventory**: Increase stock levels for existing or new items
+- **Transaction history**: Complete audit trail of all inventory movements
 
 #### User Management
-- **Role-based access**: Admin and standard user roles with different permissions
-- **User groups**: Organize by department (shipping, production, quality control)
-- **Secure authentication**: Session-based login with password encryption
-- **Activity tracking**: Monitor user actions for security and training
-
-**Security Tips:**
-- Change default admin password immediately after installation
-- Create separate user accounts for each employee
-- Use user groups to manage permissions efficiently
-- Regularly review user access and deactivate unused accounts
+- **Role-based access**: Admin and standard user roles
+- **User groups**: Organize users by department or function
+- **Authentication**: Secure login with session management
+- **Profile management**: User settings and preferences
 
 #### Barcode Integration
-- **Camera-based scanning**: Use any device with a camera for inventory operations
-- **Label generation**: Create professional barcode labels for components
-- **Multiple formats**: Support for Code 128, QR codes, and other standard formats
-- **Quick operations**: Scan barcodes to instantly find, transfer, or consume items
-
-**Implementation Tips:**
-- Print barcode labels for all frequently used components
-- Train users to scan rather than manually enter component numbers
-- Use QR codes for components with complex specifications
-- Position barcode labels consistently for easy scanning
+- **Barcode scanning**: Camera-based scanning for quick operations
+- **Label printing**: Generate barcode labels for components
+- **Multiple formats**: Support for various barcode types
+- **QR code support**: Enhanced data capacity for complex items
 
 ### Advanced Features
 
-#### Notifications & Alerts
-- **Real-time alerts**: Immediate notifications for low stock situations
-- **Persistent history**: View and track past notifications
-- **Configurable thresholds**: Set custom warning levels for each component
-- **Visual indicators**: Color-coded alerts by urgency level
+#### Notifications
+- **Real-time alerts**: Low stock and system notifications
+- **Persistent history**: View past notifications and alerts
+- **Configurable thresholds**: Set custom low stock levels
+- **Visual indicators**: Color-coded alerts by severity
 
-**Configuration Best Practices:**
-- Set critical components to alert at higher thresholds
-- Configure alerts to notify relevant department supervisors
-- Review alert history monthly to adjust thresholds
-- Use different alert levels for seasonal or project-specific components
-
-#### Reporting & Analytics
-- **Dashboard overview**: Real-time metrics and key performance indicators
-- **Consumption patterns**: Track usage trends for forecasting
-- **Transaction reports**: Detailed logs for audit and analysis purposes
-- **Export capabilities**: Generate reports for external systems or management
-
-**Analytics Tips:**
-- Review consumption reports monthly for reorder planning
-- Use dashboard metrics to identify trends and inefficiencies
-- Export data for integration with ERP or accounting systems
-- Track inventory turnover rates by component category
+#### Reporting
+- **Dashboard analytics**: Overview of inventory status and trends
+- **Activity tracking**: Recent transactions and user activity
+- **Consumed items report**: Track production consumption patterns
+- **Export capabilities**: Data export for external analysis
 
 #### User Experience
-- **Responsive design**: Seamless experience on desktop, tablet, and mobile devices
-- **Dark mode**: Reduce eye strain in various lighting conditions
-- **Guided onboarding**: Interactive tour for new users
+- **Responsive design**: Optimized for desktop, tablet, and mobile
+- **Dark mode**: Eye-friendly interface for various lighting conditions
+- **Onboarding tour**: Interactive walkthrough for new users
 - **Keyboard shortcuts**: Efficient navigation for power users
-
-**User Training Tips:**
-- Complete the onboarding tour with new users
-- Practice barcode scanning in good lighting conditions
-- Use keyboard shortcuts for frequently performed operations
-- Switch to dark mode in low-light manufacturing areas
 
 ## System Architecture
 
 ### Technology Stack
 
 **Frontend:**
-- React with TypeScript for type safety and maintainability
-- Vite for fast development and optimized builds
-- TailwindCSS for responsive, customizable styling
-- Radix UI for accessible, professional components
-- TanStack Query for efficient data management and caching
-- Wouter for lightweight, fast routing
+- React with TypeScript
+- Vite build system
+- TailwindCSS for styling
+- Radix UI components
+- TanStack Query for data management
+- Wouter for routing
 
 **Backend:**
-- Node.js with Express for robust server functionality
-- TypeScript for consistent development experience
-- PostgreSQL for reliable, scalable data storage
-- Drizzle ORM for type-safe database operations
-- WebSocket for real-time updates across all clients
-- Session-based authentication for security
+- Node.js with Express
+- TypeScript
+- PostgreSQL database
+- Drizzle ORM
+- WebSocket for real-time updates
+- Session-based authentication
 
-**Integration Technologies:**
-- WebRTC for camera-based barcode scanning
-- SVG generation for professional barcode labels
-- Local storage for user preferences and offline capability
-- Service worker foundation for future offline features
+**Additional Technologies:**
+- WebRTC for barcode scanning
+- SVG generation for barcode labels
+- Local storage for user preferences
+- Service worker for offline capabilities
 
 ### Database Schema
 
-The system uses a normalized PostgreSQL database optimized for inventory operations:
+The system uses a normalized PostgreSQL database with the following main entities:
 
-**Core Entities:**
-- **Users**: Authentication, roles, and user preferences
-- **User Groups**: Role-based permission management
-- **Facilities**: Physical locations and organizational structure
-- **Components**: Part definitions with specifications
-- **Inventory Items**: Current stock levels by location
-- **Inventory Transactions**: Complete audit trail of all movements
-
-**Performance Optimizations:**
-- Indexed queries for fast component lookups
-- Foreign key constraints for data integrity
-- Transaction logging for complete auditability
-- Efficient joins for complex inventory reporting
+- **Users**: Authentication and profile information
+- **User Groups**: Role-based access control
+- **Facilities**: Multi-location support
+- **Components**: Inventory item definitions
+- **Inventory Items**: Stock levels by location
+- **Inventory Transactions**: Complete audit trail
+- **Sessions**: User authentication management
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Node.js 18+** for modern JavaScript features and performance
-- **PostgreSQL database** for reliable data storage
-- **Modern web browser** with camera support for barcode scanning
-- **Network connectivity** for multi-device access
+- Node.js 18+ 
+- PostgreSQL database
+- Modern web browser with camera support (for barcode scanning)
 
 ### Installation
 
@@ -205,457 +137,297 @@ The system uses a normalized PostgreSQL database optimized for inventory operati
    npm install
    ```
 
-3. **Configure environment**
+3. **Set up environment variables**
    ```bash
    # Copy example environment file
    cp .env.example .env
    
-   # Edit .env with your database connection
+   # Edit .env with your database connection string
    DATABASE_URL=postgresql://username:password@localhost:5432/wb_tracks
-   SESSION_SECRET=your-secure-random-string-here
    ```
 
-4. **Initialize database**
+4. **Initialize the database**
    ```bash
    npm run db:push
    ```
 
-5. **Start the application**
+5. **Start the development server**
    ```bash
    npm run dev
    ```
 
-6. **Access the system**
+6. **Access the application**
    Open http://localhost:5000 in your web browser
 
-### Initial Configuration
+### First-Time Setup
 
-1. **Create admin account**: First user registration automatically becomes admin
-2. **Set up facilities**: Configure your production sites in Admin > Facilities
-3. **Define locations**: Create storage areas (Main Inventory, Line Inventory, etc.)
-4. **Import components**: Add your inventory items with proper categorization
-5. **Configure user groups**: Set up departments with appropriate permissions
-6. **Set alert thresholds**: Configure low stock warnings for critical components
-
-**Pro Tips for Setup:**
-- Start with one facility and expand gradually
-- Import a small test batch of components first
-- Set conservative low stock thresholds initially
-- Train a few power users before rolling out company-wide
+1. **Create admin account**: Register the first user (automatically becomes admin)
+2. **Configure facilities**: Set up your facility information in Admin > Facilities
+3. **Add locations**: Create inventory locations (e.g., "Main Inventory", "Line Inventory")
+4. **Import components**: Add your inventory items
+5. **Set up user groups**: Create groups for different departments or roles
+6. **Configure notifications**: Set low stock thresholds in Settings
 
 ## User Guide
 
 ### Dashboard
 
-The dashboard provides immediate visibility into your inventory status:
+The dashboard provides an overview of your inventory system:
 
-**Key Metrics:**
-- **Total components** across all locations
-- **Current inventory levels** by location
-- **Low stock alerts** requiring immediate attention
-- **Recent activity** showing latest transactions
+- **Quick Stats**: Total components, inventory levels, low stock alerts
+- **Quick Actions**: Fast access to scanning, transfers, and consumption
+- **Recent Activity**: Latest transactions and changes
+- **Charts**: Visual representation of inventory data
 
-**Quick Actions:**
-- **Barcode scanning** for instant component lookup
-- **Transfer operations** between locations
-- **Consumption recording** for production tracking
-- **Component search** across all locations
-
-**Best Practices:**
-- Check dashboard daily for low stock alerts
-- Review recent activity to spot unusual patterns
-- Use quick actions for common operations
-- Monitor metrics trends for inventory planning
-
-### Inventory Operations
+### Inventory Management
 
 #### Viewing Inventory
 
-1. **Navigate to inventory sections**: Main Inventory or Line Inventory
-2. **Use search functionality**: Find components by number, description, or category
-3. **View detailed information**: Click components for specifications and history
-4. **Check stock levels**: Monitor quantities and alert status
-
-**Search Tips:**
-- Use partial component numbers for quick finding
-- Search by supplier name for vendor-specific items
-- Filter by category to focus on specific component types
-- Use description keywords for functional searches
+1. Navigate to **Main Inventory** or **Line Inventory**
+2. Use the search bar to find specific components
+3. View component details by clicking on any item
+4. Check stock levels and location information
 
 #### Adding Components
 
-1. **Access component creation**: Click "New Component" button
-2. **Enter component details**:
-   - Component number (unique identifier for your system)
-   - Detailed description including specifications
-   - Category for organization and reporting
-   - Supplier information for reordering
-   - Unit price for cost tracking
-   - Notes for special handling instructions
-3. **Upload reference photos**: Visual identification aids
-4. **Save and verify**: Confirm component creation
+1. Click **New Component** button
+2. Fill in component details:
+   - Component number (unique identifier)
+   - Description
+   - Category and supplier (optional)
+   - Unit price and notes (optional)
+3. Upload photos if needed
+4. Save to create the component
 
-**Component Management Tips:**
-- Use consistent numbering schemes across your organization
-- Include key specifications in descriptions
-- Categorize components by production line or function
-- Always include supplier information for critical components
+#### Transferring Items
 
-#### Transfer Operations
+1. Click **Transfer Items** or select component and click **Transfer**
+2. Choose source and destination locations
+3. Select component and enter quantity
+4. Add notes if needed
+5. Confirm transfer
 
-1. **Initiate transfer**: Click "Transfer Items" or select component and choose transfer
-2. **Configure transfer**:
-   - Select source location (where items currently are)
-   - Choose destination location (where items should go)
-   - Specify component and exact quantity
-   - Add notes explaining the transfer reason
-3. **Execute transfer**: Confirm operation
+#### Consuming Items
 
-**Transfer Best Practices:**
-- Always verify quantities before confirming transfers
-- Include clear notes for audit trail purposes
-- Plan transfers during shift changes to minimize disruption
-- Use barcode scanning to ensure accuracy
-
-#### Production Consumption
-
-1. **Navigate to Line Inventory**: Access production area inventory
-2. **Select consumption option**: Click "Consume for Production"
-3. **Record consumption**:
-   - Choose component being used
-   - Enter exact quantity consumed
-   - Add production details (batch number, work order, etc.)
-   - Include any quality notes
-4. **Confirm consumption**: Complete the transaction
-
-**Consumption Tracking Tips:**
-- Record consumption immediately after use
-- Include work order or batch numbers in notes
-- Track waste separately from normal consumption
-- Review consumption patterns weekly for planning
+1. Navigate to Line Inventory
+2. Click **Consume for Production**
+3. Select component and enter consumed quantity
+4. Add notes describing the usage
+5. Confirm consumption
 
 ### Barcode Operations
 
-#### Scanning Setup
+#### Scanning Barcodes
 
-1. **Camera access**: Grant browser permission when prompted
-2. **Lighting conditions**: Ensure adequate lighting for clear scanning
-3. **Scanner positioning**: Hold device steady, 6-12 inches from barcode
-4. **Format compatibility**: System supports most standard barcode formats
+1. Click the **Scan Barcode** button
+2. Allow camera access when prompted
+3. Point camera at barcode/QR code
+4. The system will automatically detect and process the code
 
-**Scanning Best Practices:**
-- Clean camera lens regularly for clear images
-- Use good lighting, avoid glare and shadows
-- Hold device steady until scan confirmation
-- Print high-quality labels for consistent scanning
+#### Printing Labels
 
-#### Label Generation
+1. Select a component from the inventory
+2. Click **Print Label** 
+3. Configure label settings:
+   - Label size
+   - Barcode type
+   - Include QR code or logo
+   - Number of copies
+4. Generate and print labels
 
-1. **Select component**: Choose item from inventory list
-2. **Access printing**: Click "Print Label" option
-3. **Configure label settings**:
-   - Label size (standard options available)
-   - Barcode format (Code 128 recommended)
-   - Include QR code for additional data
-   - Add company logo if desired
-   - Specify number of copies needed
-4. **Generate and print**: Create print-ready labels
+### Settings
 
-**Label Printing Tips:**
-- Use high-quality label stock for durability
-- Print test labels before large batches
-- Include component number and description on labels
-- Store labels in clean, dry conditions
+Access personal settings to customize your experience:
 
-### Settings & Preferences
-
-#### Personal Preferences
-- **Theme selection**: Choose light or dark mode based on work environment
-- **Notification settings**: Configure alert preferences
-- **Profile management**: Update personal information and password
-- **Onboarding**: Restart tutorial for training purposes
-
-#### Notification Configuration
-- **Alert frequency**: Set how often to check for low stock
-- **Threshold preferences**: Customize warning levels
-- **Email notifications**: Configure external alerts (if enabled)
-- **Sound alerts**: Enable audio notifications for critical alerts
+- **Theme**: Switch between light and dark modes
+- **Notifications**: Configure alert preferences
+- **Profile**: Update personal information
+- **Tour**: Restart the onboarding walkthrough
 
 ## Admin Guide
 
 ### User Management
 
-#### Creating User Accounts
+#### Creating Users
 
-1. **Access user administration**: Navigate to Admin > Users
-2. **Add new user**: Click "Add User" button
-3. **Configure user details**:
-   - Username (unique identifier for login)
-   - Email address for notifications and recovery
-   - Temporary password (user should change on first login)
-   - Role assignment (Admin or User)
-   - Account status (Active/Inactive)
-4. **Save configuration**: Create the user account
+1. Navigate to **Admin > Users**
+2. Click **Add User**
+3. Fill in user details:
+   - Username and email
+   - Password (temporary)
+   - Role (Admin or User)
+   - Active status
+4. Save to create the user
 
-**User Management Best Practices:**
-- Use consistent username conventions (first.last format)
-- Require strong passwords for all accounts
-- Set up new accounts with temporary passwords
-- Regularly review user access and remove unused accounts
+#### Managing User Groups
 
-#### User Group Management
+1. Go to **Admin > Groups**
+2. Create groups for departments or functions
+3. Assign permissions to groups
+4. Add users to appropriate groups
 
-1. **Create functional groups**: Navigate to Admin > Groups
-2. **Define group permissions**:
-   - Inventory read/write access
-   - Transaction creation rights
-   - Consumption recording permissions
-   - Administrative capabilities
-3. **Assign users**: Add appropriate users to each group
-4. **Review regularly**: Update group memberships as roles change
+#### Assigning Users to Groups
 
-**Group Organization Strategies:**
-- Create groups by department (Production, Shipping, QC)
-- Set up role-based groups (Supervisors, Operators, Managers)
-- Define project-specific groups for temporary assignments
-- Regularly audit group memberships for security
+1. In the Users tab, find the user
+2. Click **Groups** button
+3. Select appropriate groups
+4. Save changes
 
-### Facility & Location Management
+### Facility Management
 
-#### Facility Configuration
+#### Adding Facilities
 
-1. **Access facility management**: Navigate to Admin > Facilities
-2. **Create new facilities**: Click "Add Facility"
-3. **Enter facility information**:
-   - Facility name and identification code
-   - Physical address and contact information
-   - Operational parameters and settings
-   - Active status and configuration
-4. **Save facility**: Confirm creation
+1. Navigate to **Admin > Facilities**
+2. Click **Add Facility**
+3. Enter facility details:
+   - Name and code
+   - Address and contact information
+   - Operational settings
+4. Save to create facility
 
-**Multi-Facility Tips:**
-- Use consistent naming conventions across facilities
-- Include facility codes in component numbering schemes
-- Set up location hierarchies that match physical layouts
-- Coordinate inventory policies across all facilities
+#### Managing Locations
 
-#### Location Management
-
-1. **Define storage areas**: Create locations within each facility
-2. **Common location types**:
-   - Main Storage: Primary inventory holding area
-   - Production Lines: Active manufacturing areas
-   - Staging Areas: Temporary holding locations
-   - Shipping/Receiving: Dock areas for incoming/outgoing inventory
-3. **Configure location settings**: Set permissions and operational parameters
-
-**Location Setup Best Practices:**
-- Mirror physical layout in system organization
-- Use clear, descriptive location names
-- Set appropriate access permissions for each area
-- Include location codes on physical signage
+1. Within each facility, manage inventory locations
+2. Create locations like "Main Storage", "Production Line", "Staging Area"
+3. Set location-specific settings and permissions
 
 ### System Configuration
 
-#### Inventory Thresholds
+#### Low Stock Thresholds
 
-1. **Global threshold settings**: Set company-wide low stock levels
-2. **Component-specific thresholds**: Override global settings for critical items
-3. **Alert configuration**: Set notification timing and recipients
-4. **Threshold monitoring**: Regular review and adjustment
+1. Configure global low stock thresholds
+2. Set component-specific thresholds as needed
+3. Customize notification settings
 
-**Threshold Management Tips:**
-- Set critical components to higher alert levels
-- Adjust thresholds based on lead times and consumption patterns
-- Review and update thresholds quarterly
-- Consider seasonal variations in threshold settings
+#### Backup and Maintenance
 
-#### Data Management
-
-1. **Database maintenance**: Regular optimization and cleanup
-2. **Transaction archiving**: Long-term storage of historical data
-3. **User activity monitoring**: Track system usage and performance
-4. **Backup procedures**: Regular data protection measures
-
-**Data Retention Guidelines:**
-- Archive transactions older than 2 years
-- Maintain user activity logs for 6 months
-- Backup database daily
-- Test restore procedures quarterly
+1. Regular database backups (recommended daily)
+2. Monitor system performance
+3. Update user permissions as needed
+4. Review and archive old transaction data
 
 ## API Documentation
 
-### Authentication Flow
+### Authentication Endpoints
 
-The API uses session-based authentication for security and simplicity:
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/user` - Get current user info
 
-```javascript
-// Login request
-POST /api/auth/login
-{
-  "username": "user123",
-  "password": "securePassword"
-}
+### Inventory Endpoints
 
-// Response includes session cookie
-{
-  "id": 1,
-  "username": "user123",
-  "role": "admin"
-}
-```
+- `GET /api/components` - List all components
+- `POST /api/components` - Create new component
+- `PUT /api/components/:id` - Update component
+- `DELETE /api/components/:id` - Delete component
 
-### Inventory Operations
+- `GET /api/inventory` - Get inventory items
+- `POST /api/inventory` - Add inventory
+- `PUT /api/inventory` - Update inventory quantities
 
-```javascript
-// Get inventory with filters
-GET /api/inventory?locationId=1&lowStock=true
+### Transaction Endpoints
 
-// Transfer items between locations
-POST /api/transactions/transfer
-{
-  "componentId": 1,
-  "fromLocationId": 1,
-  "toLocationId": 2,
-  "quantity": 50,
-  "notes": "Production transfer for order #12345"
-}
-```
+- `POST /api/transactions/transfer` - Transfer items
+- `POST /api/transactions/consume` - Consume items
+- `GET /api/transactions/consumed` - Get consumption history
 
-### Real-time Updates
+### Admin Endpoints
 
-WebSocket connection provides instant updates:
-
-```javascript
-// Connect to WebSocket
-ws://localhost:5000/ws
-
-// Receive real-time inventory updates
-{
-  "type": "inventory:update",
-  "data": {
-    "componentId": 1,
-    "locationId": 1,
-    "quantity": 150
-  }
-}
-```
+- `GET /api/admin/users` - List users (admin only)
+- `POST /api/admin/users` - Create user (admin only)
+- `PUT /api/admin/users/:id` - Update user (admin only)
 
 ## Deployment
 
-### Production Deployment on Replit
+### Production Deployment
 
-For production deployment, Replit provides a robust hosting solution:
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
 
-1. **Environment Setup**: Configure production environment variables
-2. **Database Configuration**: Set up PostgreSQL database connection
-3. **SSL Configuration**: Enable HTTPS for secure access
-4. **Performance Optimization**: Configure caching and optimization settings
+2. **Set production environment variables**
+   ```bash
+   NODE_ENV=production
+   DATABASE_URL=<production-database-url>
+   SESSION_SECRET=<secure-random-string>
+   ```
 
-### Security Configuration
+3. **Deploy to your hosting platform**
+   - Upload built files
+   - Configure database connection
+   - Set up reverse proxy (nginx recommended)
+   - Configure SSL certificates
 
-- **Session Security**: Strong session secrets and secure cookie settings
-- **Database Security**: Encrypted connections and proper user permissions
-- **Network Security**: Firewall configuration and access controls
-- **Regular Updates**: Keep dependencies and system components current
+### Recommended Hosting
 
-### Performance Optimization
+- **Cloud Platforms**: AWS, Google Cloud, Digital Ocean
+- **Database**: Managed PostgreSQL service
+- **CDN**: CloudFlare for static assets
+- **Monitoring**: Application and database monitoring
 
-- **Database Indexing**: Optimize queries for fast inventory operations
-- **Caching Strategy**: Implement appropriate caching for frequently accessed data
-- **Connection Pooling**: Manage database connections efficiently
-- **Asset Optimization**: Minimize and compress static assets
+### Security Considerations
+
+- Use HTTPS in production
+- Secure database connections
+- Regular security updates
+- Strong session secrets
+- Regular backups
+- Access logging and monitoring
 
 ## Troubleshooting
 
-### Common Issues & Solutions
-
-#### Barcode Scanner Problems
-**Symptoms**: Camera not working or poor scan quality
-**Solutions**:
-- Verify camera permissions in browser settings
-- Ensure adequate lighting conditions
-- Clean camera lens
-- Try different barcode formats
-- Test with high-quality printed barcodes
+### Common Issues
 
 #### Database Connection Issues
-**Symptoms**: Application errors or slow performance
-**Solutions**:
-- Verify DATABASE_URL configuration
-- Check PostgreSQL service status
-- Monitor connection pool usage
-- Review database logs for errors
-- Optimize query performance
+- Verify DATABASE_URL is correct
+- Check database server is running
+- Ensure network connectivity
+- Verify credentials and permissions
 
-#### User Access Problems
-**Symptoms**: Login failures or permission errors
-**Solutions**:
-- Verify user credentials and account status
-- Check user group memberships
-- Review role-based permissions
-- Clear browser cache and cookies
-- Check session configuration
+#### Authentication Problems
+- Clear browser cookies and session data
+- Check SESSION_SECRET configuration
+- Verify user exists in database
+- Check user account is active
+
+#### Barcode Scanning Issues
+- Ensure camera permissions are granted
+- Check camera hardware functionality
+- Verify good lighting conditions
+- Clean camera lens
+- Try different barcode formats
 
 #### Performance Issues
-**Symptoms**: Slow loading or unresponsive interface
-**Solutions**:
-- Monitor server resource usage
 - Check database query performance
-- Review network connectivity
-- Clear browser cache
-- Restart application services
-
-### Diagnostic Tools
-
-```bash
-# Check application status
-pm2 status
-pm2 logs wb-tracks
-
-# Database diagnostics
-psql -U username -d wb_tracks -c "SELECT COUNT(*) FROM inventory_transactions;"
-
-# Network connectivity
-ping database-server
-netstat -tulpn | grep :5000
-```
-
-### Maintenance Schedule
-
-**Daily Tasks:**
-- Monitor application logs for errors
-- Check low stock alerts and address critical items
-- Verify backup completion
-- Review user activity for unusual patterns
-
-**Weekly Tasks:**
-- Database maintenance and optimization
-- User access review and cleanup
-- Performance monitoring and tuning
-- System update review and planning
-
-**Monthly Tasks:**
-- Complete security audit
-- Database backup verification
-- User training and system optimization
-- Threshold review and adjustment
-
-## Support & Maintenance
+- Monitor memory usage
+- Optimize large data operations
+- Consider database indexing
+- Review network latency
 
 ### Getting Help
 
-1. **Documentation Review**: Check this guide and technical documentation
-2. **Log Analysis**: Review application and database logs
-3. **System Diagnostics**: Run built-in diagnostic tools
-4. **Community Resources**: Access user forums and knowledge base
+- Check the console for error messages
+- Review server logs for backend issues
+- Verify browser compatibility
+- Test with different devices/browsers
+- Contact system administrator
 
-### Continuous Improvement
+### Maintenance
 
-- **User Feedback**: Regular collection and analysis of user suggestions
-- **Performance Monitoring**: Ongoing system optimization
-- **Feature Enhancement**: Regular updates and new functionality
-- **Training Updates**: Continuous user education and system training
+#### Regular Tasks
+- Database backups (daily recommended)
+- System health monitoring
+- User access reviews
+- Performance optimization
+- Security updates
+
+#### Data Management
+- Archive old transactions periodically
+- Clean up unused components
+- Optimize database queries
+- Monitor storage usage
+- Update indexes as needed
 
 ---
 
@@ -665,9 +437,4 @@ This project is proprietary software. All rights reserved.
 
 ## Support
 
-For technical support, feature requests, or questions about WB-Tracks, refer to your system administrator or technical support team.
-
-**System Information:**
-- Version: Latest
-- Documentation Last Updated: Current
-- Support Contact: System Administrator
+For technical support or questions about WB-Tracks, please contact your system administrator or the development team.
