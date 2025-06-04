@@ -52,6 +52,7 @@ export default function Dashboard() {
   const [showConsumedInventory, setShowConsumedInventory] = useState(false);
   const [showConsumeModal, setShowConsumeModal] = useState(false);
   const [showAddInventory, setShowAddInventory] = useState(false);
+  const [showAllActivity, setShowAllActivity] = useState(false);
   const [viewingComponent, setViewingComponent] = useState<any>(null);
 
   // Connect to WebSocket for real-time updates
@@ -304,7 +305,7 @@ export default function Dashboard() {
             <Button 
               variant="ghost" 
               className="text-[hsl(var(--wb-primary))]"
-              onClick={() => setShowConsumedInventory(true)}
+              onClick={() => setShowAllActivity(true)}
             >
               View All Activity
             </Button>
@@ -460,6 +461,62 @@ export default function Dashboard() {
         isOpen={showAddInventory}
         onClose={() => setShowAddInventory(false)}
       />
+
+      {/* All Activity Modal */}
+      {showAllActivity && (
+        <Card className="fixed inset-4 z-50 overflow-auto bg-white dark:bg-gray-900 shadow-2xl rounded-lg">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-500" />
+              All Recent Activity
+            </CardTitle>
+            <Button
+              variant="ghost"
+              onClick={() => setShowAllActivity(false)}
+              className="h-8 w-8 p-0"
+            >
+              ×
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {recentActivity?.map((activity: any) => (
+                <Card 
+                  key={activity.id} 
+                  className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => {
+                    setViewingComponent({ id: activity.componentId });
+                    setShowAllActivity(false);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      {getActivityIcon(activity.transactionType)}
+                      <div>
+                        <p className="font-medium text-sm">
+                          {activity.component?.componentNumber}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {activity.component?.description} - {activity.quantity} units
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(activity.createdAt).toLocaleDateString()} at {new Date(activity.createdAt).toLocaleTimeString()}
+                        </p>
+                        {activity.notes && (
+                          <p className="text-xs text-gray-500 mt-1">{activity.notes}</p>
+                        )}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {activity.quantity}
+                    </Badge>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {viewingComponent && (
         <ComponentDetailModal
