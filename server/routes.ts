@@ -464,14 +464,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/components/:id", async (req, res) => {
+  app.put("/api/components/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const userId = (req.session as any).userId;
+      
+      console.log("Updating component:", id, "with data:", req.body);
+      
       const validatedData = insertComponentSchema.partial().parse(req.body);
-      const component = await storage.updateComponent(id, validatedData);
+      console.log("Validated data:", validatedData);
+      
+      const component = await storage.updateComponent(id, validatedData, userId);
+      console.log("Updated component:", component);
+      
       res.json(component);
     } catch (error) {
-      res.status(400).json({ message: "Failed to update component" });
+      console.error("Component update error:", error);
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to update component",
+        details: error instanceof Error ? error.stack : undefined
+      });
     }
   });
 
