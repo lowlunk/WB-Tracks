@@ -56,7 +56,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
 
   // Filter out any invalid photos - only show photos with valid image URLs
   const validPhotos = Array.isArray(photos) ? photos.filter((photo: any) => 
-    photo && photo.imageUrl && photo.imageUrl.trim() !== '' && photo.imageUrl !== 'Component photo'
+    photo && photo.imageUrl && photo.imageUrl.trim() !== ''
   ) : [];
 
   // Update component mutation
@@ -324,8 +324,11 @@ export default function ComponentEditModal({ isOpen, onClose, componentId }: Com
                       alt={photo.caption || "Component photo"}
                       className="w-full h-32 object-cover rounded-lg border"
                       onError={(e) => {
-                        // Hide broken images
+                        console.error('Failed to load image:', photo.imageUrl);
                         (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log('Successfully loaded image:', photo.imageUrl);
                       }}
                     />
 

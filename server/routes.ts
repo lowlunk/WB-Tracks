@@ -972,8 +972,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded files
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  // Debug endpoint to check photos for a specific component
+  app.get("/api/debug/component/:id/photos", async (req, res) => {
+    try {
+      const componentId = parseInt(req.params.id);
+      const photos = await storage.getComponentPhotos(componentId);
+      
+      // Check if files actually exist on disk
+      const photoStatus = [];
+      for (const photo of photos) {
+        const filePath = path.join(process.cwd(), photo.imageUrl.replace(/^\//, ''));
+        let fileExists = false;
+        try {
+          await fs.access(filePath);
+          fileExists = true;
+        } catch (error) {
+          fileExists = false;
+        }
+        
+        photoStatus.push({
+          ...photo,
+          fileExists,
+          fullPath: filePath
+        });
+      }
+      
+      res.json({
+        componentId,
+        totalPhotos: photos.length,
+        photos: photoStatus
+      });
+    } catch (error) {
+      console.error("Error debugging component photos:", error);
+      res.status(500).json({ message: "Failed to debug component photos" });
+    }
+  });
+
+  // Serve uploaded files with proper headers
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    setHeaders: (res, path, stat) => {
+      res.set('Cache-Control', 'public, max-age=31536000');
+      if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.set('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.png')) {
+        res.set('Content-Type', 'image/png');
+      } else if (path.endsWith('.gif')) {
+        res.set('Content-Type', 'image/gif');
+      } else if (path.endsWith('.webp')) {
+        res.set('Content-Type', 'image/webp');
+      }
+    }
+  }));
 
   const httpServer = createServer(app);
 
