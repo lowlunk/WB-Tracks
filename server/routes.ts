@@ -72,9 +72,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false, // Allow both secure and non-secure for compatibility
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       maxAge: sessionTtl,
-      sameSite: 'lax'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.wbtracks.xyz' : undefined
     }
   }));
 
@@ -89,10 +90,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auto-login endpoint - automatically logs in as admin user
   app.post("/api/auto-login", async (req, res) => {
     try {
+      console.log("Auto-login attempt started");
+      
       // Find or create the admin user (cbryson)
       let user = await storage.getUserByUsername("cbryson");
       
       if (!user) {
+        console.log("Creating admin user cbryson");
         // Create the admin user if it doesn't exist
         user = await storage.createUser({
           username: "cbryson",
@@ -108,26 +112,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update last login
       await storage.updateLastLogin(user.id);
 
-      // Create session
+      // Create session and save it explicitly
       (req.session as any).userId = user.id;
       
-      res.json({ 
-        message: "Auto-login successful", 
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt,
-          lastLogin: new Date().toISOString()
+      // Force session save
+      (req.session as any).save((err: any) => {
+        if (err) {
+          console.error('Auto-login session save error:', err);
+          return res.status(500).json({ message: "Session save failed" });
         }
+        
+        console.log("Auto-login successful for user:", user.username);
+        res.json({ 
+          message: "Auto-login successful", 
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            lastLogin: new Date().toISOString()
+          }
+        });
       });
     } catch (error) {
       console.error("Auto-login error:", error);
-      res.status(500).json({ message: "Auto-login failed" });
+      res.status(500).json({ message: "Auto-login failed", error: error.message });
     }
   });
 

@@ -160,6 +160,15 @@ function Router() {
     );
   }
 
+  // If authentication failed and no user, show login page
+  if (!isLoading && !isAuthenticated && !user && (location === '/' || location === '/dashboard')) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Login />
+      </div>
+    );
+  }
+
   // No login screen - auto-login handles authentication
 
   return (

@@ -45,24 +45,46 @@ export function useAuth() {
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      const res = await fetch("/api/auth/user", {
-        credentials: "include",
-      });
-      
-      if (res.status === 401) {
-        // If not authenticated, try auto-login once
-        if (!autoLoginAttempted) {
-          setAutoLoginAttempted(true);
-          autoLoginMutation.mutate();
+      try {
+        const res = await fetch("/api/auth/user", {
+          credentials: "include",
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
+        
+        if (res.status === 401) {
+          // If not authenticated, try auto-login once
+          if (!autoLoginAttempted) {
+            setAutoLoginAttempted(true);
+            try {
+              await autoLoginMutation.mutateAsync();
+              // After successful auto-login, refetch user data
+              const retryRes = await fetch("/api/auth/user", {
+                credentials: "include",
+                headers: {
+                  'Cache-Control': 'no-cache',
+                },
+              });
+              if (retryRes.ok) {
+                return await retryRes.json();
+              }
+            } catch (autoLoginError) {
+              console.log("Auto-login failed, user needs to login manually");
+            }
+          }
+          return null;
         }
+        
+        if (!res.ok) {
+          throw new Error(`${res.status}: ${res.statusText}`);
+        }
+        
+        return await res.json();
+      } catch (error) {
+        console.error("Auth check error:", error);
         return null;
       }
-      
-      if (!res.ok) {
-        throw new Error(`${res.status}: ${res.statusText}`);
-      }
-      
-      return await res.json();
     },
   });
 
