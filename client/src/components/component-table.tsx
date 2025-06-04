@@ -27,7 +27,6 @@ import {
   Filter,
   Printer
 } from "lucide-react";
-import ComponentEditDialog from "@/components/component-edit-dialog";
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
 
 interface Component {
@@ -57,17 +56,15 @@ export default function ComponentTable({
 }: ComponentTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [locationFilter, setLocationFilter] = useState("");
-  const [editingComponent, setEditingComponent] = useState<Component | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [printingComponent, setPrintingComponent] = useState<Component | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const handleEditClick = (component: Component) => {
-    console.log("Edit:", component);
-    setEditingComponent(component);
-    setIsEditModalOpen(true);
-    if (onEdit) onEdit(component);
+    if (onEdit) {
+      onEdit(component);
+    }
   };
 
   const handlePrintClick = (component: Component) => {
@@ -75,10 +72,7 @@ export default function ComponentTable({
     setIsPrintModalOpen(true);
   };
 
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setEditingComponent(null);
-  };
+
 
   const filteredComponents = components.filter((component) => {
     if (!locationFilter || locationFilter === "all") return true;
@@ -339,14 +333,7 @@ export default function ComponentTable({
         </div>
       )}
 
-      {/* Component Edit Dialog */}
-      {editingComponent && (
-        <ComponentEditDialog
-          isOpen={isEditModalOpen}
-          onClose={handleCloseEditModal}
-          component={editingComponent}
-        />
-      )}
+
 
       {/* Barcode Label Printer */}
       <BarcodeLabelPrinter
