@@ -2,7 +2,7 @@
 import { Switch, Route, useLocation, Link } from "wouter";
 import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery, ErrorBoundary } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useTheme } from "@/hooks/useTheme";
-import { AlertTriangle, TrendingDown, X } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
+import { AlertTriangle, Package, TrendingDown, Bell, X } from "lucide-react";
 import Dashboard from "@/pages/dashboard";
 import MainInventory from "@/pages/main-inventory";
 import LineInventory from "@/pages/line-inventory";
@@ -27,13 +28,49 @@ import NotificationSystem from "@/components/notification-system";
 import NotificationPanel from "@/components/notification-panel";
 import OnboardingTour from "@/components/onboarding-tour";
 
+// Error Fallback Component
+function ErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="text-center p-8">
+        <div className="mb-4">
+          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Application Error
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Something went wrong. Please try refreshing the page.
+        </p>
+        <div className="space-x-4">
+          <Button onClick={resetError}>Try Again</Button>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+        <details className="mt-6 text-left">
+          <summary className="cursor-pointer text-sm text-gray-500">
+            Error Details
+          </summary>
+          <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-auto">
+            {error.message}
+          </pre>
+        </details>
+      </div>
+    </div>
+  );
+}
+
+// Enhanced notification content component with dismissible banner
 function NotificationContent() {
   const [dismissedBanners, setDismissedBanners] = useState<Set<string>>(new Set());
-  const { data: lowStockItems = [] } = useQuery({
+  const { data: lowStockItems } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
     refetchInterval: 30000,
+    retry: 1,
   });
 
+  // Show dismissible banner for critical low stock items
   const criticalItems = Array.isArray(lowStockItems) ? lowStockItems.filter((item: any) => item.quantity === 0) : [];
   const warningItems = Array.isArray(lowStockItems) ? lowStockItems.filter((item: any) => item.quantity > 0 && item.quantity <= 5) : [];
 
@@ -41,12 +78,14 @@ function NotificationContent() {
     setDismissedBanners(prev => new Set(prev).add(bannerId));
   };
 
-  if (!Array.isArray(lowStockItems) || lowStockItems.length === 0) {
-    return null;
+  // Early return if no low stock items to display
+  if (!Array.isArray(lowStockItems) || lowStockItems.length === 0 || (criticalItems.length === 0 && warningItems.length === 0)) {
+    return null; // No notification content to show
   }
 
   return (
     <div className="space-y-4">
+      {/* Critical Items Banner */}
       {criticalItems.length > 0 && !dismissedBanners.has('critical-banner') && (
         <Alert className="border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950">
           <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -78,6 +117,7 @@ function NotificationContent() {
         </Alert>
       )}
 
+      {/* Warning Items Banner */}
       {warningItems.length > 0 && !dismissedBanners.has('warning-banner') && (
         <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950">
           <TrendingDown className="h-4 w-4 text-yellow-600" />
@@ -120,6 +160,7 @@ function Router() {
   const { showTour, completeTour } = useOnboarding();
   const { theme } = useTheme();
 
+  // Apply theme to document element
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
@@ -129,6 +170,7 @@ function Router() {
     }
   }, [theme]);
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -140,6 +182,7 @@ function Router() {
     );
   }
 
+  // Show auth pages if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -158,8 +201,10 @@ function Router() {
     );
   }
 
+  // For authenticated users, show the full app
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Notification Banner Area */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-2">
           <NotificationContent />
@@ -227,11 +272,13 @@ function Router() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router />
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary fallbackRender={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Router />
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

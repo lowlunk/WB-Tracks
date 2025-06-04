@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
@@ -27,11 +27,11 @@ export function useAuth() {
         },
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         throw new Error("Auto-login failed");
       }
-      
+
       const data = await res.json();
       return data.user;
     },
@@ -42,30 +42,33 @@ export function useAuth() {
 
   const { data: user, isLoading: userLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
-    retry: false,
+    retry: 1,
     staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<User | null> => {
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
       try {
         const res = await fetch("/api/auth/user", {
           credentials: "include",
         });
-        
+
         if (res.status === 401) {
           // Try auto-login once
           try {
-            const userData = await autoLoginMutation.mutateAsync();
-            return userData;
+            if (!autoLoginMutation.isPending) {
+              const userData = await autoLoginMutation.mutateAsync();
+              return userData;
+            }
           } catch (autoLoginError) {
             console.log("Auto-login failed, user not authenticated");
             return null;
           }
         }
-        
+
         if (!res.ok) {
           console.error(`Auth check failed: ${res.status}: ${res.statusText}`);
           return null;
         }
-        
+
         const userData = await res.json();
         return userData;
       } catch (error) {
