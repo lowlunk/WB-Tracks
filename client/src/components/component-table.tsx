@@ -28,6 +28,8 @@ import {
   Printer
 } from "lucide-react";
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
+import ComponentDetailModal from "@/components/component-detail-modal";
+import ComponentEditModal from "@/components/component-edit-modal";
 
 interface Component {
   id: number;
