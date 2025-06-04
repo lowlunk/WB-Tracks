@@ -77,17 +77,17 @@ export default function ComponentDetailModal({
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('image', file);
-      
+
       const response = await fetch(`/api/components/${componentId}/photos`, {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Failed to upload photo');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -112,11 +112,11 @@ export default function ComponentDetailModal({
       const response = await fetch(`/api/components/${componentId}/photos/${photoId}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete photo');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -134,11 +134,11 @@ export default function ComponentDetailModal({
       const response = await fetch(`/api/components/${componentId}/photos/${photoId}/primary`, {
         method: 'PUT',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to set primary photo');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -207,12 +207,12 @@ export default function ComponentDetailModal({
 
   const comp = component as any;
   const inventoryItemsArray = Array.isArray(inventoryItems) ? inventoryItems : [];
-  
+
   // Calculate stock levels for this specific component only
   const totalMainStock = inventoryItemsArray
     .filter((item: any) => item.componentId === componentId && item.location?.name === "Main Inventory")
     .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-    
+
   const totalLineStock = inventoryItemsArray
     .filter((item: any) => item.componentId === componentId && item.location?.name === "Line Inventory")
     .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
@@ -226,6 +226,14 @@ export default function ComponentDetailModal({
               <Package className="h-5 w-5" />
               <span>{comp.componentNumber}</span>
             </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -262,7 +270,7 @@ export default function ComponentDetailModal({
                     <p className="text-lg">{comp.plateNumber || 'Not specified'}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Description</Label>
                   <p className="text-lg">{comp.description}</p>
@@ -380,7 +388,7 @@ export default function ComponentDetailModal({
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                
+
                 {photosLoading ? (
                   <div className="flex items-center justify-center h-32">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>

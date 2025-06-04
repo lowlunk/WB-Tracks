@@ -80,7 +80,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
         },
         body: JSON.stringify({
           ...data,
-          unitPrice: data.unitPrice ? parseFloat(data.unitPrice) : null,
+          unitPrice: data.unitPrice ? data.unitPrice.toString() : null,
         }),
       });
       if (!response.ok) {
@@ -225,9 +225,19 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {readOnly ? "View" : "Edit"} Component: {(component as any)?.componentNumber}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>
+              {readOnly ? "View" : "Edit"} Component: {(component as any)?.componentNumber}
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

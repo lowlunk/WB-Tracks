@@ -51,7 +51,7 @@ export default function TransferModal({
   const [quantity, setQuantity] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [availableQuantity, setAvailableQuantity] = useState<number>(0);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -91,7 +91,7 @@ export default function TransferModal({
         item.locationId === parseInt(fromLocationId)
       );
       setAvailableQuantity(inventoryItem?.quantity || 0);
-      
+
       // Reset quantity if it exceeds available
       if (quantity > (inventoryItem?.quantity || 0)) {
         setQuantity(1);
@@ -258,7 +258,7 @@ export default function TransferModal({
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              
+
               <Input
                 id="quantity"
                 type="number"
@@ -271,7 +271,7 @@ export default function TransferModal({
                 }}
                 className="wb-input text-center flex-1"
               />
-              
+
               <Button
                 variant="outline"
                 size="icon"
@@ -282,7 +282,7 @@ export default function TransferModal({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            
+
             {selectedComponentId && fromLocationId && (
               <p className="text-xs text-muted-foreground">
                 Available: {availableQuantity} units

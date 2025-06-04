@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Factory, Package, Zap } from "lucide-react";
 import type { Component, InventoryLocation } from "@shared/schema";
+import { X } from "lucide-react";
 
 interface ConsumeModalProps {
   isOpen: boolean;
@@ -75,12 +76,12 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
         },
         body: JSON.stringify(consumeData),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to consume items");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -88,12 +89,12 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
         title: "Success",
         description: "Items consumed for production successfully",
       });
-      
+
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/recent-activity"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      
+
       // Reset form and close
       handleClose();
     },
@@ -108,7 +109,7 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedComponentId || !selectedLocationId || !quantity) {
       toast({
         title: "Error",
@@ -158,10 +159,20 @@ export default function ConsumeModal({ isOpen, onClose, preSelectedComponent }: 
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg mx-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <Zap className="h-5 w-5 text-orange-500" />
-            Consume for Production
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+              <Zap className="h-5 w-5 text-orange-500" />
+              Consume for Production
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
