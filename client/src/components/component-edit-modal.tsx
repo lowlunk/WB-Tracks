@@ -216,7 +216,9 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Component: {component?.componentNumber}</DialogTitle>
+          <DialogTitle>
+            {readOnly ? "View" : "Edit"} Component: {(component as any)?.componentNumber}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -230,6 +232,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   name="componentNumber"
                   value={formData.componentNumber}
                   onChange={handleChange}
+                  disabled={readOnly}
                   required
                 />
               </div>
@@ -242,6 +245,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
+                  disabled={readOnly}
                   required
                 />
               </div>
@@ -254,6 +258,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
+                    disabled={readOnly}
                   />
                 </div>
 
@@ -264,6 +269,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                     name="supplier"
                     value={formData.supplier}
                     onChange={handleChange}
+                    disabled={readOnly}
                   />
                 </div>
               </div>
@@ -277,6 +283,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   step="0.01"
                   value={formData.unitPrice}
                   onChange={handleChange}
+                  disabled={readOnly}
                 />
               </div>
 
@@ -288,6 +295,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   value={formData.notes}
                   onChange={handleChange}
                   rows={3}
+                  disabled={readOnly}
                 />
               </div>
             </form>
@@ -297,16 +305,18 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Photos</h3>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadPhotoMutation.isPending}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Photo
-              </Button>
+              {!readOnly && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadPhotoMutation.isPending}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Photo
+                </Button>
+              )}
             </div>
 
             <input
@@ -336,24 +346,34 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
 
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg">
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={photo.isPrimary ? "default" : "secondary"}
-                          onClick={() => setPrimaryMutation.mutate(photo.id)}
-                          disabled={setPrimaryMutation.isPending}
-                        >
-                          <Star className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deletePhotoMutation.mutate(photo.id)}
-                          disabled={deletePhotoMutation.isPending}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                        {!readOnly && (
+                          <>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={photo.isPrimary ? "default" : "secondary"}
+                              onClick={() => setPrimaryMutation.mutate(photo.id)}
+                              disabled={setPrimaryMutation.isPending}
+                            >
+                              <Star className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deletePhotoMutation.mutate(photo.id)}
+                              disabled={deletePhotoMutation.isPending}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                        {readOnly && photo.isPrimary && (
+                          <div className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs rounded flex items-center">
+                            <Star className="h-3 w-3 mr-1" />
+                            Primary
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -365,7 +385,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   </div>
                 ))}
 
-                {validPhotos.length < 3 && (
+                {validPhotos.length < 3 && !readOnly && (
                   <div 
                     className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
@@ -380,18 +400,20 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <div className="mb-4">
-                  <Upload className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600" />
+                  <Package className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600" />
                 </div>
                 <p className="text-sm mb-4">No photos uploaded yet</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload First Photo
-                </Button>
+                {!readOnly && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload First Photo
+                  </Button>
+                )}
               </div>
             )}
           </div>
