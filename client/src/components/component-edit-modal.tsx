@@ -33,6 +33,13 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
   // Fetch component data
   const { data: component, isLoading } = useQuery({
     queryKey: ["/api/components", componentId],
+    queryFn: async () => {
+      const response = await fetch(`/api/components/${componentId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch component');
+      }
+      return response.json();
+    },
     enabled: isOpen && !!componentId,
   });
 

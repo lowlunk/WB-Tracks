@@ -44,6 +44,13 @@ export default function ComponentDetailModal({
   // Fetch component data
   const { data: component, isLoading: componentLoading } = useQuery({
     queryKey: ["/api/components", componentId],
+    queryFn: async () => {
+      const response = await fetch(`/api/components/${componentId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch component');
+      }
+      return response.json();
+    },
     enabled: isOpen && !!componentId,
   });
 
