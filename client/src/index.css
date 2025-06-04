@@ -182,7 +182,7 @@
     .wb-btn-primary {
       @apply border-2 border-blue-800;
     }
-    
+
     .wb-btn-secondary {
       @apply border-2 border-green-800;
     }
@@ -195,13 +195,26 @@
 }
 
 @layer utilities {
-  /* Mobile-first responsive utilities */
+  /* Mobile-first responsive design */
   .wb-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8;
   }
 
   .wb-grid-responsive {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4;
+  }
+
+  /* Mobile Chrome specific fixes */
+  .wb-mobile-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .wb-mobile-viewport {
+    width: 100vw;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   /* Animation utilities for better UX */
@@ -254,11 +267,11 @@
   .wb-no-print {
     display: none !important;
   }
-  
+
   .wb-print-only {
     display: block !important;
   }
-  
+
   body {
     background: white !important;
     color: black !important;

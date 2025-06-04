@@ -139,8 +139,9 @@ export default function ComponentTable({
       )}
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <Table>
+      <div className="rounded-md border overflow-hidden wb-chrome-mobile-fix">
+        <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+          <Table className="min-w-full">
           <TableHeader className="bg-gray-50 dark:bg-gray-800">
             <TableRow>
               <TableHead className="font-semibold">Component</TableHead>

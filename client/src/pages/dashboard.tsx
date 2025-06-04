@@ -120,7 +120,7 @@ export default function Dashboard() {
   const lowStockAlerts = lowStockItems?.length || 0;
 
   return (
-    <div className="wb-container py-6 space-y-8">
+    <div className="wb-container wb-mobile-safe p-2 sm:p-4 pb-20 lg:pb-4 space-y-4 sm:space-y-6">
       {/* Low Stock Alerts */}
       {lowStockAlerts > 0 && (
         <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
