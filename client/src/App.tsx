@@ -1,8 +1,7 @@
-
 import { Switch, Route, useLocation, Link } from "wouter";
 import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider, useQuery, ErrorBoundary } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -272,13 +271,13 @@ function Router() {
 
 export default function App() {
   return (
-    <ErrorBoundary fallbackRender={ErrorFallback}>
+    
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Router />
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
+    
   );
 }
