@@ -1,6 +1,7 @@
+
 # WB-Tracks: Advanced Local Inventory Management System
 
-WB-Tracks is a comprehensive inventory management system designed for production facilities, featuring intelligent tracking, user-centric design, and seamless operational workflows.
+WB-Tracks is a comprehensive inventory management system designed for production facilities, featuring intelligent tracking, user-centric design, and seamless operational workflows with real-time updates and mobile-optimized interface.
 
 ## Table of Contents
 
@@ -16,18 +17,20 @@ WB-Tracks is a comprehensive inventory management system designed for production
 
 ## Overview
 
-WB-Tracks is built to solve the challenge of managing inventory between main storage areas and production lines in manufacturing facilities. The system supports barcode/QR code scanning for efficient tracking and provides real-time visibility into inventory levels across multiple locations.
+WB-Tracks is built to solve the challenge of managing inventory between main storage areas and production lines in manufacturing facilities. The system supports barcode/QR code scanning for efficient tracking and provides real-time visibility into inventory levels across multiple locations with full mobile support.
 
 ### Key Benefits
 
 - **Real-time inventory tracking** across multiple facilities and locations
 - **Barcode/QR code integration** for fast, accurate inventory operations
-- **Mobile-responsive design** for use on tablets and smartphones
+- **Mobile-responsive design** optimized for tablets and smartphones
 - **Multi-facility support** for expanded operations
 - **Role-based access control** with admin and user permissions
 - **Low stock alerts** with configurable thresholds
 - **Comprehensive transaction history** and reporting
 - **Dark mode support** for different working environments
+- **Component photo management** with primary image selection
+- **Plate number tracking** for enhanced component identification
 
 ## Features
 
@@ -39,12 +42,15 @@ WB-Tracks is built to solve the challenge of managing inventory between main sto
 - **Real-time stock levels**: Automatic updates across all connected devices
 - **Low stock alerts**: Configurable thresholds with visual notifications
 - **Component management**: Add, edit, and organize inventory items
+- **Plate number tracking**: Additional identifier field for components
+- **Photo management**: Upload and manage component images
 
 #### Transaction Management
 - **Transfer items**: Move inventory between locations
 - **Consume items**: Track production usage separate from transfers
 - **Add inventory**: Increase stock levels for existing or new items
 - **Transaction history**: Complete audit trail of all inventory movements
+- **Real-time activity updates**: Live notifications of inventory changes
 
 #### User Management
 - **Role-based access**: Admin and standard user roles
@@ -60,8 +66,15 @@ WB-Tracks is built to solve the challenge of managing inventory between main sto
 
 ### Advanced Features
 
+#### Mobile Optimization
+- **Touch-optimized interface**: Designed for mobile devices
+- **Responsive dialogs**: Full-screen modals on mobile
+- **Touch gestures**: Swipe and tap interactions
+- **Camera integration**: Native barcode scanning on mobile browsers
+
 #### Notifications
 - **Real-time alerts**: Low stock and system notifications
+- **WebSocket updates**: Instant notifications across all connected devices
 - **Persistent history**: View past notifications and alerts
 - **Configurable thresholds**: Set custom low stock levels
 - **Visual indicators**: Color-coded alerts by severity
@@ -83,12 +96,13 @@ WB-Tracks is built to solve the challenge of managing inventory between main sto
 ### Technology Stack
 
 **Frontend:**
-- React with TypeScript
+- React 18 with TypeScript
 - Vite build system
 - TailwindCSS for styling
 - Radix UI components
 - TanStack Query for data management
 - Wouter for routing
+- WebSocket for real-time updates
 
 **Backend:**
 - Node.js with Express
@@ -97,12 +111,13 @@ WB-Tracks is built to solve the challenge of managing inventory between main sto
 - Drizzle ORM
 - WebSocket for real-time updates
 - Session-based authentication
+- Multer for file uploads
 
 **Additional Technologies:**
 - WebRTC for barcode scanning
 - SVG generation for barcode labels
 - Local storage for user preferences
-- Service worker for offline capabilities
+- Real-time notifications system
 
 ### Database Schema
 
@@ -111,7 +126,8 @@ The system uses a normalized PostgreSQL database with the following main entitie
 - **Users**: Authentication and profile information
 - **User Groups**: Role-based access control
 - **Facilities**: Multi-location support
-- **Components**: Inventory item definitions
+- **Components**: Inventory item definitions with plate numbers
+- **Component Photos**: Image management for components
 - **Inventory Items**: Stock levels by location
 - **Inventory Transactions**: Complete audit trail
 - **Sessions**: User authentication management
@@ -164,7 +180,7 @@ The system uses a normalized PostgreSQL database with the following main entitie
 1. **Create admin account**: Register the first user (automatically becomes admin)
 2. **Configure facilities**: Set up your facility information in Admin > Facilities
 3. **Add locations**: Create inventory locations (e.g., "Main Inventory", "Line Inventory")
-4. **Import components**: Add your inventory items
+4. **Import components**: Add your inventory items with photos and plate numbers
 5. **Set up user groups**: Create groups for different departments or roles
 6. **Configure notifications**: Set low stock thresholds in Settings
 
@@ -176,7 +192,7 @@ The dashboard provides an overview of your inventory system:
 
 - **Quick Stats**: Total components, inventory levels, low stock alerts
 - **Quick Actions**: Fast access to scanning, transfers, and consumption
-- **Recent Activity**: Latest transactions and changes
+- **Recent Activity**: Latest transactions and changes with expandable details
 - **Charts**: Visual representation of inventory data
 
 ### Inventory Management
@@ -187,6 +203,7 @@ The dashboard provides an overview of your inventory system:
 2. Use the search bar to find specific components
 3. View component details by clicking on any item
 4. Check stock levels and location information
+5. View component photos and plate numbers
 
 #### Adding Components
 
@@ -194,10 +211,20 @@ The dashboard provides an overview of your inventory system:
 2. Fill in component details:
    - Component number (unique identifier)
    - Description
+   - Plate number (additional identifier)
    - Category and supplier (optional)
    - Unit price and notes (optional)
 3. Upload photos if needed
-4. Save to create the component
+4. Set primary photo
+5. Save to create the component
+
+#### Managing Component Photos
+
+1. Select a component and click **Edit**
+2. Upload multiple photos using the photo section
+3. Set one photo as primary for display
+4. Delete unwanted photos
+5. Photos are stored locally on the server
 
 #### Transferring Items
 
@@ -235,6 +262,16 @@ The dashboard provides an overview of your inventory system:
    - Number of copies
 4. Generate and print labels
 
+### Mobile Usage
+
+The application is fully optimized for mobile devices:
+
+- **Touch interface**: All controls are touch-friendly
+- **Full-screen dialogs**: Modals expand to full screen on mobile
+- **Camera scanning**: Native camera access for barcode scanning
+- **Responsive tables**: Horizontal scrolling for data tables
+- **Bottom navigation**: Easy access to main sections
+
 ### Settings
 
 Access personal settings to customize your experience:
@@ -266,13 +303,6 @@ Access personal settings to customize your experience:
 3. Assign permissions to groups
 4. Add users to appropriate groups
 
-#### Assigning Users to Groups
-
-1. In the Users tab, find the user
-2. Click **Groups** button
-3. Select appropriate groups
-4. Save changes
-
 ### Facility Management
 
 #### Adding Facilities
@@ -299,6 +329,12 @@ Access personal settings to customize your experience:
 2. Set component-specific thresholds as needed
 3. Customize notification settings
 
+#### Photo Management
+
+1. Monitor photo storage usage
+2. Clean up unused photos periodically
+3. Set photo upload limits if needed
+
 #### Backup and Maintenance
 
 1. Regular database backups (recommended daily)
@@ -308,72 +344,29 @@ Access personal settings to customize your experience:
 
 ## API Documentation
 
-### Authentication Endpoints
+For detailed API documentation, see [API_REFERENCE.md](API_REFERENCE.md).
 
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/user` - Get current user info
+### Key Endpoints
 
-### Inventory Endpoints
-
-- `GET /api/components` - List all components
-- `POST /api/components` - Create new component
-- `PUT /api/components/:id` - Update component
-- `DELETE /api/components/:id` - Delete component
-
-- `GET /api/inventory` - Get inventory items
-- `POST /api/inventory` - Add inventory
-- `PUT /api/inventory` - Update inventory quantities
-
-### Transaction Endpoints
-
-- `POST /api/transactions/transfer` - Transfer items
-- `POST /api/transactions/consume` - Consume items
-- `GET /api/transactions/consumed` - Get consumption history
-
-### Admin Endpoints
-
-- `GET /api/admin/users` - List users (admin only)
-- `POST /api/admin/users` - Create user (admin only)
-- `PUT /api/admin/users/:id` - Update user (admin only)
+- **Authentication**: `/api/auth/*`
+- **Components**: `/api/components/*`
+- **Inventory**: `/api/inventory/*`
+- **Transactions**: `/api/transactions/*`
+- **Photos**: `/api/components/:id/photos/*`
+- **Admin**: `/api/admin/*`
 
 ## Deployment
 
-### Production Deployment
+For deployment instructions, see:
+- [DEPLOYMENT.md](DEPLOYMENT.md) - General deployment guide
+- [DIGITAL_OCEAN_DEPLOYMENT.md](DIGITAL_OCEAN_DEPLOYMENT.md) - Digital Ocean specific
+- [RASPBERRY_PI_INSTALLATION_RUNBOOK.md](RASPBERRY_PI_INSTALLATION_RUNBOOK.md) - Raspberry Pi setup
 
-1. **Build the application**
-   ```bash
-   npm run build
-   ```
+### Quick Deploy Options
 
-2. **Set production environment variables**
-   ```bash
-   NODE_ENV=production
-   DATABASE_URL=<production-database-url>
-   SESSION_SECRET=<secure-random-string>
-   ```
-
-3. **Deploy to your hosting platform**
-   - Upload built files
-   - Configure database connection
-   - Set up reverse proxy (nginx recommended)
-   - Configure SSL certificates
-
-### Recommended Hosting
-
-- **Cloud Platforms**: AWS, Google Cloud, Digital Ocean
-- **Database**: Managed PostgreSQL service
-- **CDN**: CloudFlare for static assets
-- **Monitoring**: Application and database monitoring
-
-### Security Considerations
-
-- Use HTTPS in production
-- Secure database connections
-- Regular security updates
-- Strong session secrets
-- Regular backups
-- Access logging and monitoring
+- **Replit**: Direct deployment with built-in database
+- **Digital Ocean**: App Platform with managed PostgreSQL
+- **Raspberry Pi**: Local network deployment for offline use
 
 ## Troubleshooting
 
@@ -391,12 +384,17 @@ Access personal settings to customize your experience:
 - Verify user exists in database
 - Check user account is active
 
-#### Barcode Scanning Issues
-- Ensure camera permissions are granted
-- Check camera hardware functionality
-- Verify good lighting conditions
-- Clean camera lens
-- Try different barcode formats
+#### Photo Upload Issues
+- Check file size limits
+- Verify upload directory permissions
+- Ensure sufficient disk space
+- Check file format support
+
+#### Mobile Issues
+- Ensure responsive design is working
+- Check camera permissions for barcode scanning
+- Verify touch controls are functional
+- Test on different devices and browsers
 
 #### Performance Issues
 - Check database query performance
@@ -421,6 +419,7 @@ Access personal settings to customize your experience:
 - User access reviews
 - Performance optimization
 - Security updates
+- Photo storage cleanup
 
 #### Data Management
 - Archive old transactions periodically
@@ -438,3 +437,14 @@ This project is proprietary software. All rights reserved.
 ## Support
 
 For technical support or questions about WB-Tracks, please contact your system administrator or the development team.
+
+## Changelog
+
+### Latest Updates
+- Added plate number field for components
+- Implemented photo management system
+- Enhanced mobile responsiveness
+- Added real-time notifications
+- Improved dashboard activity section
+- Optimized touch interface for mobile devices
+- Added comprehensive component photo management

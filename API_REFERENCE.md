@@ -1,3 +1,4 @@
+
 # WB-Tracks API Reference
 
 This document provides detailed information about the WB-Tracks REST API endpoints.
@@ -32,7 +33,12 @@ Content-Type: application/json
   "id": 1,
   "username": "admin",
   "email": "admin@example.com",
-  "role": "admin"
+  "firstName": "Admin",
+  "lastName": "User",
+  "role": "admin",
+  "isActive": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "lastLogin": "2024-01-01T12:00:00.000Z"
 }
 ```
 
@@ -52,7 +58,12 @@ GET /api/auth/user
   "id": 1,
   "username": "admin",
   "email": "admin@example.com",
-  "role": "admin"
+  "firstName": "Admin",
+  "lastName": "User",
+  "role": "admin",
+  "isActive": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "lastLogin": "2024-01-01T12:00:00.000Z"
 }
 ```
 
@@ -70,10 +81,13 @@ GET /api/components
     "id": 1,
     "componentNumber": "217520",
     "description": "3.5X119MM 2QZ BRIGADE 6MCA 050",
+    "plateNumber": "PL-001",
     "category": "Hardware",
     "supplier": "Supplier Name",
     "unitPrice": "15.99",
-    "notes": "Special handling required"
+    "notes": "Special handling required",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
   }
 ]
 ```
@@ -86,6 +100,7 @@ Content-Type: application/json
 {
   "componentNumber": "string",
   "description": "string",
+  "plateNumber": "string",
   "category": "string",
   "supplier": "string",
   "unitPrice": "string",
@@ -101,6 +116,7 @@ Content-Type: application/json
 {
   "componentNumber": "string",
   "description": "string",
+  "plateNumber": "string",
   "category": "string",
   "supplier": "string",
   "unitPrice": "string",
@@ -118,12 +134,80 @@ DELETE /api/components/:id
 GET /api/components/search?q=search_term
 ```
 
+## Component Photos
+
+### Get Component Photos
+```http
+GET /api/components/:id/photos
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "componentId": 1,
+    "filename": "component-1-photo-1.jpg",
+    "url": "/uploads/components/component-1-photo-1.jpg",
+    "isPrimary": true,
+    "uploadedAt": "2024-01-01T12:00:00.000Z"
+  }
+]
+```
+
+### Upload Component Photo
+```http
+POST /api/components/:id/photos
+Content-Type: multipart/form-data
+
+image: <image file>
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "componentId": 1,
+  "filename": "component-1-photo-1.jpg",
+  "url": "/uploads/components/component-1-photo-1.jpg",
+  "isPrimary": false,
+  "uploadedAt": "2024-01-01T12:00:00.000Z"
+}
+```
+
+### Set Primary Photo
+```http
+PUT /api/components/:componentId/photos/:photoId/primary
+```
+
+**Response:**
+```json
+{
+  "message": "Primary photo updated successfully"
+}
+```
+
+### Delete Component Photo
+```http
+DELETE /api/components/photos/:photoId
+```
+
+**Response:**
+```json
+{
+  "message": "Photo deleted successfully"
+}
+```
+
 ## Inventory
 
 ### Get Inventory Items
 ```http
 GET /api/inventory
 ```
+
+**Query Parameters:**
+- `locationId` (optional): Filter by location ID
 
 **Response:**
 ```json
@@ -133,10 +217,13 @@ GET /api/inventory
     "componentId": 1,
     "locationId": 1,
     "quantity": 250,
+    "minThreshold": 10,
+    "maxThreshold": 500,
     "component": {
       "id": 1,
       "componentNumber": "217520",
-      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050"
+      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050",
+      "plateNumber": "PL-001"
     },
     "location": {
       "id": 1,
@@ -190,9 +277,11 @@ GET /api/inventory/low-stock
     "componentId": 1,
     "locationId": 1,
     "quantity": 2,
+    "minThreshold": 10,
     "component": {
       "componentNumber": "217520",
-      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050"
+      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050",
+      "plateNumber": "PL-001"
     },
     "location": {
       "name": "Line Inventory"
@@ -225,9 +314,10 @@ Content-Type: application/json
   "fromLocationId": 1,
   "toLocationId": 2,
   "quantity": 50,
-  "type": "transfer",
+  "transactionType": "transfer",
   "notes": "Transfer to production line",
-  "createdAt": "2024-01-01T12:00:00Z"
+  "createdAt": "2024-01-01T12:00:00Z",
+  "userId": 1
 }
 ```
 
@@ -249,6 +339,41 @@ Content-Type: application/json
 GET /api/transactions
 ```
 
+### Get Recent Transactions
+```http
+GET /api/transactions/recent
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 5,
+    "componentId": 1,
+    "fromLocationId": 1,
+    "toLocationId": 2,
+    "quantity": 50,
+    "transactionType": "transfer",
+    "notes": "Transfer to production line",
+    "createdAt": "2024-01-01T12:00:00Z",
+    "component": {
+      "componentNumber": "217520",
+      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050",
+      "plateNumber": "PL-001"
+    },
+    "fromLocation": {
+      "name": "Main Inventory"
+    },
+    "toLocation": {
+      "name": "Line Inventory"
+    },
+    "user": {
+      "username": "admin"
+    }
+  }
+]
+```
+
 ### Get Consumed Items
 ```http
 GET /api/transactions/consumed
@@ -262,14 +387,15 @@ GET /api/transactions/consumed
     "componentId": 1,
     "fromLocationId": 2,
     "quantity": 10,
-    "type": "consume",
+    "transactionType": "consume",
     "notes": "Used in production batch #123",
     "createdAt": "2024-01-01T12:00:00Z",
     "component": {
       "componentNumber": "217520",
-      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050"
+      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050",
+      "plateNumber": "PL-001"
     },
-    "location": {
+    "fromLocation": {
       "name": "Line Inventory"
     }
   }
@@ -290,13 +416,17 @@ GET /api/locations
     "id": 1,
     "facilityId": 1,
     "name": "Main Inventory",
-    "description": "Central storage area"
+    "description": "Central storage area",
+    "locationType": "main",
+    "isActive": true
   },
   {
     "id": 2,
     "facilityId": 1,
     "name": "Line Inventory",
-    "description": "Production line stock"
+    "description": "Production line stock",
+    "locationType": "line",
+    "isActive": true
   }
 ]
 ```
@@ -314,7 +444,8 @@ Content-Type: application/json
 {
   "facilityId": 1,
   "name": "Staging Area",
-  "description": "Temporary storage"
+  "description": "Temporary storage",
+  "locationType": "storage"
 }
 ```
 
@@ -335,7 +466,9 @@ GET /api/facilities
     "address": "123 Industrial Blvd",
     "city": "Kansas City",
     "state": "MO",
-    "country": "USA"
+    "country": "USA",
+    "contactEmail": "contact@kcfoam.com",
+    "contactPhone": "+1-555-0123"
   }
 ]
 ```
@@ -351,7 +484,9 @@ Content-Type: application/json
   "address": "456 Manufacturing St",
   "city": "Springfield",
   "state": "IL",
-  "country": "USA"
+  "country": "USA",
+  "contactEmail": "contact@newfacility.com",
+  "contactPhone": "+1-555-0456"
 }
 ```
 
@@ -368,7 +503,9 @@ GET /api/dashboard/stats
   "totalComponents": 155,
   "mainInventoryTotal": 1250,
   "lineInventoryTotal": 350,
-  "lowStockAlerts": 2
+  "lowStockAlerts": 2,
+  "totalTransactions": 1024,
+  "recentTransactions": 15
 }
 ```
 
@@ -386,17 +523,21 @@ GET /api/dashboard/recent-activity
     "fromLocationId": 1,
     "toLocationId": 2,
     "quantity": 50,
-    "type": "transfer",
+    "transactionType": "transfer",
     "createdAt": "2024-01-01T12:00:00Z",
     "component": {
       "componentNumber": "217520",
-      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050"
+      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050",
+      "plateNumber": "PL-001"
     },
     "fromLocation": {
       "name": "Main Inventory"
     },
     "toLocation": {
       "name": "Line Inventory"
+    },
+    "user": {
+      "username": "admin"
     }
   }
 ]
@@ -420,9 +561,12 @@ GET /api/admin/users
     "id": 1,
     "username": "admin",
     "email": "admin@example.com",
+    "firstName": "Admin",
+    "lastName": "User",
     "role": "admin",
     "isActive": true,
-    "lastLogin": "2024-01-01T12:00:00Z"
+    "lastLogin": "2024-01-01T12:00:00Z",
+    "createdAt": "2024-01-01T00:00:00Z"
   }
 ]
 ```
@@ -435,6 +579,8 @@ Content-Type: application/json
 {
   "username": "newuser",
   "email": "user@example.com",
+  "firstName": "New",
+  "lastName": "User",
   "password": "temporary123",
   "role": "user",
   "isActive": true
@@ -449,6 +595,8 @@ Content-Type: application/json
 {
   "username": "updateduser",
   "email": "updated@example.com",
+  "firstName": "Updated",
+  "lastName": "User",
   "role": "user",
   "isActive": true
 }
@@ -473,7 +621,8 @@ GET /api/admin/groups
     "id": 1,
     "name": "Shipping",
     "description": "Shipping department personnel",
-    "permissions": ["inventory:read", "transactions:create"]
+    "permissions": ["inventory:read", "transactions:create"],
+    "createdAt": "2024-01-01T00:00:00Z"
   }
 ]
 ```
@@ -500,37 +649,6 @@ POST /api/admin/test-low-inventory
 #### Test Activity Notification
 ```http
 POST /api/admin/test-activity
-```
-
-## File Upload
-
-### Upload Component Photo
-```http
-POST /api/components/:id/photos
-Content-Type: multipart/form-data
-
-file: <image file>
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "componentId": 1,
-  "filename": "component-photo.jpg",
-  "url": "/uploads/component-photo.jpg",
-  "isPrimary": false
-}
-```
-
-### Delete Component Photo
-```http
-DELETE /api/components/photos/:photoId
-```
-
-### Set Primary Photo
-```http
-PUT /api/components/:componentId/photos/:photoId/primary
 ```
 
 ## Error Responses
@@ -571,6 +689,22 @@ All endpoints return appropriate HTTP status codes and error messages:
 }
 ```
 
+### 413 Request Entity Too Large
+```json
+{
+  "error": "File too large",
+  "message": "Maximum file size is 5MB"
+}
+```
+
+### 415 Unsupported Media Type
+```json
+{
+  "error": "Unsupported file type",
+  "message": "Only JPEG, PNG, and WebP images are supported"
+}
+```
+
 ### 500 Internal Server Error
 ```json
 {
@@ -585,6 +719,7 @@ API requests are subject to rate limiting:
 - **Standard users**: 100 requests per minute
 - **Admin users**: 200 requests per minute
 - **Burst limit**: 10 requests per second
+- **File uploads**: 10 uploads per minute
 
 Rate limit headers are included in responses:
 ```
@@ -606,7 +741,8 @@ WB-Tracks supports real-time updates via WebSocket connection at `/ws`:
   "data": {
     "componentId": 1,
     "locationId": 1,
-    "quantity": 200
+    "quantity": 200,
+    "timestamp": "2024-01-01T12:00:00Z"
   }
 }
 ```
@@ -619,7 +755,11 @@ WB-Tracks supports real-time updates via WebSocket connection at `/ws`:
     "componentId": 1,
     "locationId": 2,
     "quantity": 2,
-    "threshold": 5
+    "threshold": 5,
+    "component": {
+      "componentNumber": "217520",
+      "description": "3.5X119MM 2QZ BRIGADE 6MCA 050"
+    }
   }
 }
 ```
@@ -630,14 +770,47 @@ WB-Tracks supports real-time updates via WebSocket connection at `/ws`:
   "type": "transaction:created",
   "data": {
     "id": 5,
-    "type": "transfer",
+    "transactionType": "transfer",
     "componentId": 1,
     "fromLocationId": 1,
     "toLocationId": 2,
-    "quantity": 50
+    "quantity": 50,
+    "timestamp": "2024-01-01T12:00:00Z"
   }
 }
 ```
+
+#### Photo Updated
+```json
+{
+  "type": "photo:updated",
+  "data": {
+    "componentId": 1,
+    "photoId": 1,
+    "action": "uploaded|deleted|primary_set",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+## File Upload Specifications
+
+### Supported File Types
+- **Images**: JPEG, PNG, WebP
+- **Maximum Size**: 5MB per file
+- **Maximum Files**: 10 photos per component
+
+### Upload Requirements
+- **Content-Type**: `multipart/form-data`
+- **Field Name**: `image`
+- **File Validation**: Automatic type and size validation
+- **Storage**: Local file system with organized directory structure
+
+### Image Processing
+- **Automatic Optimization**: Images are optimized for web display
+- **Thumbnail Generation**: Ready for future implementation
+- **Unique Naming**: Automatic generation of unique filenames
+- **URL Generation**: Automatic public URL assignment
 
 ## Data Types
 
@@ -647,12 +820,25 @@ interface Component {
   id: number;
   componentNumber: string;
   description: string;
+  plateNumber?: string;
   category?: string;
   supplier?: string;
   unitPrice?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+```
+
+### ComponentPhoto
+```typescript
+interface ComponentPhoto {
+  id: number;
+  componentId: number;
+  filename: string;
+  url: string;
+  isPrimary: boolean;
+  uploadedAt: Date;
 }
 ```
 
@@ -663,6 +849,8 @@ interface InventoryItem {
   componentId: number;
   locationId: number;
   quantity: number;
+  minThreshold?: number;
+  maxThreshold?: number;
   component: Component;
   location: Location;
 }
@@ -676,10 +864,14 @@ interface Transaction {
   fromLocationId?: number;
   toLocationId?: number;
   quantity: number;
-  type: 'transfer' | 'consume' | 'add';
+  transactionType: 'transfer' | 'consume' | 'add' | 'remove' | 'adjust';
   notes?: string;
   createdAt: Date;
   userId: number;
+  component?: Component;
+  fromLocation?: Location;
+  toLocation?: Location;
+  user?: User;
 }
 ```
 
@@ -689,6 +881,8 @@ interface User {
   id: number;
   username: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   role: 'admin' | 'user';
   isActive: boolean;
   lastLogin?: Date;
@@ -696,4 +890,4 @@ interface User {
 }
 ```
 
-This API reference covers all available endpoints in the WB-Tracks system. For implementation examples and more detailed usage, refer to the main documentation.
+This API reference covers all available endpoints in the WB-Tracks system including the new photo management features and enhanced mobile support. For implementation examples and more detailed usage, refer to the main documentation.
