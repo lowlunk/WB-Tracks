@@ -261,7 +261,11 @@ export default function ComponentTable({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleEditClick(component)}
+                      onClick={() => {
+                        if (component && onEdit) {
+                          onEdit(component);
+                        }
+                      }}
                       className="wb-focus-visible"
                       title="Edit Component"
                     >

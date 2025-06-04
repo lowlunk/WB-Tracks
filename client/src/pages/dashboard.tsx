@@ -10,6 +10,8 @@ import BarcodeScanner from "@/components/barcode-scanner";
 import TransferModal from "@/components/transfer-modal";
 import ConsumeModal from "@/components/consume-modal";
 import AddComponentDialog from "@/components/add-component-dialog";
+import AddInventoryDialog from "@/components/add-inventory-dialog";
+import ComponentDetailModal from "@/components/component-detail-modal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   QrCode,
@@ -26,26 +28,23 @@ import {
   Zap,
   Clock
 } from "lucide-react";
-import AddInventoryDialog from "@/components/add-inventory-dialog";
-import ComponentDetailModal from "@/components/component-detail-modal";
-
-// Helper function to get activity icons
-const getActivityIcon = (transactionType: string) => {
-  switch (transactionType) {
-    case 'add':
-      return <TrendingUp className="h-4 w-4 text-green-500" />;
-    case 'remove':
-      return <TrendingDown className="h-4 w-4 text-red-500" />;
-    case 'transfer':
-      return <ArrowRightLeft className="h-4 w-4 text-blue-500" />;
-    case 'consume':
-      return <Zap className="h-4 w-4 text-orange-500" />;
-    default:
-      return <Activity className="h-4 w-4 text-gray-500" />;
-  }
-};
 
 export default function Dashboard() {
+  // Helper function to get activity icons
+  const getActivityIcon = (transactionType: string) => {
+    switch (transactionType) {
+      case 'add':
+        return <TrendingUp className="h-4 w-4 text-green-500" />;
+      case 'remove':
+        return <TrendingDown className="h-4 w-4 text-red-500" />;
+      case 'transfer':
+        return <ArrowRightLeft className="h-4 w-4 text-blue-500" />;
+      case 'consume':
+        return <Zap className="h-4 w-4 text-orange-500" />;
+      default:
+        return <Activity className="h-4 w-4 text-gray-500" />;
+    }
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
