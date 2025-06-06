@@ -31,23 +31,21 @@ import {
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
 import ComponentDetailModal from "@/components/component-detail-modal";
 import ComponentEditModal from "@/components/component-edit-modal";
+import ComponentIcon from "@/components/component-icon";
+import type { Component } from "@shared/schema";
 
-interface Component {
-  id: number;
-  componentNumber: string;
-  description: string;
-  plateNumber?: string;
+interface ComponentWithStock extends Component {
   mainStock?: number;
   lineStock?: number;
 }
 
 interface ComponentTableProps {
-  components: Component[];
+  components: ComponentWithStock[];
   isLoading: boolean;
   showLocationFilter?: boolean;
-  onEdit: (component: Component) => void;
-  onTransfer: (component: Component) => void;
-  onViewDetails: (component: Component) => void;
+  onEdit: (component: ComponentWithStock) => void;
+  onTransfer: (component: ComponentWithStock) => void;
+  onViewDetails: (component: ComponentWithStock) => void;
 }
 
 export default function ComponentTable({
@@ -87,9 +85,10 @@ export default function ComponentTable({
 
 
   const filteredComponents = components.filter((component) => {
+    const comp = component as ComponentWithStock;
     if (!locationFilter || locationFilter === "all") return true;
-    if (locationFilter === "main") return (component.mainStock || 0) > 0;
-    if (locationFilter === "line") return (component.lineStock || 0) > 0;
+    if (locationFilter === "main") return (comp.mainStock || 0) > 0;
+    if (locationFilter === "line") return (comp.lineStock || 0) > 0;
     return true;
   });
 
@@ -171,18 +170,16 @@ export default function ComponentTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedComponents.map((component) => (
+            {paginatedComponents.map((component) => {
+              const comp = component as ComponentWithStock;
+              return (
               <TableRow 
-                key={component.id} 
+                key={comp.id} 
                 className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <TableCell>
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center relative">
-                      <Package className="h-5 w-5 text-gray-500" />
-                      {/* Small indicator for photos - you can expand this later */}
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full opacity-0" />
-                    </div>
+                    <ComponentIcon componentId={component.id} size="md" />
                     <div>
                       <Button
                         variant="ghost"
@@ -192,7 +189,7 @@ export default function ComponentTable({
                         {component.componentNumber}
                       </Button>
                       <div className="text-xs text-gray-500">
-                        Ready for photos
+                        Click to view details
                       </div>
                     </div>
                   </div>
@@ -302,7 +299,8 @@ export default function ComponentTable({
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
           </Table>
         </div>
