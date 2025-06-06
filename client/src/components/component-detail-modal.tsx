@@ -19,7 +19,9 @@ import {
   Truck, 
   Minus,
   Plus,
-  Edit
+  Edit,
+  Maximize2,
+  ZoomIn
 } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
@@ -40,6 +42,7 @@ export default function ComponentDetailModal({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [expandedPhoto, setExpandedPhoto] = useState<any>(null);
 
   // Fetch component data
   const { data: component, isLoading: componentLoading } = useQuery({
@@ -71,8 +74,6 @@ export default function ComponentDetailModal({
       return data;
     },
     enabled: isOpen && !!componentId,
-    staleTime: 0,
-    cacheTime: 0,
   });
 
   // Fetch inventory data for this component
@@ -425,13 +426,28 @@ export default function ComponentDetailModal({
                         <img
                           src={photo.imageUrl}
                           alt="Component photo"
-                          className="w-full h-32 object-cover rounded-lg border"
+                          className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
+                          onClick={() => setExpandedPhoto(photo)}
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setPrimaryPhotoMutation.mutate(photo.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedPhoto(photo);
+                            }}
+                            className="text-xs"
+                          >
+                            <ZoomIn className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPrimaryPhotoMutation.mutate(photo.id);
+                            }}
                             disabled={photo.isPrimary}
                             className="text-xs"
                           >
@@ -440,7 +456,10 @@ export default function ComponentDetailModal({
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => deletePhotoMutation.mutate(photo.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deletePhotoMutation.mutate(photo.id);
+                            }}
                             className="text-xs"
                           >
                             <X className="h-3 w-3" />
@@ -503,6 +522,50 @@ export default function ComponentDetailModal({
           </TabsContent>
         </Tabs>
       </DialogContent>
+      
+      {/* Photo Expansion Modal */}
+      {expandedPhoto && (
+        <Dialog open={!!expandedPhoto} onOpenChange={() => setExpandedPhoto(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+            <div className="relative">
+              <img
+                src={expandedPhoto.imageUrl}
+                alt="Expanded component photo"
+                className="w-full h-auto max-h-[85vh] object-contain"
+              />
+              <div className="absolute top-4 right-4 flex space-x-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setPrimaryPhotoMutation.mutate(expandedPhoto.id)}
+                  disabled={expandedPhoto.isPrimary}
+                  className="bg-white/90 hover:bg-white"
+                >
+                  {expandedPhoto.isPrimary ? (
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  ) : (
+                    <Star className="h-4 w-4" />
+                  )}
+                  {expandedPhoto.isPrimary ? "Primary" : "Set as Primary"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setExpandedPhoto(null)}
+                  className="bg-white/90 hover:bg-white"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              {expandedPhoto.caption && (
+                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-4">
+                  <p className="text-sm">{expandedPhoto.caption}</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 }
