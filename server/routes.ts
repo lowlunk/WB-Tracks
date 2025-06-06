@@ -403,12 +403,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const componentId = parseInt(req.params.id);
       const userId = (req.session as any).userId;
 
+      console.log("Photo upload request:", { componentId, userId, file: req.file });
+
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
       }
 
       const imageUrl = `/uploads/components/${req.file.filename}`;
       const caption = req.body.caption || '';
+
+      console.log("Saving photo to database:", { componentId, imageUrl, caption, uploadedBy: userId });
 
       const photo = await storage.uploadComponentPhoto({
         componentId,
@@ -417,6 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         uploadedBy: userId,
       });
 
+      console.log("Photo saved successfully:", photo);
       res.json(photo);
     } catch (error) {
       console.error("Error uploading component photo:", error);
