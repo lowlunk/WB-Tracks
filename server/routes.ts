@@ -65,6 +65,9 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Static file serving for uploads
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
   // Session middleware
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
