@@ -36,14 +36,14 @@ const LABEL_SIZES = [
 ];
 
 const BARCODE_TYPES = [
-  { value: "code128", label: "Code 128 (General purpose)", description: "Most versatile, handles numbers and text" },
-  { value: "code39", label: "Code 39 (Alphanumeric)", description: "Widely supported, letters and numbers" },
-  { value: "ean13", label: "EAN-13 (Product codes)", description: "Standard for retail products" },
-  { value: "upc", label: "UPC-A (US products)", description: "Common in North America" },
-  { value: "code93", label: "Code 93 (Compact)", description: "Higher density than Code 39" },
-  { value: "itf", label: "ITF (Interleaved 2 of 5)", description: "For numeric data only" },
-  { value: "datamatrix", label: "Data Matrix (2D)", description: "Small size, high data capacity" },
-  { value: "pdf417", label: "PDF417 (2D)", description: "High capacity 2D barcode" },
+  { value: "qrcode", label: "QR Code (2D)", description: "Most popular 2D code, high capacity", category: "2D" },
+  { value: "datamatrix", label: "Data Matrix (2D)", description: "Compact 2D code, industrial standard", category: "2D" },
+  { value: "pdf417", label: "PDF417 (2D)", description: "High capacity 2D barcode", category: "2D" },
+  { value: "code128", label: "Code 128 (1D)", description: "Most versatile linear barcode", category: "1D" },
+  { value: "code39", label: "Code 39 (1D)", description: "Widely supported alphanumeric", category: "1D" },
+  { value: "ean13", label: "EAN-13 (1D)", description: "Standard for retail products", category: "1D" },
+  { value: "upc", label: "UPC-A (1D)", description: "Common in North America", category: "1D" },
+  { value: "code93", label: "Code 93 (1D)", description: "Higher density than Code 39", category: "1D" },
 ];
 
 export default function BarcodeLabelPrinter({ 

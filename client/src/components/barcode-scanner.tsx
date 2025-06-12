@@ -20,8 +20,12 @@ import {
   Keyboard, 
   CheckCircle,
   AlertTriangle,
-  Package
+  Package,
+  QrCode,
+  Flashlight,
+  FlashlightOff
 } from "lucide-react";
+import { BrowserMultiFormatReader, BarcodeFormat } from "@zxing/library";
 
 interface BarcodeScannerProps {
   isOpen: boolean;
@@ -34,10 +38,175 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
   const [manualEntry, setManualEntry] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [scannedComponent, setScannedComponent] = useState<any>(null);
+  const [hasFlashlight, setHasFlashlight] = useState(false);
+  const [flashlightOn, setFlashlightOn] = useState(false);
+  const [selectedCamera, setSelectedCamera] = useState<string>("");
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Initialize camera devices
+  useEffect(() => {
+    if (isOpen) {
+      initializeCameras();
+    }
+    return () => {
+      cleanup();
+    };
+  }, [isOpen]);
+
+  const initializeCameras = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      setAvailableCameras(videoDevices);
+      
+      if (videoDevices.length > 0) {
+        // Prefer rear camera if available
+        const rearCamera = videoDevices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('rear')
+        );
+        setSelectedCamera(rearCamera?.deviceId || videoDevices[0].deviceId);
+      }
+    } catch (error) {
+      console.error('Error enumerating devices:', error);
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera devices",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const initializeCodeReader = () => {
+    if (!codeReaderRef.current) {
+      codeReaderRef.current = new BrowserMultiFormatReader();
+      // Support multiple barcode formats including 2D codes
+      const hints = new Map();
+      hints.set(2, [
+        BarcodeFormat.QR_CODE,
+        BarcodeFormat.DATA_MATRIX,
+        BarcodeFormat.PDF_417,
+        BarcodeFormat.CODE_128,
+        BarcodeFormat.CODE_39,
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.UPC_E,
+      ]);
+      codeReaderRef.current.hints = hints;
+    }
+  };
+
+  const startCamera = async () => {
+    try {
+      setIsScanning(true);
+      initializeCodeReader();
+      
+      if (!videoRef.current || !codeReaderRef.current) return;
+
+      const constraints = {
+        video: {
+          deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
+          facingMode: selectedCamera ? undefined : { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+      
+      // Check for flashlight capability
+      const track = stream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities();
+      setHasFlashlight('torch' in capabilities);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        
+        // Start barcode scanning
+        codeReaderRef.current.decodeFromVideoDevice(
+          selectedCamera || null,
+          videoRef.current,
+          (result, error) => {
+            if (result) {
+              const barcodeText = result.getText();
+              handleBarcodeDetected(barcodeText);
+            }
+            if (error && !(error.name === 'NotFoundException')) {
+              console.warn('Barcode scanning error:', error);
+            }
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Camera initialization error:', error);
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera. Please check permissions.",
+        variant: "destructive",
+      });
+      setIsScanning(false);
+    }
+  };
+
+  const stopCamera = () => {
+    setIsScanning(false);
+    
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    
+    setFlashlightOn(false);
+  };
+
+  const toggleFlashlight = async () => {
+    if (!streamRef.current || !hasFlashlight) return;
+    
+    try {
+      const track = streamRef.current.getVideoTracks()[0];
+      // Use applyConstraints with advanced constraints for torch
+      await track.applyConstraints({
+        advanced: [{ torch: !flashlightOn } as any]
+      });
+      setFlashlightOn(!flashlightOn);
+    } catch (error) {
+      console.error('Flashlight error:', error);
+      toast({
+        title: "Flashlight Error",
+        description: "Unable to control flashlight",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const cleanup = () => {
+    stopCamera();
+    if (codeReaderRef.current) {
+      codeReaderRef.current = null;
+    }
+  };
+
+  const handleBarcodeDetected = (barcode: string) => {
+    if (barcode && barcode.trim()) {
+      lookupMutation.mutate(barcode.trim());
+    }
+  };
 
   const lookupMutation = useMutation({
     mutationFn: async (barcode: string) => {
@@ -52,48 +221,15 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
         description: `Found ${component.componentNumber} - ${component.description}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Component Not Found",
-        description: error.message || "The scanned barcode was not found in the database.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment", // Use back camera on mobile
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setIsScanning(true);
-      }
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      toast({
-        title: "Camera Error",
-        description: "Unable to access camera. Please check permissions or use manual entry.",
+        description: "No component found with this barcode. Try manual entry or check the code.",
         variant: "destructive",
       });
       setManualEntry(true);
     }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    setIsScanning(false);
-  };
+  });
 
   const handleManualLookup = () => {
     if (barcodeInput.trim()) {
@@ -117,49 +253,14 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
     onClose();
   };
 
-  // Cleanup camera when component unmounts or modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      stopCamera();
-    }
-    return () => {
-      stopCamera();
-    };
-  }, [isOpen]);
-
-  // Simulate barcode detection (in a real app, this would use a barcode scanning library)
-  useEffect(() => {
-    if (isScanning && videoRef.current) {
-      // In a production app, you would integrate with a barcode scanning library like:
-      // - @zxing/library
-      // - quagga2
-      // - html5-qrcode
-      
-      // For now, we'll simulate with a click handler
-      const handleVideoClick = () => {
-        // Simulate finding a barcode - in reality this would be automatic
-        const simulatedBarcode = "217520"; // This would come from the scanning library
-        lookupMutation.mutate(simulatedBarcode);
-      };
-
-      videoRef.current.addEventListener('click', handleVideoClick);
-      
-      return () => {
-        if (videoRef.current) {
-          videoRef.current.removeEventListener('click', handleVideoClick);
-        }
-      };
-    }
-  }, [isScanning, lookupMutation]);
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md mx-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              <Camera className="h-5 w-5" />
-              Scan Barcode
+              <QrCode className="h-5 w-5" />
+              Scan Barcode/QR Code
             </DialogTitle>
             <Button
               variant="ghost"
@@ -176,175 +277,218 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
           {/* Camera Preview or Manual Entry */}
           {!manualEntry && !scannedComponent ? (
             <>
-              <div className="relative bg-gray-900 dark:bg-gray-800 rounded-lg overflow-hidden aspect-square">
+              {/* Camera Selection */}
+              {availableCameras.length > 1 && (
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm">Camera:</Label>
+                  <select
+                    value={selectedCamera}
+                    onChange={(e) => setSelectedCamera(e.target.value)}
+                    className="text-sm border rounded px-2 py-1"
+                    disabled={isScanning}
+                  >
+                    {availableCameras.map((camera) => (
+                      <option key={camera.deviceId} value={camera.deviceId}>
+                        {camera.label || `Camera ${camera.deviceId.slice(0, 8)}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="relative bg-gray-900 dark:bg-gray-800 rounded-lg overflow-hidden aspect-video">
                 {isScanning ? (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-cover"
-                    onClick={() => {
-                      // In a real app, this would be handled by the barcode scanning library
-                      toast({
-                        title: "Scanning...",
-                        description: "Position the barcode in the center of the frame",
-                      });
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white">
-                    <div className="text-center">
-                      <Camera className="h-16 w-16 mx-auto mb-4 opacity-75" />
-                      <p className="text-lg font-medium mb-2">Camera Preview</p>
-                      <p className="text-sm opacity-75">Position barcode in the center</p>
+                  <>
+                    <video
+                      ref={videoRef}
+                      className="w-full h-full object-cover"
+                      playsInline
+                      muted
+                    />
+                    {/* Scanning overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="border-2 border-green-400 w-64 h-64 rounded-lg animate-pulse">
+                        <div className="w-full h-full border border-green-400 rounded-lg opacity-50"></div>
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {isScanning && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-48 h-48 border-2 border-white border-dashed rounded-lg opacity-75" />
+                    {/* Controls overlay */}
+                    <div className="absolute top-4 right-4 flex space-x-2">
+                      {hasFlashlight && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={toggleFlashlight}
+                          className="bg-black/50 hover:bg-black/70 text-white"
+                        >
+                          {flashlightOn ? (
+                            <FlashlightOff className="h-4 w-4" />
+                          ) : (
+                            <Flashlight className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={stopCamera}
+                        className="bg-black/50 hover:bg-black/70 text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {/* Scanning indicator */}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <div className="bg-black/70 text-white px-3 py-2 rounded text-sm text-center">
+                        <QrCode className="h-4 w-4 inline mr-2" />
+                        Scanning for barcodes and QR codes...
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-white">
+                    <Camera className="h-16 w-16 mb-4 opacity-50" />
+                    <p className="text-center mb-4">
+                      Position barcode or QR code within camera view
+                    </p>
+                    <Button
+                      onClick={startCamera}
+                      className="wb-btn-primary"
+                      disabled={availableCameras.length === 0}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Camera
+                    </Button>
                   </div>
                 )}
               </div>
 
               <div className="space-y-3">
-                {!isScanning ? (
-                  <Button
-                    onClick={startCamera}
-                    className="w-full wb-btn-primary wb-touch-target"
-                    disabled={lookupMutation.isPending}
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Scanning
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={stopCamera}
-                    variant="outline"
-                    className="w-full wb-touch-target"
-                  >
-                    Stop Scanning
-                  </Button>
-                )}
-                
                 <Button
-                  onClick={() => setManualEntry(true)}
                   variant="outline"
-                  className="w-full wb-touch-target"
+                  onClick={() => setManualEntry(true)}
+                  className="w-full"
                 >
                   <Keyboard className="h-4 w-4 mr-2" />
                   Manual Entry
                 </Button>
               </div>
             </>
-          ) : manualEntry && !scannedComponent ? (
-            <>
-              <div className="space-y-4">
+          ) : null}
+
+          {/* Manual Entry Mode */}
+          {manualEntry && !scannedComponent ? (
+            <div className="space-y-4">
+              <div className="text-center">
+                <Keyboard className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <h3 className="font-semibold">Enter Barcode Manually</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Type or paste the barcode number
+                </p>
+              </div>
+
+              <div className="space-y-3">
                 <div>
-                  <Label htmlFor="barcode-input" className="text-sm font-medium">
-                    Component Number / Barcode
-                  </Label>
+                  <Label htmlFor="barcode-input">Barcode/Component Number</Label>
                   <Input
                     id="barcode-input"
                     value={barcodeInput}
                     onChange={(e) => setBarcodeInput(e.target.value)}
-                    placeholder="Enter component number..."
-                    className="wb-input mt-2"
+                    placeholder="Enter barcode or component number"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleManualLookup();
                       }
                     }}
+                    className="text-center font-mono"
+                    autoFocus
                   />
                 </div>
-              </div>
 
-              <div className="flex space-x-3">
-                <Button
-                  onClick={() => setManualEntry(false)}
-                  variant="outline"
-                  className="flex-1 wb-touch-target"
-                >
-                  Back to Camera
-                </Button>
-                <Button
-                  onClick={handleManualLookup}
-                  disabled={!barcodeInput.trim() || lookupMutation.isPending}
-                  className="flex-1 wb-btn-primary wb-touch-target"
-                >
-                  {lookupMutation.isPending ? "Looking up..." : "Lookup"}
-                </Button>
-              </div>
-            </>
-          ) : scannedComponent ? (
-            <>
-              <Card className="wb-card">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Component Found!</h3>
-                      <p className="text-sm text-muted-foreground">Scanned successfully</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Package className="h-5 w-5 text-gray-500" />
-                      <div>
-                        <p className="font-medium">{scannedComponent.componentNumber}</p>
-                        <p className="text-sm text-muted-foreground">Component Number</p>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium mb-1">Description</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {scannedComponent.description}
-                      </p>
-                    </div>
-                    
-                    <div className="pt-2">
-                      <Badge variant="outline" className="wb-badge-success">
-                        Ready to use
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex space-x-3">
-                <Button
-                  onClick={() => {
-                    setScannedComponent(null);
-                    setManualEntry(false);
-                  }}
-                  variant="outline"
-                  className="flex-1 wb-touch-target"
-                >
-                  Scan Another
-                </Button>
-                <Button
-                  onClick={handleUseComponent}
-                  className="flex-1 wb-btn-primary wb-touch-target"
-                >
-                  Use Component
-                </Button>
-              </div>
-            </>
-          ) : null}
-
-          {/* Loading state */}
-          {lookupMutation.isPending && (
-            <div className="text-center py-4">
-              <div className="inline-flex items-center space-x-2 text-sm text-muted-foreground">
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                <span>Looking up component...</span>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleManualLookup}
+                    disabled={!barcodeInput.trim() || lookupMutation.isPending}
+                    className="flex-1"
+                  >
+                    {lookupMutation.isPending ? "Searching..." : "Search"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setManualEntry(false)}
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
+          ) : null}
+
+          {/* Scanned Component Display */}
+          {scannedComponent ? (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <CheckCircle className="h-8 w-8 text-green-500" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div>
+                      <Badge variant="secondary" className="mb-2">
+                        {scannedComponent.componentNumber}
+                      </Badge>
+                      <h3 className="font-semibold">{scannedComponent.description}</h3>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                      {scannedComponent.category && (
+                        <div>Category: {scannedComponent.category}</div>
+                      )}
+                      {scannedComponent.supplier && (
+                        <div>Supplier: {scannedComponent.supplier}</div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        onClick={handleUseComponent}
+                        className="flex-1"
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        Use This Component
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setScannedComponent(null);
+                          setManualEntry(false);
+                        }}
+                      >
+                        Scan Again
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {/* Error State */}
+          {lookupMutation.isError && (
+            <Card className="border-red-200 dark:border-red-800">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-red-700 dark:text-red-300">
+                      Component Not Found
+                    </h3>
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      No component found with this barcode. Please check the code or try manual entry.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </DialogContent>

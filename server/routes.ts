@@ -26,10 +26,12 @@ const requireAuth = (req: any, res: any, next: any) => {
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.diskStorage({
-    destination: async (req, file, cb) => {
+    destination: (req, file, cb) => {
       const uploadDir = path.join(process.cwd(), 'uploads', 'components');
+      // Use sync mkdir to avoid callback issues
       try {
-        await fs.mkdir(uploadDir, { recursive: true });
+        const fs_sync = require('fs');
+        fs_sync.mkdirSync(uploadDir, { recursive: true });
         cb(null, uploadDir);
       } catch (error) {
         cb(error as Error, uploadDir);
@@ -37,13 +39,20 @@ const upload = multer({
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+      const filename = file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname);
+      console.log('Generated filename:', filename);
+      cb(null, filename);
     }
   }),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
+    console.log('File filter check:', { 
+      originalname: file.originalname, 
+      mimetype: file.mimetype, 
+      size: file.size 
+    });
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
