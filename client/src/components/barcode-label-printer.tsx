@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Printer, Download, Eye, Copy } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Printer, Download, Eye, Copy, QrCode, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import QRCode from "qrcode";
 import type { Component } from "@shared/schema";
 
 interface BarcodeLabelPrinterProps {
@@ -26,6 +28,9 @@ interface LabelData {
   includeQR: boolean;
   includeLogo: boolean;
   barcodeType: string;
+  errorCorrectionLevel: string;
+  includeDataMatrix: boolean;
+  customText: string;
 }
 
 const LABEL_SIZES = [
@@ -61,7 +66,10 @@ export default function BarcodeLabelPrinter({
     quantity: 1,
     includeQR: true,
     includeLogo: true,
-    barcodeType: "code128",
+    barcodeType: "qrcode",
+    errorCorrectionLevel: "M",
+    includeDataMatrix: false,
+    customText: "",
   });
 
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -95,23 +103,61 @@ export default function BarcodeLabelPrinter({
     return barcodePattern;
   };
 
-  const generateQRCode = (text: string) => {
-    // Simple QR code representation - in production, you'd use a QR library
-    const size = 8;
+  const [qrCodeDataURL, setQrCodeDataURL] = useState<string>('');
+  const [dataMatrixURL, setDataMatrixURL] = useState<string>('');
+
+  const generateQRCodeURL = async (text: string, errorLevel: string = 'M') => {
+    try {
+      const dataURL = await QRCode.toDataURL(text, {
+        width: 120,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: errorLevel as any
+      });
+      return dataURL;
+    } catch (error) {
+      console.error('QR Code generation failed:', error);
+      return '';
+    }
+  };
+
+  const generateDataMatrix = (text: string) => {
+    // Simple Data Matrix representation using a grid pattern
+    const size = 12;
     const pattern = [];
     
     for (let i = 0; i < size; i++) {
       const row = [];
       for (let j = 0; j < size; j++) {
-        // Simple pattern based on text
-        const hash = text.charCodeAt(i % text.length) + text.charCodeAt(j % text.length);
-        row.push(hash % 3 !== 0);
+        // Create a pattern based on text content and position
+        const charSum = text.split('').reduce((sum, char, idx) => sum + char.charCodeAt(0) * (idx + 1), 0);
+        const hash = (charSum + i * j + i + j) % 4;
+        row.push(hash < 2);
       }
       pattern.push(row);
     }
     
     return pattern;
   };
+
+  // Generate QR code when component data changes
+  useEffect(() => {
+    if (labelData.componentNumber && labelData.includeQR) {
+      const qrData = JSON.stringify({
+        type: 'WB_TRACKS_COMPONENT',
+        componentNumber: labelData.componentNumber,
+        description: labelData.description,
+        category: labelData.category,
+        supplier: labelData.supplier,
+        timestamp: new Date().toISOString()
+      });
+      
+      generateQRCodeURL(qrData, labelData.errorCorrectionLevel).then(setQrCodeDataURL);
+    }
+  }, [labelData.componentNumber, labelData.description, labelData.includeQR, labelData.errorCorrectionLevel]);
 
   const handlePrint = () => {
     if (!labelData.componentNumber) {
