@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { validateStartup } from "./startup-check";
 
 // Validate required environment variables
 function validateEnvironment() {
@@ -66,6 +67,11 @@ function setupGracefulShutdown(server: any) {
 
 (async () => {
   try {
+    // Run comprehensive startup validation in production
+    if (process.env.NODE_ENV === 'production') {
+      await validateStartup();
+    }
+    
     const server = await registerRoutes(app);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

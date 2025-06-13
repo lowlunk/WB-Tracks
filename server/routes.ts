@@ -68,12 +68,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Static file serving for uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-  // Session middleware
+  // Session middleware with production optimizations
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",
+    errorLog: (error) => {
+      console.error('Session store error:', error);
+    }
   });
 
   // Configure session middleware once
