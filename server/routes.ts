@@ -93,9 +93,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize default data
   await storage.initializeDefaultData();
 
-  // Health check endpoint
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+  // Enhanced health check endpoint
+  app.get('/api/health', async (req, res) => {
+    try {
+      // Test database connection
+      await storage.getDashboardStats();
+      
+      res.status(200).json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        database: 'connected',
+        environment: process.env.NODE_ENV || 'development',
+        port: process.env.PORT || 5000
+      });
+    } catch (error: any) {
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        database: 'disconnected',
+        error: error.message,
+        environment: process.env.NODE_ENV || 'development'
+      });
+    }
   });
 
   // Auto-login endpoint - automatically logs in as admin user

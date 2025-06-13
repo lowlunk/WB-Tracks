@@ -11,5 +11,45 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+// Enhanced database connection with error handling
+const createDatabaseConnection = () => {
+  try {
+    const pool = new Pool({ 
+      connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 30000,
+      idleTimeoutMillis: 30000,
+      max: 20
+    });
+
+    // Test the connection
+    pool.on('error', (err) => {
+      console.error('Database pool error:', err);
+    });
+
+    const db = drizzle({ client: pool, schema });
+    
+    // Test database connectivity on startup
+    testDatabaseConnection(pool);
+    
+    return { pool, db };
+  } catch (error) {
+    console.error('Failed to create database connection:', error);
+    throw error;
+  }
+};
+
+async function testDatabaseConnection(pool: Pool) {
+  try {
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    console.log('Database connection established successfully');
+  } catch (error) {
+    console.error('Database connection test failed:', error);
+    throw new Error(`Database connection failed: ${error}`);
+  }
+}
+
+const { pool, db } = createDatabaseConnection();
+
+export { pool, db };
