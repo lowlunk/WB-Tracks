@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { validateStartup } from "./startup-check";
+import { applyProductionFixes } from "./production-fixes";
 
 // Validate required environment variables
 function validateEnvironment() {
@@ -20,6 +21,9 @@ validateEnvironment();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply production-specific fixes
+applyProductionFixes(app);
 
 app.use((req, res, next) => {
   const start = Date.now();

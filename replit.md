@@ -95,6 +95,13 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Health Checks**: Built-in endpoint for monitoring and load balancing
 - **Production Optimization**: Asset bundling, compression, and caching
 
+## Recent Changes
+- June 22, 2025: Fixed deployment issues and blank page errors
+  - Enhanced error boundary and authentication error handling
+  - Added production-specific fixes for build compatibility
+  - Improved unhandled promise rejection handling
+  - Added comprehensive startup validation for production environments
+
 ## Changelog
 - June 22, 2025. Initial setup
 
