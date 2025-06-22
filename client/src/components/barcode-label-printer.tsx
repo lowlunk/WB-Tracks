@@ -342,7 +342,7 @@ export default function BarcodeLabelPrinter({
   };
 
   const barcodePattern = generateBarcode(labelData.componentNumber);
-  const qrPattern = generateQRCode(labelData.componentNumber);
+  // Note: QR code is handled via qrCodeDataURL state, not qrPattern
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -555,16 +555,13 @@ export default function BarcodeLabelPrinter({
                         </div>
 
                         {/* QR Code */}
-                        {labelData.includeQR && (
-                          <div className="w-[24px] h-[24px] grid grid-cols-8 grid-rows-8 border border-black">
-                            {qrPattern.map((row, i) =>
-                              row.map((pixel, j) => (
-                                <div
-                                  key={`${i}-${j}`}
-                                  className={`${pixel ? 'bg-black' : 'bg-white'}`}
-                                />
-                              ))
-                            )}
+                        {labelData.includeQR && qrCodeDataURL && (
+                          <div className="w-[24px] h-[24px] flex items-center justify-center">
+                            <img 
+                              src={qrCodeDataURL} 
+                              alt="QR Code" 
+                              className="w-full h-full object-contain"
+                            />
                           </div>
                         )}
                       </div>
