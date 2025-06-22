@@ -20,6 +20,7 @@ import AddInventoryDialog from "@/components/add-inventory-dialog";
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ConsumedComponentsModal from "@/components/consumed-components-modal";
+import InventoryImportDialog from "@/components/inventory-import-dialog";
 import { 
   Search,
   Package,

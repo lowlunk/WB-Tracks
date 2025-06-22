@@ -10,6 +10,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import express from "express";
+import { inventoryIngestion } from "./inventory-ingestion";
+import XLSX from "xlsx";
 
 // Session configuration
 const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -67,6 +69,17 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Static file serving for uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  const importsDir = path.join(uploadsDir, 'imports');
+  try {
+    const fs_sync = require('fs');
+    fs_sync.mkdirSync(uploadsDir, { recursive: true });
+    fs_sync.mkdirSync(importsDir, { recursive: true });
+  } catch (error) {
+    console.error('Error creating upload directories:', error);
+  }
 
   // Session middleware with production optimizations
   const sessionStore = new pgStore({
@@ -889,6 +902,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('CSV export error:', error);
       res.status(500).json({ message: 'Failed to export CSV' });
+    }
+  });
+
+  // Inventory Import/Ingestion System
+  const importUpload = multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const importDir = path.join(process.cwd(), 'uploads', 'imports');
+        cb(null, importDir);
+      },
+      filename: (req, file, cb) => {
+        const timestamp = Date.now();
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, `${timestamp}-${safeName}`);
+      }
+    }),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/csv'
+      ];
+      
+      if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(xlsx|xls|csv)$/i)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only Excel and CSV files are allowed'));
+      }
+    }
+  });
+
+  // Import inventory from Excel/CSV
+  app.post('/api/inventory/import', requireAuth, importUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const skipZeroQuantity = req.body.skipZeroQuantity === 'true';
+      const userId = req.session.userId;
+
+      console.log(`Processing inventory import: ${req.file.filename}`);
+
+      const result = await inventoryIngestion.processInventoryFile(req.file.path, {
+        skipZeroQuantity,
+        userId
+      });
+
+      // Clean up uploaded file
+      try {
+        await fs.unlink(req.file.path);
+      } catch (cleanupError) {
+        console.warn('Failed to cleanup uploaded file:', cleanupError);
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('Inventory import error:', error);
+      res.status(500).json({ 
+        message: error.message || 'Failed to process inventory import' 
+      });
+    }
+  });
+
+  // Download import template
+  app.get('/api/inventory/import-template', async (req, res) => {
+    try {
+      const templateData = [
+        {
+          'Part Number': 'ABC123',
+          'Description': 'Sample Component Description',
+          'Quantity': 100,
+          'Category': 'Electronics',
+          'Supplier': 'Sample Supplier',
+          'Unit Price': 12.50,
+          'Notes': 'Sample notes'
+        },
+        {
+          'Part Number': 'XYZ789',
+          'Description': 'Another Sample Component',
+          'Quantity': 50,
+          'Category': 'Mechanical',
+          'Supplier': 'Another Supplier',
+          'Unit Price': 25.00,
+          'Notes': ''
+        }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(templateData);
+      
+      // Set column widths for better formatting
+      const columnWidths = [
+        { wch: 15 }, // Part Number
+        { wch: 30 }, // Description
+        { wch: 10 }, // Quantity
+        { wch: 15 }, // Category
+        { wch: 20 }, // Supplier
+        { wch: 12 }, // Unit Price
+        { wch: 25 }  // Notes
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory Template');
+      
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="inventory-import-template.xlsx"');
+      res.send(buffer);
+    } catch (error) {
+      console.error('Template generation error:', error);
+      res.status(500).json({ message: 'Failed to generate template' });
     }
   });
 
