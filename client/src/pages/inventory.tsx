@@ -27,7 +27,8 @@ import {
   AlertTriangle,
   TrendingUp,
   Building2,
-  Plus
+  Plus,
+  Upload
 } from "lucide-react";
 import type { 
   Component, 
@@ -49,6 +50,7 @@ export default function Inventory() {
   const [printComponent, setPrintComponent] = useState<Component | undefined>();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [showConsumedComponents, setShowConsumedComponents] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   // Fetch all data
   const { data: components = [], isLoading: componentsLoading } = useQuery({
@@ -161,6 +163,10 @@ export default function Inventory() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inventory</h1>
         <div className="flex gap-2">
+          <Button onClick={() => setShowImportDialog(true)} variant="outline" className="wb-focus-visible">
+            <Upload className="h-4 w-4 mr-2" />
+            Import
+          </Button>
           <Button onClick={() => setIsAddComponentOpen(true)} className="wb-focus-visible">
             <Plus className="h-4 w-4 mr-2" />
             Add Component
@@ -364,6 +370,11 @@ export default function Inventory() {
         onClose={() => setShowConsumedComponents(false)}
         consumedTransactions={consumedTransactions}
         isLoading={consumedLoading}
+      />
+
+      <InventoryImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
       />
     </div>
   );

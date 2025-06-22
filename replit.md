@@ -96,6 +96,12 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 22, 2025: Added comprehensive inventory ingestion system
+  - Created Excel/CSV import functionality for bulk inventory updates
+  - Added intelligent header mapping for flexible file formats
+  - Implemented automatic component creation for new part numbers
+  - Added inventory transaction tracking for all import operations
+  - Created download template feature for proper file formatting
 - June 22, 2025: Fixed deployment issues and blank page errors
   - Enhanced error boundary and authentication error handling
   - Added production-specific fixes for build compatibility
