@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useTheme } from "@/hooks/useTheme";
 import { useNotifications } from "@/hooks/useNotifications";
+import { ErrorBoundary, useErrorHandler } from "@/components/error-boundary";
 import { AlertTriangle, Package, TrendingDown, Bell, X } from "lucide-react";
 import Dashboard from "@/pages/dashboard";
 import MainInventory from "@/pages/main-inventory";
@@ -123,6 +124,9 @@ function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
 
+  // Handle unhandled promise rejections
+  useErrorHandler();
+
   // Debug logging
   console.log('Auth State:', { user, isLoading, isAuthenticated, location });
 
@@ -226,11 +230,13 @@ function Router() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router />
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Router />
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

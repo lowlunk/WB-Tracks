@@ -38,6 +38,10 @@ export function useAuth() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
+    onError: (error) => {
+      console.warn("Auto-login failed:", error);
+      // Don't throw the error, just log it and continue
+    },
   });
 
   const { data: user, isLoading: userLoading, error } = useQuery({
@@ -45,24 +49,33 @@ export function useAuth() {
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      const res = await fetch("/api/auth/user", {
-        credentials: "include",
-      });
-      
-      if (res.status === 401) {
-        // If not authenticated, try auto-login once
-        if (!autoLoginAttempted) {
-          setAutoLoginAttempted(true);
-          autoLoginMutation.mutate();
+      try {
+        const res = await fetch("/api/auth/user", {
+          credentials: "include",
+        });
+        
+        if (res.status === 401) {
+          // If not authenticated, try auto-login once
+          if (!autoLoginAttempted) {
+            setAutoLoginAttempted(true);
+            // Use setTimeout to avoid promise rejection issues
+            setTimeout(() => {
+              autoLoginMutation.mutate();
+            }, 0);
+          }
+          return null;
         }
+        
+        if (!res.ok) {
+          console.warn(`Auth check failed: ${res.status} ${res.statusText}`);
+          return null;
+        }
+        
+        return await res.json();
+      } catch (error) {
+        console.warn("Auth check error:", error);
         return null;
       }
-      
-      if (!res.ok) {
-        throw new Error(`${res.status}: ${res.statusText}`);
-      }
-      
-      return await res.json();
     },
   });
 
