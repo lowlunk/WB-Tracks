@@ -225,7 +225,7 @@ const DatabaseOptimizer = lazy(() => import("@/pages/database-optimizer"));
         }}
       />
 
-      <AlertBanner />
+
 
       <OnboardingTour
         isOpen={showTour}
