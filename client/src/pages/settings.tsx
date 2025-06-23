@@ -420,6 +420,9 @@ export default function Settings() {
           {/* Facility Management */}
           <FacilityManagement />
 
+          {/* Dismissed Alerts Management */}
+          <DismissedAlertsManager />
+
           {/* Logout Section */}
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>

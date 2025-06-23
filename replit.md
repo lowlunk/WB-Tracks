@@ -96,6 +96,15 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 23, 2025: Enhanced low stock alert dismissal system with persistent management
+  - Implemented intelligent alert dismissal that persists across page refreshes
+  - Added dismissal expiration system (7 days for regular alerts, 24 hours for critical)
+  - Created smart re-alerting when stock levels change after dismissal
+  - Built individual item dismissal with reasoning tracking
+  - Added temporary "snooze" option for 1-hour dismissal
+  - Created dismissed alerts manager for reviewing and restoring dismissed alerts
+  - Enhanced alert banner with better information and management options
+  - Alerts now show both out-of-stock and low-stock items with different handling
 - June 23, 2025: Implemented automated database optimization tools
   - Built comprehensive database performance analysis system
   - Created intelligent optimization recommendations with priority levels

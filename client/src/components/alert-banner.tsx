@@ -5,23 +5,46 @@ import { Button } from "@/components/ui/button";
 import { X, AlertTriangle } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 
+interface DismissedAlert {
+  id: string;
+  dismissedAt: number;
+  componentId: number;
+  locationId: number;
+  quantity: number;
+  reason?: string;
+}
+
 export default function AlertBanner() {
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlerts, setDismissedAlerts] = useState<Map<string, DismissedAlert>>(new Map());
   const { settings } = useNotifications();
-
-
 
   // Load dismissed alerts from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('dismissedCriticalAlerts');
+    const saved = localStorage.getItem('dismissedLowStockAlerts');
     if (saved) {
-      setDismissedAlerts(new Set(JSON.parse(saved)));
+      try {
+        const parsed = JSON.parse(saved);
+        const alertMap = new Map<string, DismissedAlert>();
+        
+        // Convert array back to Map and clean expired dismissals (older than 7 days)
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        parsed.forEach((alert: DismissedAlert) => {
+          if (alert.dismissedAt > sevenDaysAgo) {
+            alertMap.set(alert.id, alert);
+          }
+        });
+        
+        setDismissedAlerts(alertMap);
+      } catch (error) {
+        console.warn('Failed to load dismissed alerts:', error);
+      }
     }
   }, []);
 
   // Save dismissed alerts to localStorage
   useEffect(() => {
-    localStorage.setItem('dismissedCriticalAlerts', JSON.stringify(Array.from(dismissedAlerts)));
+    const alertArray = Array.from(dismissedAlerts.values());
+    localStorage.setItem('dismissedLowStockAlerts', JSON.stringify(alertArray));
   }, [dismissedAlerts]);
 
   const { data: lowStockItems = [] } = useQuery({
