@@ -192,7 +192,12 @@ function Router() {
             <Route path="/main-inventory" component={MainInventory} />
             <Route path="/line-inventory" component={LineInventory} />
             <Route path="/inventory" component={Inventory} />
-            <Route path="/admin" component={AdminDashboard} />
+            <Route path="/admin">
+              {() => {
+                const AdminEnhanced = lazy(() => import("@/pages/admin-enhanced"));
+                return <AdminEnhanced />;
+              }}
+            </Route>
             <Route path="/settings" component={Settings} />
             <Route component={NotFound} />
           </Switch>
