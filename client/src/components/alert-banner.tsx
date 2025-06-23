@@ -15,6 +15,8 @@ interface DismissedAlert {
 }
 
 export default function AlertBanner() {
+  // Disabled per user preference - no banner popups
+  return null;
   const [dismissedAlerts, setDismissedAlerts] = useState<Map<string, DismissedAlert>>(new Map());
   const { settings } = useNotifications();
 

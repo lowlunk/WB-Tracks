@@ -84,8 +84,8 @@ export default function AlertManager({ className = "" }: AlertManagerProps) {
     localStorage.removeItem('dismissedAlerts');
   };
 
-  // Only show the persistent banner for critical alerts and if notifications are enabled
-  const showCriticalBanner = criticalAlerts.length > 0 && settings?.enabled && settings?.lowStockAlerts;
+  // Disabled per user preference - no banner popups
+  const showCriticalBanner = false;
 
   return (
     <div className={className}>
