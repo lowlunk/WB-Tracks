@@ -60,29 +60,57 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
 
   const initializeCameras = async () => {
     try {
-      // Request permission first to get device labels
-      await navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-        stream.getTracks().forEach(track => track.stop());
-      });
+      // For mobile devices, we need to be more careful with permissions
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported in this browser');
+      }
 
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      // First, try to enumerate devices without requesting permissions
+      let devices = await navigator.mediaDevices.enumerateDevices();
+      let videoDevices = devices.filter(device => device.kind === 'videoinput');
+      
+      // If device labels are empty, we need to request permission first
+      if (videoDevices.length === 0 || !videoDevices[0].label) {
+        try {
+          // For mobile devices, use more specific constraints
+          const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          const constraints = isMobile ? 
+            { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } } :
+            { video: { facingMode: 'environment' } };
+          
+          // Request minimal permissions first
+          const tempStream = await navigator.mediaDevices.getUserMedia(constraints);
+          tempStream.getTracks().forEach(track => track.stop());
+          
+          // Now enumerate again to get proper labels
+          devices = await navigator.mediaDevices.enumerateDevices();
+          videoDevices = devices.filter(device => device.kind === 'videoinput');
+        } catch (permError) {
+          console.warn('Permission denied, using fallback approach:', permError);
+          // Still set what we found, even without labels
+          setAvailableCameras(videoDevices);
+          return;
+        }
+      }
+
       setAvailableCameras(videoDevices);
       
       if (videoDevices.length > 0) {
-        // Prefer rear camera if available
+        // For mobile, prefer rear/environment camera
         const rearCamera = videoDevices.find(device => 
           device.label.toLowerCase().includes('back') || 
           device.label.toLowerCase().includes('rear') ||
-          device.label.toLowerCase().includes('environment')
+          device.label.toLowerCase().includes('environment') ||
+          device.label.toLowerCase().includes('camera2') || // Android common naming
+          device.label.toLowerCase().includes('0') // Often the rear camera
         );
         setSelectedCamera(rearCamera?.deviceId || videoDevices[0].deviceId);
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast({
-        title: "Camera Permission Required",
-        description: "Please allow camera access to use the barcode scanner",
+        title: "Camera Access Required",
+        description: "Please enable camera permissions in your browser settings and refresh the page",
         variant: "destructive",
       });
     }
@@ -121,12 +149,20 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
 
       console.log('Starting camera with selected device:', selectedCamera);
 
+      // Enhanced constraints for mobile devices
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
       const constraints = {
         video: {
           deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
           facingMode: selectedCamera ? undefined : { ideal: 'environment' },
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 },
+          width: isMobile ? { ideal: 1280, max: 1920, min: 640 } : { ideal: 1280, min: 640 },
+          height: isMobile ? { ideal: 720, max: 1080, min: 480 } : { ideal: 720, min: 480 },
+          // Additional mobile-specific constraints
+          ...(isMobile && {
+            frameRate: { ideal: 30, max: 30 },
+            aspectRatio: { ideal: 16/9 }
+          })
         }
       };
 
@@ -196,20 +232,27 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
     } catch (error) {
       console.error('Camera initialization error:', error);
       let errorMessage = "Unable to access camera. Please check permissions.";
+      let actionText = "For Android: Go to Settings → Apps → Browser → Permissions → Camera and enable it.";
       
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
-          errorMessage = "Camera access denied. Please allow camera permissions and try again.";
+          errorMessage = "Camera access denied. Please allow camera permissions.";
+          actionText = "Tap the camera icon in your browser's address bar to allow camera access, then refresh the page.";
         } else if (error.name === 'NotFoundError') {
-          errorMessage = "No camera found. Please connect a camera and try again.";
+          errorMessage = "No camera found on this device.";
+          actionText = "Please ensure your device has a working camera.";
         } else if (error.name === 'NotSupportedError') {
           errorMessage = "Camera not supported by this browser.";
+          actionText = "Try opening this page in Chrome or another modern browser.";
+        } else if (error.name === 'NotReadableError') {
+          errorMessage = "Camera is already in use by another app.";
+          actionText = "Close other camera apps and try again.";
         }
       }
       
       toast({
-        title: "Camera Error",
-        description: errorMessage,
+        title: "Camera Access Required",
+        description: `${errorMessage} ${actionText}`,
         variant: "destructive",
       });
       setIsScanning(false);
@@ -407,19 +450,36 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                     </div>
                   </>
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-white">
+                  <div className="w-full h-full flex flex-col items-center justify-center text-white p-4">
                     <Camera className="h-16 w-16 mb-4 opacity-50" />
-                    <p className="text-center mb-4">
+                    <p className="text-center mb-2 text-sm">
                       Position barcode or QR code within camera view
+                    </p>
+                    <p className="text-center mb-4 text-xs opacity-75">
+                      Make sure to allow camera permissions when prompted
                     </p>
                     <Button
                       onClick={startCamera}
-                      className="wb-btn-primary"
+                      className="wb-btn-primary mb-3"
                       disabled={availableCameras.length === 0}
                     >
                       <Play className="h-4 w-4 mr-2" />
                       Start Camera
                     </Button>
+                    {availableCameras.length === 0 && (
+                      <div className="text-center text-xs opacity-90 bg-orange-900/70 p-4 rounded-lg border border-orange-600/50">
+                        <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-orange-300" />
+                        <p className="mb-3 font-semibold text-orange-200">Camera Permission Required</p>
+                        <div className="space-y-2 text-left">
+                          <p className="text-orange-100">For Android Chrome:</p>
+                          <p className="text-orange-200 pl-2">1. Tap the 🔒 or camera icon in address bar</p>
+                          <p className="text-orange-200 pl-2">2. Enable Camera permission</p>
+                          <p className="text-orange-200 pl-2">3. Refresh this page</p>
+                          <p className="text-orange-100 mt-3">Alternative:</p>
+                          <p className="text-orange-200 pl-2">Settings → Site Settings → Camera → Allow</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
