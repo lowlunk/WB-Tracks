@@ -249,8 +249,9 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch
-                  checked={notificationSettings?.enabled || false}
+                  checked={notificationSettings?.enabled ?? true}
                   onCheckedChange={(checked) => {
+                    console.log('Settings page toggle:', checked);
                     updateSettings({ enabled: checked });
                     toast({
                       title: checked ? "Notifications Enabled" : "Notifications Disabled",

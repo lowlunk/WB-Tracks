@@ -40,7 +40,9 @@ export default function AlertManager({ className = "" }: AlertManagerProps) {
 
   // Save dismissed alerts to localStorage
   useEffect(() => {
-    localStorage.setItem('dismissedAlerts', JSON.stringify(Array.from(dismissedAlerts)));
+    if (dismissedAlerts.size > 0) {
+      localStorage.setItem('dismissedAlerts', JSON.stringify(Array.from(dismissedAlerts)));
+    }
   }, [dismissedAlerts]);
 
   const { data: lowStockItems = [] } = useQuery({
@@ -79,10 +81,11 @@ export default function AlertManager({ className = "" }: AlertManagerProps) {
 
   const clearDismissedAlerts = () => {
     setDismissedAlerts(new Set());
+    localStorage.removeItem('dismissedAlerts');
   };
 
   // Only show the persistent banner for critical alerts and if notifications are enabled
-  const showCriticalBanner = criticalAlerts.length > 0 && settings?.enabled;
+  const showCriticalBanner = criticalAlerts.length > 0 && settings?.enabled && settings?.lowStockAlerts;
 
   return (
     <div className={className}>

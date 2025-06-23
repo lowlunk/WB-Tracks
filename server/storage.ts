@@ -861,7 +861,7 @@ export class DatabaseStorage implements IStorage {
         { componentNumber: "217821", description: "372X346 4OZ BRIGADE 15MCA 3RSC" },
         { componentNumber: "217823", description: "402X369MM 4OZ BRIGADE 15MCA 3R" },
         { componentNumber: "217824", description: "116X364MM 4OZ BRIG 9MCA 3RSC L" },
-Completing the DatabaseStorage class implementation by adding the remaining methods for user management and initialization.        { componentNumber: "217860", description: "448X519MM 4OZ BRIG W/FELT 23MC" },
+        { componentNumber: "217860", description: "448X519MM 4OZ BRIG W/FELT 23MC" },
         { componentNumber: "217861", description: "450X557MM 4OZ BRIG W/FELT 23MC" },
         { componentNumber: "217864", description: "243X94MM 100G FELT 12MCA RH FS" },
         { componentNumber: "217865", description: "243X94MM 100G FELT 12MCA LH FS" },
@@ -1000,10 +1000,8 @@ Completing the DatabaseStorage class implementation by adding the remaining meth
         { componentNumber: "400220", description: "220MM MG4 12MM WIDE" },
         { componentNumber: "400240", description: "240MM MG4 12MM WIDE" },
         { componentNumber: "400260", description: "260MM MG4 12MM WIDE" },
-        { componentNumber: "400320", description: "320MM MG4 12MM WIDE" },
+        { componentNumber: "400320", description: "320MM MG4 12MM WIDE" }
       ];
-
-      await db.insert(components).values(componentData);
     }
   }
 }

@@ -52,7 +52,9 @@ export function useNotifications() {
     const storedSettings = localStorage.getItem('wb-tracks-notification-settings');
     if (storedSettings) {
       try {
-        setSettings(JSON.parse(storedSettings));
+        const parsed = JSON.parse(storedSettings);
+        console.log('Loading notification settings:', parsed);
+        setSettings(parsed);
       } catch (error) {
         console.error('Failed to parse stored settings:', error);
       }
@@ -116,6 +118,9 @@ export function useNotifications() {
   const updateSettings = (newSettings: Partial<NotificationSettings>) => {
     setSettings(prev => {
       const updated = { ...prev, ...newSettings };
+      console.log('Updating notification settings:', updated);
+      // Save immediately to localStorage
+      localStorage.setItem('wb-tracks-notification-settings', JSON.stringify(updated));
       return updated;
     });
   };
