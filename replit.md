@@ -96,6 +96,11 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 23, 2025: Fixed low stock management page modal functionality
+  - Resolved TypeError with unit price formatting in component details modal
+  - Enhanced error handling for price display with proper fallbacks
+  - Verified "View Details" and "Transfer Stock" buttons work without 404 errors
+  - Both modals now display comprehensive component information properly
 - June 23, 2025: Completely removed all banner popups and notification bell per user preference
   - Completely removed all banner popups and notification bell from header
   - Disabled all alert dialogs and empty "View Details" popups

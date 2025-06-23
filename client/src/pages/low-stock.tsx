@@ -5,11 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertTriangle, Package, Search, RefreshCw, ArrowLeft, MapPin, BarChart3, Eye, ArrowRightLeft } from "lucide-react";
 import { useLocation } from "wouter";
-import TransferModal from "@/components/transfer-modal";
-import ComponentDetailsModal from "@/components/component-details-modal";
 
 interface LowStockItem {
   id: number;
@@ -457,7 +455,18 @@ export default function LowStockPage() {
               {selectedComponent.component.unitPrice && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Unit Price</label>
-                  <p className="text-lg font-semibold">${selectedComponent.component.unitPrice.toFixed(2)}</p>
+                  <p className="text-lg font-semibold">
+                    ${(() => {
+                      try {
+                        const price = typeof selectedComponent.component.unitPrice === 'number' 
+                          ? selectedComponent.component.unitPrice 
+                          : parseFloat(selectedComponent.component.unitPrice.toString());
+                        return isNaN(price) ? '0.00' : price.toFixed(2);
+                      } catch {
+                        return '0.00';
+                      }
+                    })()}
+                  </p>
                 </div>
               )}
             </div>
