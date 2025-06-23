@@ -102,10 +102,24 @@ function Router() {
             <Route path="/main-inventory" component={MainInventory} />
             <Route path="/line-inventory" component={LineInventory} />
             <Route path="/inventory" component={Inventory} />
+            <Route path="/low-stock">
+              {() => {
+                const LowStockPage = lazy(() => import("@/pages/low-stock"));
+                return (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  }>
+                    <LowStockPage />
+                  </Suspense>
+                );
+              }}
+            </Route>
             <Route path="/admin">
               {() => {
                 const AdminEnhanced = lazy(() => import("@/pages/admin-new"));
-const DatabaseOptimizer = lazy(() => import("@/pages/database-optimizer"));
+                const DatabaseOptimizer = lazy(() => import("@/pages/database-optimizer"));
                 return (
                   <Suspense fallback={
                     <div className="flex items-center justify-center h-64">
