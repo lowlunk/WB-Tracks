@@ -89,10 +89,15 @@
 
 ## 9. Barcode/QR Code Features
 - [ ] Barcode Scanner:
-  - [ ] Camera permission requested
-  - [ ] Camera view displays
-  - [ ] Mock scanning works (for demo)
-  - [ ] Scanner closes properly
+  - [ ] Camera permission requested and handled properly
+  - [ ] Camera view displays with correct orientation
+  - [ ] Android Chrome compatibility verified
+  - [ ] Front camera shows mirrored, rear camera normal orientation
+  - [ ] Force Camera Start button works when enumeration fails
+  - [ ] Error messages provide clear guidance for mobile users
+  - [ ] Automatic barcode detection and component lookup
+  - [ ] Scanner closes properly after successful scan
+  - [ ] Manual entry fallback available when camera fails
 - [ ] Barcode Label Printer:
   - [ ] Component selection works
   - [ ] Label preview generates
@@ -140,12 +145,16 @@
 - [ ] Real-time notification updates
 
 ## 14. Mobile Responsiveness
-- [ ] Bottom navigation appears on mobile
-- [ ] All pages are mobile-friendly
-- [ ] Touch interactions work
-- [ ] Modals go full-screen on mobile
-- [ ] Forms are usable on mobile
+- [ ] Bottom navigation appears on mobile devices
+- [ ] All pages are mobile-friendly with proper scaling
+- [ ] Touch interactions work smoothly
+- [ ] Modals go full-screen on mobile with proper navigation
+- [ ] Forms are usable on mobile with touch-optimized inputs
 - [ ] Tables scroll horizontally on mobile
+- [ ] Barcode scanner works on Android Chrome
+- [ ] Camera permissions handled correctly on mobile
+- [ ] Progressive Web App installation works
+- [ ] Mobile performance is smooth and responsive
 
 ## 15. Real-time Features
 - [ ] WebSocket connects successfully
@@ -185,7 +194,11 @@
 - [ ] Database connection issues
 - [ ] WebSocket connection problems
 - [ ] File upload permission issues
-- [ ] Camera access on different devices/browsers
+- [ ] Mobile camera access and permissions
+- [ ] Android Chrome barcode scanner compatibility
+- [ ] Camera orientation and mirroring issues
+- [ ] Mobile touch responsiveness
+- [ ] Progressive Web App installation on mobile devices
 
 ## Presentation Tips
 - Have sample data ready

@@ -282,19 +282,23 @@ Components (1:many) Component Photos
 - Responsive data tables with horizontal scroll
 
 ### Mobile-Specific Components
-- Touch-optimized buttons and controls
-- Mobile-friendly form layouts
-- Responsive dialog system
-- Mobile navigation patterns
+- **Enhanced Barcode Scanner**: Full Android Chrome compatibility with smart orientation
+- **Touch-optimized Interface**: Large buttons and controls for easy mobile interaction
+- **Responsive Modals**: Full-screen dialogs on mobile with proper navigation
+- **Camera Integration**: Native camera access with comprehensive error handling
+- **Mobile Navigation**: Bottom navigation bar with touch-friendly interactions
+- **Progressive Web App**: Install-to-homescreen with offline capability planning
 
 ## Barcode/QR Code Integration
 
-### Scanning Capabilities
-- Camera-based scanning via web browser
-- Multiple barcode format support (Code 128, QR codes, etc.)
-- Real-time scanning feedback
-- Automatic component lookup
-- Mobile camera optimization
+### Enhanced Mobile Scanning
+- **Android Chrome Compatibility**: Fixed initialization issues with comprehensive error handling
+- **Smart Camera Orientation**: Automatic detection of front/rear cameras with proper mirroring
+- **Enhanced Error Recovery**: Multiple fallback mechanisms and Force Camera Start option
+- **Mobile-Specific Constraints**: Optimized camera settings for mobile devices
+- **Permission Handling**: Step-by-step guidance for Android camera permissions
+- **Real-time Detection**: Immediate barcode recognition with automatic camera stop
+- **Multiple Format Support**: Code 128, QR codes, and various other barcode types
 
 ### Label Printing
 - Customizable barcode label generation

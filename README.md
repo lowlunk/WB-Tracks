@@ -59,18 +59,23 @@ WB-Tracks is built to solve the challenge of managing inventory between main sto
 - **Profile management**: User settings and preferences
 
 #### Barcode Integration
-- **Barcode scanning**: Camera-based scanning for quick operations
+- **Mobile-optimized scanning**: Full Android Chrome compatibility with enhanced camera handling
+- **Smart camera orientation**: Automatic front/rear camera detection with proper mirroring
+- **Enhanced error handling**: Comprehensive mobile debugging and fallback options
+- **Force camera start**: Bypass enumeration issues on problematic devices
 - **Label printing**: Generate barcode labels for components
-- **Multiple formats**: Support for various barcode types
-- **QR code support**: Enhanced data capacity for complex items
+- **Multiple formats**: Support for various barcode types including QR codes
+- **Manual entry fallback**: Reliable backup when camera access fails
 
 ### Advanced Features
 
 #### Mobile Optimization
-- **Touch-optimized interface**: Designed for mobile devices
-- **Responsive dialogs**: Full-screen modals on mobile
-- **Touch gestures**: Swipe and tap interactions
-- **Camera integration**: Native barcode scanning on mobile browsers
+- **Touch-optimized interface**: Designed for mobile devices and tablets
+- **Responsive dialogs**: Full-screen modals on mobile with proper navigation
+- **Enhanced camera support**: Fixed Android Chrome initialization with retry logic
+- **Smart mirroring**: Rear cameras show correct orientation, front cameras mirrored
+- **Mobile debugging**: Comprehensive error handling and permission guidance
+- **Progressive Web App**: Install-to-homescreen capability for native app experience
 
 #### Notifications
 - **Real-time alerts**: Low stock and system notifications
@@ -441,10 +446,14 @@ For technical support or questions about WB-Tracks, please contact your system a
 ## Changelog
 
 ### Latest Updates
-- Added plate number field for components
-- Implemented photo management system
-- Enhanced mobile responsiveness
-- Added real-time notifications
-- Improved dashboard activity section
-- Optimized touch interface for mobile devices
-- Added comprehensive component photo management
+- **June 2025**: Fixed mobile barcode scanner for Android Chrome browsers
+  - Resolved camera initialization and permission issues
+  - Fixed rear camera mirroring for correct barcode scanning orientation  
+  - Added Force Camera Start bypass for device enumeration problems
+  - Enhanced mobile constraints and comprehensive error handling
+- **Enhanced Features**: Inventory ingestion from Excel/CSV files
+- **Database Tools**: Automated optimization and performance monitoring
+- **Admin Dashboard**: Complete user management and system health monitoring
+- **Low Stock Management**: Intelligent dismissal system with persistent tracking
+- **Photo Management**: Comprehensive component image handling with primary selection
+- **Mobile Experience**: Touch-optimized interface with PWA capabilities
