@@ -739,6 +739,63 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${inventoryItems.quantity} <= ${inventoryItems.minStockLevel}`);
   }
 
+  // Get user by username for authentication
+  async getUserByUsername(username: string) {
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0] || null;
+  }
+
+  // Get user by email
+  async getUserByEmail(email: string) {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0] || null;
+  }
+
+  // Get all users
+  async getAllUsers() {
+    const allUsers = await db.select().from(users).orderBy(users.createdAt);
+    return allUsers.map(user => ({
+      ...user,
+      lastLoginFormatted: user.lastLogin ? 
+        new Date(user.lastLogin).toLocaleDateString() : 'Never'
+    }));
+  }
+
+  // Update user
+  async updateUser(id: number, userData: any) {
+    const result = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Delete user
+  async deleteUser(id: number) {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  // Get all user groups
+  async getAllUserGroups() {
+    const result = await db.select().from(userGroups).orderBy(userGroups.name);
+    return result;
+  }
+
+  // Create user group
+  async createUserGroup(groupData: any) {
+    const result = await db.insert(userGroups).values(groupData).returning();
+    return result[0];
+  }
+
+  // Update user group
+  async updateUserGroup(id: number, groupData: any) {
+    const result = await db.update(userGroups)
+      .set(groupData)
+      .where(eq(userGroups.id, id))
+      .returning();
+    return result[0];
+  }
+
   async initializeDefaultData(): Promise<void> {
     // Create default facility if it doesn't exist
     const existingFacilities = await db.select().from(facilities);
@@ -804,7 +861,7 @@ export class DatabaseStorage implements IStorage {
         { componentNumber: "217821", description: "372X346 4OZ BRIGADE 15MCA 3RSC" },
         { componentNumber: "217823", description: "402X369MM 4OZ BRIGADE 15MCA 3R" },
         { componentNumber: "217824", description: "116X364MM 4OZ BRIG 9MCA 3RSC L" },
-        { componentNumber: "217860", description: "448X519MM 4OZ BRIG W/FELT 23MC" },
+Completing the DatabaseStorage class implementation by adding the remaining methods for user management and initialization.        { componentNumber: "217860", description: "448X519MM 4OZ BRIG W/FELT 23MC" },
         { componentNumber: "217861", description: "450X557MM 4OZ BRIG W/FELT 23MC" },
         { componentNumber: "217864", description: "243X94MM 100G FELT 12MCA RH FS" },
         { componentNumber: "217865", description: "243X94MM 100G FELT 12MCA LH FS" },
