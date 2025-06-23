@@ -16,7 +16,7 @@ import Dashboard from "@/pages/dashboard";
 import MainInventory from "@/pages/main-inventory";
 import LineInventory from "@/pages/line-inventory";
 import Inventory from "@/pages/inventory";
-import AlertManager from "@/components/alert-manager";
+import AlertBanner from "@/components/alert-banner";
 import Settings from "@/pages/settings";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -195,7 +195,15 @@ function Router() {
             <Route path="/admin">
               {() => {
                 const AdminEnhanced = lazy(() => import("@/pages/admin-enhanced"));
-                return <AdminEnhanced />;
+                return (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  }>
+                    <AdminEnhanced />
+                  </Suspense>
+                );
               }}
             </Route>
             <Route path="/settings" component={Settings} />
@@ -217,7 +225,7 @@ function Router() {
         }}
       />
 
-      <NotificationSystem />
+      <AlertBanner />
 
       <NotificationPanel
         isOpen={showNotifications}

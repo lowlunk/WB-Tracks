@@ -1022,7 +1022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced Admin System Statistics
-  app.get("/api/admin/system-stats", async (req, res) => {
+  app.get("/api/admin/system-stats", requireAuth, async (req, res) => {
     try {
       const totalUsers = await db.select({ count: sql`count(*)` }).from(users);
       const activeUsers = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.isActive, true));
@@ -1049,7 +1049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Database Health Check
-  app.get("/api/admin/database-health", async (req, res) => {
+  app.get("/api/admin/database-health", requireAuth, async (req, res) => {
     try {
       const startTime = Date.now();
       await db.select({ test: sql`1` });
@@ -1074,7 +1074,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // System Maintenance Actions
-  app.post("/api/admin/maintenance/:action", async (req, res) => {
+  app.post("/api/admin/maintenance/:action", requireAuth, async (req, res) => {
     try {
       const { action } = req.params;
       
@@ -1101,7 +1101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity Logs (simplified implementation)
-  app.get("/api/admin/activity-logs", async (req, res) => {
+  app.get("/api/admin/activity-logs", requireAuth, async (req, res) => {
     try {
       // Get recent transactions as activity logs
       const recentTransactions = await storage.getRecentTransactions(20);
