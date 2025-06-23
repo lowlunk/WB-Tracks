@@ -114,10 +114,8 @@ export function useNotifications() {
   };
 
   const updateSettings = (newSettings: Partial<NotificationSettings>) => {
-    console.log('Updating settings:', newSettings); // Debug log
     setSettings(prev => {
       const updated = { ...prev, ...newSettings };
-      console.log('New settings state:', updated); // Debug log
       return updated;
     });
   };

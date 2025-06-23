@@ -9,7 +9,7 @@ export default function AlertBanner() {
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
   const { settings } = useNotifications();
 
-  console.log('AlertBanner - settings:', settings); // Debug log
+
 
   // Load dismissed alerts from localStorage
   useEffect(() => {
