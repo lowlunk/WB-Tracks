@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Printer, Download, Eye, Copy } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Printer, Download, Eye, Copy, QrCode, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import QRCode from "qrcode";
 import type { Component } from "@shared/schema";
 
 interface BarcodeLabelPrinterProps {
@@ -26,6 +28,9 @@ interface LabelData {
   includeQR: boolean;
   includeLogo: boolean;
   barcodeType: string;
+  errorCorrectionLevel: string;
+  includeDataMatrix: boolean;
+  customText: string;
 }
 
 const LABEL_SIZES = [
@@ -36,14 +41,14 @@ const LABEL_SIZES = [
 ];
 
 const BARCODE_TYPES = [
-  { value: "code128", label: "Code 128 (General purpose)", description: "Most versatile, handles numbers and text" },
-  { value: "code39", label: "Code 39 (Alphanumeric)", description: "Widely supported, letters and numbers" },
-  { value: "ean13", label: "EAN-13 (Product codes)", description: "Standard for retail products" },
-  { value: "upc", label: "UPC-A (US products)", description: "Common in North America" },
-  { value: "code93", label: "Code 93 (Compact)", description: "Higher density than Code 39" },
-  { value: "itf", label: "ITF (Interleaved 2 of 5)", description: "For numeric data only" },
-  { value: "datamatrix", label: "Data Matrix (2D)", description: "Small size, high data capacity" },
-  { value: "pdf417", label: "PDF417 (2D)", description: "High capacity 2D barcode" },
+  { value: "qrcode", label: "QR Code (2D)", description: "Most popular 2D code, high capacity", category: "2D" },
+  { value: "datamatrix", label: "Data Matrix (2D)", description: "Compact 2D code, industrial standard", category: "2D" },
+  { value: "pdf417", label: "PDF417 (2D)", description: "High capacity 2D barcode", category: "2D" },
+  { value: "code128", label: "Code 128 (1D)", description: "Most versatile linear barcode", category: "1D" },
+  { value: "code39", label: "Code 39 (1D)", description: "Widely supported alphanumeric", category: "1D" },
+  { value: "ean13", label: "EAN-13 (1D)", description: "Standard for retail products", category: "1D" },
+  { value: "upc", label: "UPC-A (1D)", description: "Common in North America", category: "1D" },
+  { value: "code93", label: "Code 93 (1D)", description: "Higher density than Code 39", category: "1D" },
 ];
 
 export default function BarcodeLabelPrinter({ 
@@ -61,7 +66,10 @@ export default function BarcodeLabelPrinter({
     quantity: 1,
     includeQR: true,
     includeLogo: true,
-    barcodeType: "code128",
+    barcodeType: "qrcode",
+    errorCorrectionLevel: "M",
+    includeDataMatrix: false,
+    customText: "",
   });
 
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -95,23 +103,61 @@ export default function BarcodeLabelPrinter({
     return barcodePattern;
   };
 
-  const generateQRCode = (text: string) => {
-    // Simple QR code representation - in production, you'd use a QR library
-    const size = 8;
+  const [qrCodeDataURL, setQrCodeDataURL] = useState<string>('');
+  const [dataMatrixURL, setDataMatrixURL] = useState<string>('');
+
+  const generateQRCodeURL = async (text: string, errorLevel: string = 'M') => {
+    try {
+      const dataURL = await QRCode.toDataURL(text, {
+        width: 120,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: errorLevel as any
+      });
+      return dataURL;
+    } catch (error) {
+      console.error('QR Code generation failed:', error);
+      return '';
+    }
+  };
+
+  const generateDataMatrix = (text: string) => {
+    // Simple Data Matrix representation using a grid pattern
+    const size = 12;
     const pattern = [];
     
     for (let i = 0; i < size; i++) {
       const row = [];
       for (let j = 0; j < size; j++) {
-        // Simple pattern based on text
-        const hash = text.charCodeAt(i % text.length) + text.charCodeAt(j % text.length);
-        row.push(hash % 3 !== 0);
+        // Create a pattern based on text content and position
+        const charSum = text.split('').reduce((sum, char, idx) => sum + char.charCodeAt(0) * (idx + 1), 0);
+        const hash = (charSum + i * j + i + j) % 4;
+        row.push(hash < 2);
       }
       pattern.push(row);
     }
     
     return pattern;
   };
+
+  // Generate QR code when component data changes
+  useEffect(() => {
+    if (labelData.componentNumber && labelData.includeQR) {
+      const qrData = JSON.stringify({
+        type: 'WB_TRACKS_COMPONENT',
+        componentNumber: labelData.componentNumber,
+        description: labelData.description,
+        category: labelData.category,
+        supplier: labelData.supplier,
+        timestamp: new Date().toISOString()
+      });
+      
+      generateQRCodeURL(qrData, labelData.errorCorrectionLevel).then(setQrCodeDataURL);
+    }
+  }, [labelData.componentNumber, labelData.description, labelData.includeQR, labelData.errorCorrectionLevel]);
 
   const handlePrint = () => {
     if (!labelData.componentNumber) {
@@ -296,7 +342,7 @@ export default function BarcodeLabelPrinter({
   };
 
   const barcodePattern = generateBarcode(labelData.componentNumber);
-  const qrPattern = generateQRCode(labelData.componentNumber);
+  // Note: QR code is handled via qrCodeDataURL state, not qrPattern
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -509,16 +555,13 @@ export default function BarcodeLabelPrinter({
                         </div>
 
                         {/* QR Code */}
-                        {labelData.includeQR && (
-                          <div className="w-[24px] h-[24px] grid grid-cols-8 grid-rows-8 border border-black">
-                            {qrPattern.map((row, i) =>
-                              row.map((pixel, j) => (
-                                <div
-                                  key={`${i}-${j}`}
-                                  className={`${pixel ? 'bg-black' : 'bg-white'}`}
-                                />
-                              ))
-                            )}
+                        {labelData.includeQR && qrCodeDataURL && (
+                          <div className="w-[24px] h-[24px] flex items-center justify-center">
+                            <img 
+                              src={qrCodeDataURL} 
+                              alt="QR Code" 
+                              className="w-full h-full object-contain"
+                            />
                           </div>
                         )}
                       </div>

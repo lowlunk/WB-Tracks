@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNotifications } from "@/hooks/useNotifications";
 import { 
   Package, 
   Bell, 
@@ -21,6 +22,7 @@ interface HeaderProps {
 export default function Header({ onScanClick, onNotificationClick, onSettingsClick }: HeaderProps) {
   const [location] = useLocation();
   const [isOnline] = useState(true); // In a real app, this would check actual network status
+  const { settings } = useNotifications();
   
   // Get notification count from low stock items
   const { data: lowStockItems } = useQuery({
@@ -28,7 +30,10 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
     refetchInterval: 30000,
   });
   
-  const notificationCount = lowStockItems?.length || 0;
+  // Only show notification count if notifications are enabled
+  const notificationCount = settings?.enabled ? (lowStockItems?.length || 0) : 0;
+  
+
 
   return (
     <header className="bg-[hsl(var(--wb-surface))] shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50" data-tour="header">
@@ -102,24 +107,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
               </span>
             </div>
 
-            {/* Notifications */}
-            <Button 
-              onClick={onNotificationClick}
-              variant="ghost" 
-              size="icon" 
-              className="relative wb-focus-visible"
-              title="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              {notificationCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {notificationCount}
-                </Badge>
-              )}
-            </Button>
+            {/* Notification bell removed per user preference */}
 
             {/* Scan button */}
             <Button 

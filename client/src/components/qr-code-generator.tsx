@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { QrCode, Download, Printer } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { QrCode, Download, Printer, Grid, Square } from "lucide-react";
+import QRCode from "qrcode";
 
 interface QRCodeGeneratorProps {
   isOpen: boolean;
@@ -10,60 +13,79 @@ interface QRCodeGeneratorProps {
   description: string;
 }
 
-// Simple QR code generation using a data URL approach
-// In a production environment, you might use a library like qrcode.js
-const generateQRCodeDataURL = (text: string): string => {
-  // Create a simple QR code pattern using Canvas API
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  
-  if (!ctx) return '';
-  
-  const size = 200;
-  canvas.width = size;
-  canvas.height = size;
-  
-  // Fill background
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, size, size);
-  
-  // Simple QR-like pattern for demonstration
-  // In production, use a proper QR code library
-  ctx.fillStyle = '#000000';
-  const moduleSize = size / 25;
-  
-  // Create a simple grid pattern that represents the component number
-  for (let i = 0; i < 25; i++) {
-    for (let j = 0; j < 25; j++) {
-      // Use the text to determine which modules to fill
-      const hash = (text.charCodeAt((i * 25 + j) % text.length) + i + j) % 3;
-      if (hash === 0) {
-        ctx.fillRect(i * moduleSize, j * moduleSize, moduleSize, moduleSize);
-      }
-    }
+const QR_CODE_FORMATS = [
+  { value: "component", label: "Component ID Only", description: "Just the component number" },
+  { value: "json", label: "Full Component Data", description: "Component number, description, and metadata" },
+  { value: "url", label: "Web Link", description: "Link to component in system" },
+];
+
+const QR_ERROR_LEVELS = [
+  { value: "L", label: "Low (7%)", description: "Fastest generation" },
+  { value: "M", label: "Medium (15%)", description: "Balanced" },
+  { value: "Q", label: "Quartile (25%)", description: "Good for damaged labels" },
+  { value: "H", label: "High (30%)", description: "Maximum reliability" },
+];
+
+const generateQRCodeDataURL = async (
+  text: string, 
+  errorCorrectionLevel: string = "M",
+  size: number = 200
+): Promise<string> => {
+  try {
+    return await QRCode.toDataURL(text, {
+      width: size,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      },
+      errorCorrectionLevel: errorCorrectionLevel as any
+    });
+  } catch (error) {
+    console.error('QR Code generation failed:', error);
+    return '';
   }
-  
-  // Add border
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(0, 0, size, size);
-  
-  return canvas.toDataURL();
 };
 
 export default function QRCodeGenerator({ isOpen, onClose, componentNumber, description }: QRCodeGeneratorProps) {
   const [qrCodeDataURL, setQRCodeDataURL] = useState<string>('');
+  const [format, setFormat] = useState('component');
+  const [errorLevel, setErrorLevel] = useState('M');
+  const [size, setSize] = useState(200);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateQRCode = () => {
-    const qrData = JSON.stringify({
-      type: 'WB_TRACKS_COMPONENT',
-      componentNumber,
-      description,
-      timestamp: new Date().toISOString()
-    });
-    
-    const dataURL = generateQRCodeDataURL(qrData);
-    setQRCodeDataURL(dataURL);
+  const generateQRCode = async () => {
+    setIsGenerating(true);
+    try {
+      let qrData: string;
+      
+      switch (format) {
+        case 'component':
+          qrData = componentNumber;
+          break;
+        case 'json':
+          qrData = JSON.stringify({
+            type: 'WB_TRACKS_COMPONENT',
+            componentNumber,
+            description,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+          });
+          break;
+        case 'url':
+          qrData = `${window.location.origin}/components/${componentNumber}`;
+          break;
+        default:
+          qrData = componentNumber;
+      }
+      
+      const dataURL = await generateQRCodeDataURL(qrData, errorLevel, size);
+      setQRCodeDataURL(dataURL);
+    } catch (error) {
+      console.error('QR Code generation failed:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const downloadQRCode = () => {
@@ -134,38 +156,105 @@ export default function QRCodeGenerator({ isOpen, onClose, componentNumber, desc
     printWindow.print();
   };
 
-  // Generate QR code when dialog opens
+  // Generate QR code when dialog opens or settings change
   useEffect(() => {
     if (isOpen && componentNumber) {
       generateQRCode();
     }
-  }, [isOpen, componentNumber]);
+  }, [isOpen, componentNumber, format, errorLevel, size]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <QrCode className="h-5 w-5 mr-2" />
-            QR Code for {componentNumber}
+            Advanced QR Code Generator - {componentNumber}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="mb-4">
-              <div className="font-medium text-lg">{componentNumber}</div>
-              <div className="text-sm text-gray-600 mt-1">{description}</div>
+        <div className="space-y-6">
+          {/* Component Info */}
+          <div className="text-center bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <div className="font-medium text-lg">{componentNumber}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{description}</div>
+          </div>
+
+          {/* QR Code Configuration */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Data Format</Label>
+              <Select value={format} onValueChange={setFormat}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {QR_CODE_FORMATS.map((fmt) => (
+                    <SelectItem key={fmt.value} value={fmt.value}>
+                      <div>
+                        <div className="font-medium">{fmt.label}</div>
+                        <div className="text-xs text-gray-500">{fmt.description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            
-            {qrCodeDataURL ? (
+
+            <div className="space-y-2">
+              <Label>Error Correction</Label>
+              <Select value={errorLevel} onValueChange={setErrorLevel}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {QR_ERROR_LEVELS.map((level) => (
+                    <SelectItem key={level.value} value={level.value}>
+                      <div>
+                        <div className="font-medium">{level.label}</div>
+                        <div className="text-xs text-gray-500">{level.description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Size: {size}px</Label>
+            <input
+              type="range"
+              min="100"
+              max="400"
+              step="50"
+              value={size}
+              onChange={(e) => setSize(Number(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Small</span>
+              <span>Large</span>
+            </div>
+          </div>
+          
+          {/* QR Code Display */}
+          <div className="text-center">
+            {isGenerating ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                <p className="text-sm text-gray-600">Generating QR code...</p>
+              </div>
+            ) : qrCodeDataURL ? (
               <div className="flex flex-col items-center space-y-4">
-                <img 
-                  src={qrCodeDataURL} 
-                  alt={`QR Code for ${componentNumber}`}
-                  className="border border-gray-300 rounded-lg"
-                  style={{ width: '200px', height: '200px' }}
-                />
+                <div className="p-4 bg-white rounded-lg border-2 border-gray-200">
+                  <img 
+                    src={qrCodeDataURL} 
+                    alt={`QR Code for ${componentNumber}`}
+                    className="rounded"
+                    style={{ width: `${Math.min(size, 300)}px`, height: `${Math.min(size, 300)}px` }}
+                  />
+                </div>
                 
                 <div className="flex space-x-2">
                   <Button
@@ -174,7 +263,7 @@ export default function QRCodeGenerator({ isOpen, onClose, componentNumber, desc
                     onClick={downloadQRCode}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    Download PNG
                   </Button>
                   
                   <Button
@@ -183,22 +272,34 @@ export default function QRCodeGenerator({ isOpen, onClose, componentNumber, desc
                     onClick={printQRCode}
                   >
                     <Printer className="h-4 w-4 mr-2" />
-                    Print
+                    Print Label
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={generateQRCode}
+                    disabled={isGenerating}
+                  >
+                    <QrCode className="h-4 w-4 mr-2" />
+                    Regenerate
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
                 <QrCode className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                <Button onClick={generateQRCode}>
+                <Button onClick={generateQRCode} disabled={isGenerating}>
+                  <QrCode className="h-4 w-4 mr-2" />
                   Generate QR Code
                 </Button>
               </div>
             )}
           </div>
           
-          <div className="text-xs text-gray-500 text-center">
-            This QR code contains the component number and can be scanned with the WB-Tracks mobile app for quick identification.
+          <div className="text-xs text-gray-500 text-center space-y-1">
+            <p>QR codes can be scanned with any barcode scanner or mobile device camera.</p>
+            <p>Higher error correction levels work better on damaged or dirty labels.</p>
           </div>
         </div>
       </DialogContent>

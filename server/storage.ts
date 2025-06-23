@@ -739,6 +739,63 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${inventoryItems.quantity} <= ${inventoryItems.minStockLevel}`);
   }
 
+  // Get user by username for authentication
+  async getUserByUsername(username: string) {
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0] || null;
+  }
+
+  // Get user by email
+  async getUserByEmail(email: string) {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0] || null;
+  }
+
+  // Get all users
+  async getAllUsers() {
+    const allUsers = await db.select().from(users).orderBy(users.createdAt);
+    return allUsers.map(user => ({
+      ...user,
+      lastLoginFormatted: user.lastLogin ? 
+        new Date(user.lastLogin).toLocaleDateString() : 'Never'
+    }));
+  }
+
+  // Update user
+  async updateUser(id: number, userData: any) {
+    const result = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Delete user
+  async deleteUser(id: number) {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  // Get all user groups
+  async getAllUserGroups() {
+    const result = await db.select().from(userGroups).orderBy(userGroups.name);
+    return result;
+  }
+
+  // Create user group
+  async createUserGroup(groupData: any) {
+    const result = await db.insert(userGroups).values(groupData).returning();
+    return result[0];
+  }
+
+  // Update user group
+  async updateUserGroup(id: number, groupData: any) {
+    const result = await db.update(userGroups)
+      .set(groupData)
+      .where(eq(userGroups.id, id))
+      .returning();
+    return result[0];
+  }
+
   async initializeDefaultData(): Promise<void> {
     // Create default facility if it doesn't exist
     const existingFacilities = await db.select().from(facilities);
@@ -943,10 +1000,8 @@ export class DatabaseStorage implements IStorage {
         { componentNumber: "400220", description: "220MM MG4 12MM WIDE" },
         { componentNumber: "400240", description: "240MM MG4 12MM WIDE" },
         { componentNumber: "400260", description: "260MM MG4 12MM WIDE" },
-        { componentNumber: "400320", description: "320MM MG4 12MM WIDE" },
+        { componentNumber: "400320", description: "320MM MG4 12MM WIDE" }
       ];
-
-      await db.insert(components).values(componentData);
     }
   }
 }

@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useTheme } from "@/hooks/useTheme";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3, Bell, AlertTriangle, Activity, Play } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FacilityManagement from "@/components/facility-management";
+import InventoryImportDialog from "@/components/inventory-import-dialog";
 import { apiRequest } from "@/lib/queryClient";
+import DismissedAlertsManager from "@/components/dismissed-alerts-manager";
 
 
 export default function Settings() {
@@ -23,6 +26,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { startTour, resetOnboarding } = useOnboarding();
   const { theme, toggleTheme } = useTheme();
+  const { settings: notificationSettings, updateSettings } = useNotifications();
   const [isLoading, setIsLoading] = useState(false);
 
   // Data export mutations
@@ -95,9 +99,7 @@ export default function Settings() {
   });
   
   const [userSettings, setUserSettings] = useState({
-    notifications: true,
     autoBackup: true,
-    lowStockThreshold: 5,
   });
 
   // Test low inventory functionality
@@ -248,8 +250,15 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch
-                  checked={userSettings.notifications}
-                  onCheckedChange={(checked) => handleSettingChange("notifications", checked)}
+                  checked={notificationSettings?.enabled ?? true}
+                  onCheckedChange={(checked) => {
+                    console.log('Settings page toggle:', checked);
+                    updateSettings({ enabled: checked });
+                    toast({
+                      title: checked ? "Notifications Enabled" : "Notifications Disabled",
+                      description: checked ? "You will receive alerts and notifications" : "All notifications have been turned off",
+                    });
+                  }}
                 />
               </div>
               
@@ -292,8 +301,8 @@ export default function Settings() {
                   type="number"
                   min="1"
                   max="100"
-                  value={userSettings.lowStockThreshold}
-                  onChange={(e) => handleSettingChange("lowStockThreshold", parseInt(e.target.value))}
+                  value={notificationSettings?.lowStockThreshold || 5}
+                  onChange={(e) => updateSettings({ lowStockThreshold: parseInt(e.target.value) || 5 })}
                   className="w-32"
                 />
                 <p className="text-sm text-gray-500">
@@ -352,14 +361,15 @@ export default function Settings() {
                   {exportDataMutation.isPending ? 'Exporting...' : 'Export to CSV'}
                 </Button>
                 
-                <Button
-                  variant="outline"
-                  className="flex items-center justify-center"
-                  disabled
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Data
-                </Button>
+                <InventoryImportDialog>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Inventory
+                  </Button>
+                </InventoryImportDialog>
               </div>
               
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -411,6 +421,9 @@ export default function Settings() {
           {/* Facility Management */}
           <FacilityManagement />
 
+          {/* Dismissed Alerts Management */}
+          <DismissedAlertsManager />
+
           {/* Logout Section */}
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>
@@ -425,170 +438,6 @@ export default function Settings() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
-            </CardContent>
-          </Card>
-
-          {/* Notifications Configuration */}
-          <Card className="wb-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification Settings
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure when and how you receive notifications
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Low Stock Alerts */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Low Stock Alerts</h4>
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Enable Low Stock Notifications</label>
-                      <p className="text-xs text-muted-foreground">
-                        Receive alerts when inventory levels are low
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Low Stock Threshold</label>
-                      <Input
-                        type="number"
-                        placeholder="5"
-                        className="wb-input"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Alert when quantity falls below this number
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Critical Stock Threshold</label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        className="wb-input"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Critical alert when quantity reaches this level
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Activity Notifications */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Activity Notifications</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Inventory Transfers</label>
-                      <p className="text-xs text-muted-foreground">
-                        Notify when items are transferred between locations
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Production Consumption</label>
-                      <p className="text-xs text-muted-foreground">
-                        Notify when items are consumed for production
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <label className="text-sm font-medium">New Components Added</label>
-                      <p className="text-xs text-muted-foreground">
-                        Notify when new components are added to inventory
-                      </p>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Notification Timing */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Notification Timing</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Check Frequency</label>
-                    <Select defaultValue="30">
-                      <SelectTrigger className="wb-select">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">Every 15 seconds</SelectItem>
-                        <SelectItem value="30">Every 30 seconds</SelectItem>
-                        <SelectItem value="60">Every minute</SelectItem>
-                        <SelectItem value="300">Every 5 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Quiet Hours</label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="time"
-                        defaultValue="22:00"
-                        className="wb-input flex-1"
-                      />
-                      <span className="text-sm text-muted-foreground">to</span>
-                      <Input
-                        type="time"
-                        defaultValue="06:00"
-                        className="wb-input flex-1"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Reduce notifications during these hours
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Test Notifications */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Test Notifications</h4>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="wb-btn-secondary"
-                    onClick={() => testLowInventoryMutation.mutate()}
-                    disabled={testLowInventoryMutation.isPending}
-                  >
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    {testLowInventoryMutation.isPending ? 'Testing...' : 'Test Low Stock Alert'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="wb-btn-secondary"
-                    onClick={() => testActivityMutation.mutate()}
-                    disabled={testActivityMutation.isPending}
-                  >
-                    <Activity className="h-4 w-4 mr-2" />
-                    {testActivityMutation.isPending ? 'Testing...' : 'Test Activity Alert'}
-                  </Button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>

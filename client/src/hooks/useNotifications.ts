@@ -13,11 +13,28 @@ export interface StoredNotification {
   location?: string;
 }
 
+export interface NotificationSettings {
+  enabled: boolean;
+  lowStockAlerts: boolean;
+  systemAlerts: boolean;
+  activityAlerts: boolean;
+  lowStockThreshold: number;
+  showToasts: boolean;
+}
+
 export function useNotifications() {
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
+  const [settings, setSettings] = useState<NotificationSettings>({
+    enabled: true,
+    lowStockAlerts: true,
+    systemAlerts: true,
+    activityAlerts: true,
+    lowStockThreshold: 5,
+    showToasts: true
+  });
   const { toast } = useToast();
 
-  // Load notifications from localStorage on mount
+  // Load notifications and settings from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem('wb-tracks-notifications');
     if (stored) {
@@ -31,12 +48,28 @@ export function useNotifications() {
         console.error('Failed to parse stored notifications:', error);
       }
     }
+
+    const storedSettings = localStorage.getItem('wb-tracks-notification-settings');
+    if (storedSettings) {
+      try {
+        const parsed = JSON.parse(storedSettings);
+        console.log('Loading notification settings:', parsed);
+        setSettings(parsed);
+      } catch (error) {
+        console.error('Failed to parse stored settings:', error);
+      }
+    }
   }, []);
 
   // Save notifications to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('wb-tracks-notifications', JSON.stringify(notifications));
   }, [notifications]);
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('wb-tracks-notification-settings', JSON.stringify(settings));
+  }, [settings]);
 
   const addNotification = (notification: Omit<StoredNotification, 'id' | 'timestamp' | 'seen'>) => {
     const newNotification: StoredNotification = {
@@ -48,12 +81,14 @@ export function useNotifications() {
 
     setNotifications(prev => [newNotification, ...prev]);
 
-    // Show toast notification for new notifications
-    toast({
-      title: notification.title,
-      description: notification.description,
-      variant: notification.severity === 'critical' ? 'destructive' : 'default',
-    });
+    // Show toast notification for new notifications if enabled and notifications are enabled
+    if (settings?.enabled && settings?.showToasts) {
+      toast({
+        title: notification.title,
+        description: notification.description,
+        variant: notification.severity === 'critical' ? 'destructive' : 'default',
+      });
+    }
 
     return newNotification.id;
   };
@@ -80,12 +115,23 @@ export function useNotifications() {
     setNotifications([]);
   };
 
+  const updateSettings = (newSettings: Partial<NotificationSettings>) => {
+    setSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      console.log('Updating notification settings:', updated);
+      // Save immediately to localStorage
+      localStorage.setItem('wb-tracks-notification-settings', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   // Get counts
   const unreadCount = notifications.filter(n => !n.seen).length;
   const totalCount = notifications.length;
 
   return {
     notifications,
+    settings,
     unreadCount,
     totalCount,
     addNotification,
@@ -93,5 +139,6 @@ export function useNotifications() {
     markAllAsSeen,
     removeNotification,
     clearAllNotifications,
+    updateSettings,
   };
 }
