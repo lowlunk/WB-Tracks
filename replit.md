@@ -96,6 +96,13 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 23, 2025: Enhanced alert system and admin dashboard
+  - Replaced intrusive notification system with smart alert manager
+  - Alerts now persist in localStorage and only show new/critical items
+  - Critical alerts (out of stock) show persistent banner, warnings are dismissible
+  - Built comprehensive admin dashboard with system statistics and health monitoring
+  - Added database health checks, maintenance actions, and activity logs
+  - Improved database connection pooling to reduce timeout errors
 - June 22, 2025: Added comprehensive inventory ingestion system
   - Created Excel/CSV import functionality for bulk inventory updates
   - Added intelligent header mapping for flexible file formats

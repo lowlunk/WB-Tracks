@@ -1,5 +1,5 @@
 import { Switch, Route, useLocation, Link } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,7 +16,7 @@ import Dashboard from "@/pages/dashboard";
 import MainInventory from "@/pages/main-inventory";
 import LineInventory from "@/pages/line-inventory";
 import Inventory from "@/pages/inventory";
-import AdminDashboard from "@/pages/admin";
+import AlertManager from "@/components/alert-manager";
 import Settings from "@/pages/settings";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
