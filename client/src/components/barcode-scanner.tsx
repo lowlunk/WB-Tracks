@@ -155,13 +155,13 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
       const constraints = {
         video: {
           deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
-          facingMode: selectedCamera ? undefined : { ideal: 'environment' },
-          width: isMobile ? { ideal: 1280, max: 1920, min: 640 } : { ideal: 1280, min: 640 },
-          height: isMobile ? { ideal: 720, max: 1080, min: 480 } : { ideal: 720, min: 480 },
+          facingMode: selectedCamera ? undefined : 'environment', // Use exact for mobile
+          width: isMobile ? { ideal: 640, max: 1280 } : { ideal: 1280, min: 640 },
+          height: isMobile ? { ideal: 480, max: 720 } : { ideal: 720, min: 480 },
           // Additional mobile-specific constraints
           ...(isMobile && {
-            frameRate: { ideal: 30, max: 30 },
-            aspectRatio: { ideal: 16/9 }
+            frameRate: { ideal: 15, max: 30 }, // Lower framerate for mobile performance
+            aspectRatio: { ideal: 4/3 } // Better for mobile cameras
           })
         }
       };
@@ -181,38 +181,59 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
         
         // Wait for the video to be ready
         videoRef.current.onloadedmetadata = async () => {
           try {
-            await videoRef.current!.play();
-            console.log('Video started playing');
+            // For mobile devices, ensure video plays correctly
+            const video = videoRef.current!;
+            video.muted = true; // Required for autoplay on mobile
+            video.playsInline = true; // Prevent fullscreen on iOS
             
-            // Start barcode scanning with a small delay
+            await video.play();
+            console.log('Video started playing', {
+              videoWidth: video.videoWidth,
+              videoHeight: video.videoHeight,
+              readyState: video.readyState
+            });
+            
+            // Start barcode scanning with a delay for mobile stability
             setTimeout(() => {
               if (codeReaderRef.current && videoRef.current) {
-                console.log('Starting barcode detection');
-                codeReaderRef.current.decodeFromVideoDevice(
-                  selectedCamera || undefined,
-                  videoRef.current,
-                  (result, error) => {
-                    if (result) {
-                      console.log('Barcode detected:', result.getText());
-                      const barcodeText = result.getText();
-                      handleBarcodeDetected(barcodeText);
+                console.log('Starting barcode detection on mobile device');
+                try {
+                  codeReaderRef.current.decodeFromVideoDevice(
+                    selectedCamera || undefined,
+                    videoRef.current,
+                    (result, error) => {
+                      if (result) {
+                        console.log('Barcode detected:', result.getText());
+                        const barcodeText = result.getText();
+                        handleBarcodeDetected(barcodeText);
+                        stopCamera(); // Stop after successful scan
+                      }
+                      if (error && !(error.name === 'NotFoundException')) {
+                        console.warn('Barcode scanning error:', error);
+                      }
                     }
-                    if (error && !(error.name === 'NotFoundException')) {
-                      console.warn('Barcode scanning error:', error);
-                    }
-                  }
-                );
+                  );
+                } catch (scanError) {
+                  console.error('Failed to start barcode scanning:', scanError);
+                  toast({
+                    title: "Scanner Error",
+                    description: "Failed to start barcode detection. Try the manual entry option.",
+                    variant: "destructive",
+                  });
+                }
               }
-            }, 500);
+            }, 1500); // Increased delay for mobile
           } catch (playError) {
             console.error('Video play error:', playError);
             toast({
-              title: "Video Error",
-              description: "Unable to start video playback",
+              title: "Video Error", 
+              description: "Unable to start video playback. Try refreshing the page.",
               variant: "destructive",
             });
             setIsScanning(false);
@@ -401,14 +422,21 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                 </div>
               )}
 
-              <div className="relative bg-gray-900 dark:bg-gray-800 rounded-lg overflow-hidden aspect-video">
+              <div className="relative bg-gray-900 dark:bg-gray-800 rounded-lg overflow-hidden" style={{ aspectRatio: '4/3', minHeight: '300px' }}>
                 {isScanning ? (
                   <>
                     <video
                       ref={videoRef}
                       className="w-full h-full object-cover"
+                      autoPlay
                       playsInline
                       muted
+                      webkit-playsinline="true"
+                      style={{
+                        transform: 'scaleX(-1)',
+                        maxWidth: '100%',
+                        height: 'auto'
+                      }}
                     />
                     {/* Scanning overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -467,16 +495,20 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                       Start Camera
                     </Button>
                     {availableCameras.length === 0 && (
-                      <div className="text-center text-xs opacity-90 bg-orange-900/70 p-4 rounded-lg border border-orange-600/50">
+                      <div className="text-center text-xs opacity-90 bg-orange-900/70 p-4 rounded-lg border border-orange-600/50 mt-3">
                         <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-orange-300" />
-                        <p className="mb-3 font-semibold text-orange-200">Camera Permission Required</p>
-                        <div className="space-y-2 text-left">
-                          <p className="text-orange-100">For Android Chrome:</p>
-                          <p className="text-orange-200 pl-2">1. Tap the 🔒 or camera icon in address bar</p>
-                          <p className="text-orange-200 pl-2">2. Enable Camera permission</p>
-                          <p className="text-orange-200 pl-2">3. Refresh this page</p>
-                          <p className="text-orange-100 mt-3">Alternative:</p>
-                          <p className="text-orange-200 pl-2">Settings → Site Settings → Camera → Allow</p>
+                        <p className="mb-3 font-semibold text-orange-200">Camera Access Issue</p>
+                        <div className="space-y-1 text-left text-orange-200">
+                          <p className="font-medium text-orange-100">Android Chrome:</p>
+                          <p>• Tap camera/lock icon in address bar</p>
+                          <p>• Allow camera permissions</p>
+                          <p>• Refresh page</p>
+                          <p className="font-medium text-orange-100 mt-2">Alternative:</p>
+                          <p>• Chrome → Settings → Site Settings → Camera</p>
+                          <p>• Find this site and enable camera</p>
+                        </div>
+                        <div className="mt-3 p-2 bg-blue-900/50 rounded">
+                          <p className="text-blue-200 text-xs">Use Manual Entry below if camera doesn't work</p>
                         </div>
                       </div>
                     )}
