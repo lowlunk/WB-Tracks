@@ -138,16 +138,30 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
 
   const startCamera = async () => {
     try {
+      console.log('Starting camera - initial setup');
       setIsScanning(true);
       initializeCodeReader();
       
       if (!videoRef.current || !codeReaderRef.current) {
         console.error('Video element or code reader not available');
+        toast({
+          title: "Camera Error",
+          description: "Camera interface not ready. Please try again.",
+          variant: "destructive",
+        });
         setIsScanning(false);
         return;
       }
 
       console.log('Starting camera with selected device:', selectedCamera);
+      
+      // Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('getUserMedia not available');
+        throw new Error('Camera not supported in this browser');
+      }
+      
+      console.log('getUserMedia available, proceeding with camera access...');
 
       // Enhanced constraints for mobile devices
       const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -168,10 +182,18 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
 
       console.log('Camera constraints:', constraints);
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-      
-      console.log('Camera stream obtained:', stream);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        streamRef.current = stream;
+        console.log('Camera stream obtained successfully:', {
+          id: stream.id,
+          active: stream.active,
+          tracks: stream.getTracks().length
+        });
+      } catch (streamError) {
+        console.error('Failed to get camera stream:', streamError);
+        throw streamError;
+      }
 
       // Check for flashlight capability
       const track = stream.getVideoTracks()[0];
@@ -180,23 +202,31 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
       setHasFlashlight('torch' in capabilities);
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        const video = videoRef.current;
+        video.srcObject = streamRef.current;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.muted = true;
+        
+        console.log('Video element setup complete, waiting for metadata...');
         
         // Wait for the video to be ready
-        videoRef.current.onloadedmetadata = async () => {
+        video.onloadedmetadata = async () => {
           try {
+            console.log('Video metadata loaded');
             // For mobile devices, ensure video plays correctly
             const video = videoRef.current!;
             video.muted = true; // Required for autoplay on mobile
             video.playsInline = true; // Prevent fullscreen on iOS
             
+            console.log('Attempting to play video...');
             await video.play();
-            console.log('Video started playing', {
+            console.log('Video started playing successfully', {
               videoWidth: video.videoWidth,
               videoHeight: video.videoHeight,
-              readyState: video.readyState
+              readyState: video.readyState,
+              paused: video.paused,
+              currentTime: video.currentTime
             });
             
             // Start barcode scanning with a delay for mobile stability
@@ -240,15 +270,28 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
           }
         };
 
-        videoRef.current.onerror = (error) => {
+        video.onerror = (error) => {
           console.error('Video element error:', error);
           toast({
             title: "Video Error",
-            description: "Video element encountered an error",
+            description: "Camera video failed to load. Try refreshing the page.",
             variant: "destructive",
           });
           setIsScanning(false);
         };
+        
+        // Add timeout fallback
+        setTimeout(() => {
+          if (video.readyState === 0) {
+            console.error('Video failed to load within timeout');
+            toast({
+              title: "Camera Timeout",
+              description: "Camera took too long to initialize. Try manual entry instead.",
+              variant: "destructive",
+            });
+            setIsScanning(false);
+          }
+        }, 10000); // 10 second timeout
       }
     } catch (error) {
       console.error('Camera initialization error:', error);
@@ -486,14 +529,31 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                     <p className="text-center mb-4 text-xs opacity-75">
                       Make sure to allow camera permissions when prompted
                     </p>
-                    <Button
-                      onClick={startCamera}
-                      className="wb-btn-primary mb-3"
-                      disabled={availableCameras.length === 0}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Camera
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={startCamera}
+                        className="wb-btn-primary w-full"
+                        disabled={availableCameras.length === 0}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start Camera
+                      </Button>
+                      
+                      {availableCameras.length === 0 && (
+                        <Button
+                          onClick={async () => {
+                            console.log('Attempting direct camera access...');
+                            setSelectedCamera('');
+                            await startCamera();
+                          }}
+                          variant="outline"
+                          className="w-full text-sm"
+                        >
+                          <Camera className="h-4 w-4 mr-2" />
+                          Try Direct Camera Access
+                        </Button>
+                      )}
+                    </div>
                     {availableCameras.length === 0 && (
                       <div className="text-center text-xs opacity-90 bg-orange-900/70 p-4 rounded-lg border border-orange-600/50 mt-3">
                         <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-orange-300" />
