@@ -235,11 +235,20 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
         throw streamError;
       }
 
-      // Check for flashlight capability
+      // Check for flashlight capability and camera orientation
       const track = stream.getVideoTracks()[0];
       const capabilities = track.getCapabilities();
       console.log('Camera capabilities:', capabilities);
       setHasFlashlight('torch' in capabilities);
+      
+      // Log camera info for debugging
+      const cameraInfo = availableCameras.find(cam => cam.deviceId === selectedCamera);
+      console.log('Selected camera info:', {
+        deviceId: selectedCamera,
+        label: cameraInfo?.label,
+        isFrontFacing: cameraInfo?.label?.toLowerCase().includes('front'),
+        isBackFacing: cameraInfo?.label?.toLowerCase().includes('back')
+      });
 
       if (videoRef.current) {
         const video = videoRef.current;
@@ -536,7 +545,10 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                       muted
                       webkit-playsinline="true"
                       style={{
-                        transform: 'scaleX(-1)',
+                        // Only mirror front-facing cameras, not rear cameras
+                        transform: selectedCamera && availableCameras.find(cam => cam.deviceId === selectedCamera)?.label?.toLowerCase().includes('front') 
+                          ? 'scaleX(-1)' 
+                          : 'none',
                         maxWidth: '100%',
                         height: 'auto'
                       }}

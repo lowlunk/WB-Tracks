@@ -96,6 +96,11 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 23, 2025: Fixed mobile barcode scanner camera functionality and orientation
+  - Resolved Android Chrome camera initialization issues with enhanced error handling
+  - Fixed rear camera mirroring - now shows correct orientation for barcode scanning
+  - Added Force Camera Start button for devices with camera enumeration issues
+  - Enhanced mobile camera constraints and video element setup for better compatibility
 - June 23, 2025: Enhanced barcode scanner for Android mobile devices
   - Improved camera permission handling with mobile-specific constraints
   - Added comprehensive error messages and permission guidance for Android users
