@@ -193,7 +193,7 @@ function Router() {
             <Route path="/inventory" component={Inventory} />
             <Route path="/admin">
               {() => {
-                const AdminEnhanced = lazy(() => import("@/pages/admin-enhanced"));
+                const AdminEnhanced = lazy(() => import("@/pages/admin-new"));
                 return (
                   <Suspense fallback={
                     <div className="flex items-center justify-center h-64">

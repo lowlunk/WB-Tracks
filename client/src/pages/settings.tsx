@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Database, Download, Upload, Settings as SettingsIcon, LogOut, FileText, BarChart3, Bell, AlertTriangle, Activity, Play } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FacilityManagement from "@/components/facility-management";
+import InventoryImportDialog from "@/components/inventory-import-dialog";
 import { apiRequest } from "@/lib/queryClient";
 
 
@@ -358,14 +359,15 @@ export default function Settings() {
                   {exportDataMutation.isPending ? 'Exporting...' : 'Export to CSV'}
                 </Button>
                 
-                <Button
-                  variant="outline"
-                  className="flex items-center justify-center"
-                  disabled
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Data
-                </Button>
+                <InventoryImportDialog>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center justify-center"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Inventory
+                  </Button>
+                </InventoryImportDialog>
               </div>
               
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
