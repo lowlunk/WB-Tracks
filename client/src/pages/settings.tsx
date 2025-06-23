@@ -97,9 +97,7 @@ export default function Settings() {
   });
   
   const [userSettings, setUserSettings] = useState({
-    notifications: true,
     autoBackup: true,
-    lowStockThreshold: 5,
   });
 
   // Test low inventory functionality
@@ -250,8 +248,8 @@ export default function Settings() {
                   </p>
                 </div>
                 <Switch
-                  checked={userSettings.notifications}
-                  onCheckedChange={(checked) => handleSettingChange("notifications", checked)}
+                  checked={notificationSettings.enabled}
+                  onCheckedChange={(checked) => updateSettings({ enabled: checked })}
                 />
               </div>
               
@@ -294,8 +292,8 @@ export default function Settings() {
                   type="number"
                   min="1"
                   max="100"
-                  value={userSettings.lowStockThreshold}
-                  onChange={(e) => handleSettingChange("lowStockThreshold", parseInt(e.target.value))}
+                  value={notificationSettings.lowStockThreshold}
+                  onChange={(e) => updateSettings({ lowStockThreshold: parseInt(e.target.value) || 5 })}
                   className="w-32"
                 />
                 <p className="text-sm text-gray-500">
@@ -462,6 +460,8 @@ export default function Settings() {
                       <Input
                         type="number"
                         placeholder="5"
+                        value={notificationSettings.lowStockThreshold}
+                        onChange={(e) => updateSettings({ lowStockThreshold: parseInt(e.target.value) || 5 })}
                         className="wb-input"
                       />
                       <p className="text-xs text-muted-foreground">
@@ -497,7 +497,10 @@ export default function Settings() {
                         Notify when items are transferred between locations
                       </p>
                     </div>
-                    <Switch defaultChecked />
+                    <Switch 
+                      checked={notificationSettings.activityAlerts}
+                      onCheckedChange={(checked) => updateSettings({ activityAlerts: checked })}
+                    />
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -507,7 +510,10 @@ export default function Settings() {
                         Notify when items are consumed for production
                       </p>
                     </div>
-                    <Switch defaultChecked />
+                    <Switch 
+                      checked={notificationSettings.activityAlerts}
+                      onCheckedChange={(checked) => updateSettings({ activityAlerts: checked })}
+                    />
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -517,7 +523,10 @@ export default function Settings() {
                         Notify when new components are added to inventory
                       </p>
                     </div>
-                    <Switch />
+                    <Switch 
+                      checked={notificationSettings.systemAlerts}
+                      onCheckedChange={(checked) => updateSettings({ systemAlerts: checked })}
+                    />
                   </div>
                 </div>
               </div>
