@@ -74,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const uploadsDir = path.join(process.cwd(), 'uploads');
   const importsDir = path.join(uploadsDir, 'imports');
   try {
-    const fs_sync = require('fs');
+    const fs_sync = await import('fs');
     fs_sync.mkdirSync(uploadsDir, { recursive: true });
     fs_sync.mkdirSync(importsDir, { recursive: true });
   } catch (error) {
