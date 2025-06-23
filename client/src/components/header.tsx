@@ -31,7 +31,9 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
   });
   
   // Only show notification count if notifications are enabled
-  const notificationCount = settings.enabled ? (lowStockItems?.length || 0) : 0;
+  const notificationCount = settings?.enabled ? (lowStockItems?.length || 0) : 0;
+  
+  console.log('Header - settings:', settings, 'count:', notificationCount); // Debug log
 
   return (
     <header className="bg-[hsl(var(--wb-surface))] shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50" data-tour="header">

@@ -249,7 +249,13 @@ export default function Settings() {
                 </div>
                 <Switch
                   checked={notificationSettings.enabled}
-                  onCheckedChange={(checked) => updateSettings({ enabled: checked })}
+                  onCheckedChange={(checked) => {
+                    updateSettings({ enabled: checked });
+                    toast({
+                      title: checked ? "Notifications Enabled" : "Notifications Disabled",
+                      description: checked ? "You will receive alerts and notifications" : "All notifications have been turned off",
+                    });
+                  }}
                 />
               </div>
               
@@ -428,18 +434,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* Notifications Configuration */}
-          <Card className="wb-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification Settings
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure when and how you receive notifications
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
+
               {/* Low Stock Alerts */}
               <div className="space-y-4">
                 <h4 className="font-medium">Low Stock Alerts</h4>

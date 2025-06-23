@@ -9,6 +9,8 @@ export default function AlertBanner() {
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
   const { settings } = useNotifications();
 
+  console.log('AlertBanner - settings:', settings); // Debug log
+
   // Load dismissed alerts from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('dismissedCriticalAlerts');
@@ -38,7 +40,7 @@ export default function AlertBanner() {
   };
 
   // Don't show alerts if notifications are disabled in settings
-  if (criticalAlerts.length === 0 || !settings.enabled) {
+  if (criticalAlerts.length === 0 || !settings?.enabled) {
     return null;
   }
 

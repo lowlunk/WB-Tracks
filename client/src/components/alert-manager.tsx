@@ -82,7 +82,7 @@ export default function AlertManager({ className = "" }: AlertManagerProps) {
   };
 
   // Only show the persistent banner for critical alerts and if notifications are enabled
-  const showCriticalBanner = criticalAlerts.length > 0 && settings.enabled;
+  const showCriticalBanner = criticalAlerts.length > 0 && settings?.enabled;
 
   return (
     <div className={className}>

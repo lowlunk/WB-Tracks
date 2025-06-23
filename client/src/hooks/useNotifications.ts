@@ -80,7 +80,7 @@ export function useNotifications() {
     setNotifications(prev => [newNotification, ...prev]);
 
     // Show toast notification for new notifications if enabled and notifications are enabled
-    if (settings.enabled && settings.showToasts) {
+    if (settings?.enabled && settings?.showToasts) {
       toast({
         title: notification.title,
         description: notification.description,
@@ -114,7 +114,12 @@ export function useNotifications() {
   };
 
   const updateSettings = (newSettings: Partial<NotificationSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    console.log('Updating settings:', newSettings); // Debug log
+    setSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      console.log('New settings state:', updated); // Debug log
+      return updated;
+    });
   };
 
   // Get counts
