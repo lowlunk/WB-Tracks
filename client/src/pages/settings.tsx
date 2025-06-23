@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useTheme } from "@/hooks/useTheme";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { startTour, resetOnboarding } = useOnboarding();
   const { theme, toggleTheme } = useTheme();
+  const { settings: notificationSettings, updateSettings } = useNotifications();
   const [isLoading, setIsLoading] = useState(false);
 
   // Data export mutations

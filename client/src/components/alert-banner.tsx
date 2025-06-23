@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { X, AlertTriangle } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export default function AlertBanner() {
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const { settings } = useNotifications();
 
   // Load dismissed alerts from localStorage
   useEffect(() => {
@@ -35,7 +37,8 @@ export default function AlertBanner() {
     setDismissedAlerts(prev => new Set([...prev, ...alertIds]));
   };
 
-  if (criticalAlerts.length === 0) {
+  // Don't show alerts if notifications are disabled in settings
+  if (criticalAlerts.length === 0 || !settings.enabled) {
     return null;
   }
 

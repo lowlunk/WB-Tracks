@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X, AlertTriangle, Package, CheckCircle } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface AlertItem {
   id: string;
@@ -27,6 +28,7 @@ interface AlertManagerProps {
 export default function AlertManager({ className = "" }: AlertManagerProps) {
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
   const [showAlerts, setShowAlerts] = useState(false);
+  const { settings } = useNotifications();
 
   // Load dismissed alerts from localStorage
   useEffect(() => {
@@ -79,8 +81,8 @@ export default function AlertManager({ className = "" }: AlertManagerProps) {
     setDismissedAlerts(new Set());
   };
 
-  // Only show the persistent banner for critical alerts
-  const showCriticalBanner = criticalAlerts.length > 0;
+  // Only show the persistent banner for critical alerts and if notifications are enabled
+  const showCriticalBanner = criticalAlerts.length > 0 && settings.enabled;
 
   return (
     <div className={className}>

@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNotifications } from "@/hooks/useNotifications";
 import { 
   Package, 
   Bell, 
@@ -21,6 +22,7 @@ interface HeaderProps {
 export default function Header({ onScanClick, onNotificationClick, onSettingsClick }: HeaderProps) {
   const [location] = useLocation();
   const [isOnline] = useState(true); // In a real app, this would check actual network status
+  const { settings } = useNotifications();
   
   // Get notification count from low stock items
   const { data: lowStockItems } = useQuery({
@@ -28,7 +30,8 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
     refetchInterval: 30000,
   });
   
-  const notificationCount = lowStockItems?.length || 0;
+  // Only show notification count if notifications are enabled
+  const notificationCount = settings.enabled ? (lowStockItems?.length || 0) : 0;
 
   return (
     <header className="bg-[hsl(var(--wb-surface))] shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50" data-tour="header">
