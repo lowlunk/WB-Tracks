@@ -59,27 +59,44 @@ export default function InventoryImportDialog({ isOpen, onClose }: InventoryImpo
 
   const importMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch('/api/inventory/import', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
+      // Create a progress simulation since the actual processing happens on the server
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) return prev; // Don't go past 90% until we get a response
+          return prev + Math.random() * 15; // Simulate progress
+        });
+      }, 500);
 
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Import failed');
+      try {
+        const response = await fetch('/api/inventory/import', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        clearInterval(progressInterval);
+
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(error || 'Import failed');
+        }
+
+        const result = await response.json();
+        setUploadProgress(100);
+        return result;
+      } catch (error) {
+        clearInterval(progressInterval);
+        throw error;
       }
-
-      return await response.json();
     },
     onSuccess: (result: IngestionResult) => {
       setImportResult(result);
-      setUploadProgress(100);
       
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['/api/components'] });
       queryClient.invalidateQueries({ queryKey: ['/api/inventory'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/recent-activity'] });
       
       toast({
         title: "Import Completed",
@@ -146,7 +163,7 @@ export default function InventoryImportDialog({ isOpen, onClose }: InventoryImpo
     formData.append('file', selectedFile);
     formData.append('skipZeroQuantity', skipZeroQuantity.toString());
 
-    setUploadProgress(10);
+    setUploadProgress(5); // Start with a small progress
     importMutation.mutate(formData);
   };
 
@@ -246,10 +263,13 @@ export default function InventoryImportDialog({ isOpen, onClose }: InventoryImpo
                 {uploadProgress > 0 && uploadProgress < 100 && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span>Processing...</span>
-                      <span>{uploadProgress}%</span>
+                      <span>Processing inventory file...</span>
+                      <span>{Math.round(uploadProgress)}%</span>
                     </div>
                     <Progress value={uploadProgress} />
+                    <p className="text-xs text-muted-foreground">
+                      Reading file, creating components, and updating inventory
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -299,7 +319,7 @@ export default function InventoryImportDialog({ isOpen, onClose }: InventoryImpo
                 {importMutation.isPending ? (
                   <>
                     <Clock className="h-4 w-4 animate-spin" />
-                    Processing...
+                    Processing {Math.round(uploadProgress)}%
                   </>
                 ) : (
                   <>
