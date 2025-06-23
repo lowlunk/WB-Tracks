@@ -194,6 +194,7 @@ function Router() {
             <Route path="/admin">
               {() => {
                 const AdminEnhanced = lazy(() => import("@/pages/admin-new"));
+const DatabaseOptimizer = lazy(() => import("@/pages/database-optimizer"));
                 return (
                   <Suspense fallback={
                     <div className="flex items-center justify-center h-64">

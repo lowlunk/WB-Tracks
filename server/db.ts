@@ -20,8 +20,7 @@ const createDatabaseConnection = () => {
       idleTimeoutMillis: 30000,
       max: 10,
       maxUses: 7500,
-      allowExitOnIdle: false,
-      maxLifetimeSeconds: 0
+      allowExitOnIdle: false
     });
 
     // Test the connection
