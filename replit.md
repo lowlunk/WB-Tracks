@@ -96,14 +96,14 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
-- June 23, 2025: Removed banner popups and created dedicated low stock management page
-  - Removed all banner popups for low stock alerts per user preference
-  - Kept only dismissible notifications with "View Details" option
-  - Made Low Stock Alerts dashboard card clickable, navigating to /low-stock
-  - Created comprehensive low stock management page with filtering and search
-  - Added visual stock level indicators and detailed item information
-  - Implemented location and severity filters for better management
-  - Enhanced low stock page with action buttons for transfers and details
+- June 23, 2025: Completely removed all banner popups and notification bell per user preference
+  - Completely removed all banner popups and notification bell from header
+  - Disabled all alert dialogs and empty "View Details" popups
+  - Made Low Stock Alerts dashboard card fully clickable, navigating to /low-stock
+  - Fixed settings page error by properly importing DismissedAlertsManager
+  - Enhanced barcode scanner with better camera permissions and error handling
+  - Added barcode lookup API endpoint for component search by part number
+  - All alert management now happens through dedicated /low-stock page only
 - June 23, 2025: Enhanced low stock alert dismissal system with persistent management
   - Implemented intelligent alert dismissal that persists across page refreshes
   - Added dismissal expiration system (7 days for regular alerts, 24 hours for critical)

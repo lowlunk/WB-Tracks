@@ -150,7 +150,7 @@ export default function Dashboard() {
             <Button 
               variant="link" 
               className="p-0 h-auto ml-2 text-orange-700 hover:text-orange-900"
-              onClick={() => setShowConsumedInventory(true)}
+              onClick={() => window.location.href = '/low-stock'}
             >
               View Details
             </Button>
@@ -199,13 +199,19 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="wb-card">
+        <Card 
+          className="wb-card hover:shadow-lg transition-shadow cursor-pointer" 
+          onClick={() => window.location.href = '/low-stock'}
+          title="Click to view low stock management page"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-orange-600 dark:text-orange-400">
+              Low Stock Alerts
+            </CardTitle>
+            <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{lowStockAlerts}</div>
+            <div className="text-2xl font-bold">{lowStockAlerts}</div>
             <p className="text-xs text-muted-foreground">
               Items need restocking
             </p>
