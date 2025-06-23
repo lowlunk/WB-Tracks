@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import FacilityManagement from "@/components/facility-management";
 import InventoryImportDialog from "@/components/inventory-import-dialog";
 import { apiRequest } from "@/lib/queryClient";
+import DismissedAlertsManager from "@/components/dismissed-alerts-manager";
 
 
 export default function Settings() {

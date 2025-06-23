@@ -107,24 +107,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
               </span>
             </div>
 
-            {/* Notifications */}
-            <Button 
-              onClick={onNotificationClick}
-              variant="ghost" 
-              size="icon" 
-              className="relative wb-focus-visible"
-              title="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              {notificationCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {notificationCount}
-                </Badge>
-              )}
-            </Button>
+            {/* Notification bell removed per user preference */}
 
             {/* Scan button */}
             <Button 

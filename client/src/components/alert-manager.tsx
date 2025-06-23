@@ -89,37 +89,7 @@ export default function AlertManager({ className = "" }: AlertManagerProps) {
 
   return (
     <div className={className}>
-      {/* Critical Alert Banner - only shows for out of stock items */}
-      {showCriticalBanner && (
-        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4">
-          <Alert variant="destructive" className="shadow-lg border-red-500 bg-red-50 dark:bg-red-950">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>
-                {criticalAlerts.length} critical stock alert{criticalAlerts.length !== 1 ? 's' : ''} - items out of stock
-              </span>
-              <div className="flex gap-2 ml-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAlerts(true)}
-                  className="text-red-700 border-red-300 hover:bg-red-100"
-                >
-                  View Details
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={dismissAllAlerts}
-                  className="text-red-700 hover:bg-red-100"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
+      {/* Critical Alert Banner disabled per user preference - no banner popups */}
 
       {/* Alert Details Modal */}
       {showAlerts && (
