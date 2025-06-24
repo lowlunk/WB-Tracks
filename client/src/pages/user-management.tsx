@@ -70,9 +70,18 @@ export default function UserManagement() {
   });
 
   // Redirect if not admin
-  if (currentUser?.role !== 'admin') {
+  if (currentUser && currentUser.role !== 'admin') {
     navigate('/');
     return null;
+  }
+
+  // Show loading while checking auth
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   const { data: users = [], isLoading, error } = useQuery({
