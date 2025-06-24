@@ -19,6 +19,7 @@ import Inventory from "@/pages/inventory";
 import AlertBanner from "@/components/alert-banner";
 import Settings from "@/pages/settings";
 import SimpleLogin from "@/pages/simple-login";
+import UserManagement from "@/pages/user-management";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -133,6 +134,7 @@ function Router() {
               }}
             </Route>
             <Route path="/settings" component={Settings} />
+            <Route path="/admin/users" component={UserManagement} />
             <Route component={NotFound} />
           </Switch>
         </div>

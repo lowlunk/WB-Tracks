@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Package, 
   Bell, 
@@ -23,6 +24,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
   const [location] = useLocation();
   const [isOnline] = useState(true); // In a real app, this would check actual network status
   const { settings } = useNotifications();
+  const { user } = useAuth();
   
   // Get notification count from low stock items
   const { data: lowStockItems } = useQuery({
@@ -86,15 +88,17 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
                 Inventory
               </Button>
             </Link>
-            <Link href="/admin">
-              <Button 
-                variant={location === "/admin" ? "default" : "ghost"}
-                className={`${location === "/admin" ? "wb-btn-primary" : ""} flex items-center gap-1`}
-              >
-                <Shield className="h-4 w-4" />
-                Admin
-              </Button>
-            </Link>
+            {user?.role === 'admin' && (
+              <Link href="/admin/users">
+                <Button 
+                  variant={location.startsWith("/admin") ? "default" : "ghost"}
+                  className={`${location.startsWith("/admin") ? "wb-btn-primary" : ""} flex items-center gap-1`}
+                >
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            )}
           </nav>
 
           {/* Right side actions */}

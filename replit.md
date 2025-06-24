@@ -96,6 +96,13 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 24, 2025: Implemented comprehensive user management system for admin accounts
+  - Fixed authentication system by removing auto-login and implementing proper login page
+  - Created user management interface with role assignment (admin, manager, shipping, prod, user)  
+  - Added admin-only user creation, editing, and deletion capabilities
+  - Fixed bcrypt import issues and duplicate function implementations in storage
+  - Added role-based access control with admin navigation menu
+  - Updated database schema to support new user roles
 - June 23, 2025: Fixed mobile barcode scanner camera functionality and orientation
   - Resolved Android Chrome camera initialization issues with enhanced error handling
   - Fixed rear camera mirroring - now shows correct orientation for barcode scanning
