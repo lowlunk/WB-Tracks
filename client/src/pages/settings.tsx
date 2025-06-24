@@ -379,7 +379,7 @@ export default function Settings() {
             <CardContent className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Application Version</span>
-                <span className="text-sm text-gray-500">WB-Tracks v1.0.0</span>
+                <span className="text-sm text-gray-500">WB-Tracks v1.7.2</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Last Login</span>
