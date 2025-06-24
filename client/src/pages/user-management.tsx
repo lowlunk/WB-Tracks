@@ -388,9 +388,12 @@ export default function UserManagement() {
                         <Edit className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-md">
                       <DialogHeader>
                         <DialogTitle>Edit User</DialogTitle>
+                        <DialogDescription>
+                          Update user information and passwords. Only admins can modify user accounts.
+                        </DialogDescription>
                       </DialogHeader>
                       {editingUser && (
                         <div className="space-y-4">
