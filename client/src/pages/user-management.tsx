@@ -79,7 +79,9 @@ export default function UserManagement() {
     queryKey: ["/api/admin/users"],
     queryFn: async () => {
       try {
+        console.log("Fetching users from API...");
         const response = await apiRequest("/api/admin/users");
+        console.log("Users API response:", response);
         // Ensure we always return an array
         if (!response) return [];
         return Array.isArray(response) ? response : [];
