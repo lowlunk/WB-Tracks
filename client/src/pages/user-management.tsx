@@ -75,12 +75,20 @@ export default function UserManagement() {
     return null;
   }
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, error } = useQuery({
     queryKey: ["/api/admin/users"],
     queryFn: async () => {
-      const response = await apiRequest("/api/admin/users");
-      return response;
+      try {
+        const response = await apiRequest("/api/admin/users");
+        // Ensure we always return an array
+        if (!response) return [];
+        return Array.isArray(response) ? response : [];
+      } catch (error: any) {
+        console.error("Failed to fetch users:", error);
+        throw error;
+      }
     },
+    retry: 1,
   });
 
   const createUserMutation = useMutation({
@@ -198,6 +206,18 @@ export default function UserManagement() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <Alert variant="destructive">
+          <AlertDescription>
+            Failed to load users. Please try refreshing the page.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="flex items-center justify-between mb-6">
@@ -299,7 +319,7 @@ export default function UserManagement() {
       </div>
 
       <div className="grid gap-4">
-        {users.map((user: User) => (
+        {Array.isArray(users) && users.map((user: User) => (
           <Card key={user.id}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -413,7 +433,7 @@ export default function UserManagement() {
         ))}
       </div>
 
-      {users.length === 0 && (
+      {Array.isArray(users) && users.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
