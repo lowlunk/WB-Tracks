@@ -363,8 +363,8 @@ export class DatabaseOptimizer {
         if (tableName && table !== tableName) continue;
 
         try {
-          // Get row count
-          const countResult = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table}`));
+          // Get row count using parameterized query to prevent SQL injection
+          const countResult = await db.execute(sql`SELECT COUNT(*) as count FROM ${sql.identifier(table)}`);
           const rowCount = countResult.rows[0]?.count || 0;
 
           // Simulate table statistics (in real PostgreSQL, you'd query pg_stat_user_tables)
