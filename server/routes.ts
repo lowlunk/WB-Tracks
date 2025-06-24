@@ -130,50 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auto-login endpoint - automatically logs in as admin user
-  app.post("/api/auto-login", async (req, res) => {
-    try {
-      // Find or create the admin user (cbryson)
-      let user = await storage.getUserByUsername("cbryson");
 
-      if (!user) {
-        // Create the admin user if it doesn't exist
-        user = await storage.createUser({
-          username: "cbryson",
-          email: "cbryson@wb-tracks.local",
-          firstName: "Chris",
-          lastName: "Bryson",
-          role: "admin",
-          isActive: true,
-          password: await bcrypt.hash("admin123", 10)
-        });
-      }
-
-      // Update last login
-      await storage.updateLastLogin(user.id);
-
-      // Create session
-      (req.session as any).userId = user.id;
-
-      res.json({ 
-        message: "Auto-login successful", 
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt,
-          lastLogin: new Date().toISOString()
-        }
-      });
-    } catch (error) {
-      console.error("Auto-login error:", error);
-      res.status(500).json({ message: "Auto-login failed" });
-    }
-  });
 
   // Authentication routes
   app.post("/api/login", async (req, res) => {
@@ -347,25 +304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/auth/user", async (req, res) => {
-    try {
-      const userId = (req.session as any).userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
 
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
-      }
-
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      console.error("Get user error:", error);
-      res.status(500).json({ message: "Failed to get user" });
-    }
-  });
 
   // Dashboard API routes
   app.get("/api/dashboard/stats", async (req, res) => {

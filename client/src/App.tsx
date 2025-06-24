@@ -18,8 +18,7 @@ import LineInventory from "@/pages/line-inventory";
 import Inventory from "@/pages/inventory";
 import AlertBanner from "@/components/alert-banner";
 import Settings from "@/pages/settings";
-import Login from "@/pages/login";
-import Register from "@/pages/register";
+import SimpleLogin from "@/pages/simple-login";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
@@ -42,7 +41,7 @@ function Router() {
 
   // Only redirect if we're certain about authentication state
   useEffect(() => {
-    if (!isLoading && isAuthenticated && (location === '/login' || location === '/register')) {
+    if (!isLoading && isAuthenticated && location === '/login') {
       console.log('Redirecting authenticated user to dashboard');
       navigate('/');
     }
