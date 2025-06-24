@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,16 @@ interface CreateUserData {
   password: string;
   role: string;
   isActive: boolean;
+}
+
+interface UpdateUserData {
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  role?: string;
+  isActive?: boolean;
 }
 
 const roleIcons = {
@@ -68,6 +79,7 @@ export default function UserManagement() {
     role: "user",
     isActive: true,
   });
+  const [updateUserData, setUpdateUserData] = useState<UpdateUserData>({});
 
   // Redirect if not admin
   if (currentUser && currentUser.role !== 'admin') {
@@ -179,8 +191,26 @@ export default function UserManagement() {
     createUserMutation.mutate(createUserData);
   };
 
-  const handleUpdateUser = (user: User, updates: Partial<User>) => {
-    updateUserMutation.mutate({ id: user.id, data: updates });
+  const handleUpdateUser = () => {
+    if (!editingUser) return;
+    
+    updateUserMutation.mutate({ 
+      id: editingUser.id, 
+      data: updateUserData 
+    });
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setUpdateUserData({
+      username: user.username,
+      email: user.email || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      password: "", // Always start with empty password
+      role: user.role,
+      isActive: user.isActive,
+    });
   };
 
   const handleDeleteUser = (userId: number) => {

@@ -400,8 +400,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Remove sensitive fields that shouldn't be updated this way
       delete updates.id;
-      delete updates.password;
       delete updates.createdAt;
+
+      // Hash password if provided
+      if (updates.password && updates.password.trim()) {
+        updates.password = await bcrypt.hash(updates.password, 10);
+      } else {
+        // If no password provided, don't update it
+        delete updates.password;
+      }
 
       const updatedUser = await storage.updateUser(targetUserId, updates);
       
