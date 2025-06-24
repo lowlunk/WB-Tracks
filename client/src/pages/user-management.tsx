@@ -384,7 +384,7 @@ export default function UserManagement() {
                 <div className="flex items-center gap-2">
                   <Dialog open={editingUser?.id === user.id} onOpenChange={(open) => !open && setEditingUser(null)}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>
+                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
@@ -394,32 +394,50 @@ export default function UserManagement() {
                       </DialogHeader>
                       {editingUser && (
                         <div className="space-y-4">
+                          <div>
+                            <Label>Username</Label>
+                            <Input
+                              value={updateUserData.username || ""}
+                              onChange={(e) => setUpdateUserData(prev => ({ ...prev, username: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input
+                              type="email"
+                              value={updateUserData.email || ""}
+                              onChange={(e) => setUpdateUserData(prev => ({ ...prev, email: e.target.value }))}
+                            />
+                          </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <Label>First Name</Label>
                               <Input
-                                value={editingUser.firstName || ""}
-                                onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
+                                value={updateUserData.firstName || ""}
+                                onChange={(e) => setUpdateUserData(prev => ({ ...prev, firstName: e.target.value }))}
                               />
                             </div>
                             <div>
                               <Label>Last Name</Label>
                               <Input
-                                value={editingUser.lastName || ""}
-                                onChange={(e) => setEditingUser({ ...editingUser, lastName: e.target.value })}
+                                value={updateUserData.lastName || ""}
+                                onChange={(e) => setUpdateUserData(prev => ({ ...prev, lastName: e.target.value }))}
                               />
                             </div>
                           </div>
                           <div>
-                            <Label>Email</Label>
+                            <Label>New Password</Label>
                             <Input
-                              value={editingUser.email}
-                              onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                              type="password"
+                              value={updateUserData.password || ""}
+                              onChange={(e) => setUpdateUserData(prev => ({ ...prev, password: e.target.value }))}
+                              placeholder="Leave empty to keep current password"
                             />
+                            <p className="text-sm text-gray-500 mt-1">Leave empty to keep current password</p>
                           </div>
                           <div>
                             <Label>Role</Label>
-                            <Select value={editingUser.role} onValueChange={(value) => setEditingUser({ ...editingUser, role: value })}>
+                            <Select value={updateUserData.role} onValueChange={(value) => setUpdateUserData(prev => ({ ...prev, role: value }))}>
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -433,11 +451,10 @@ export default function UserManagement() {
                             </Select>
                           </div>
                           <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
+                            <Switch
                               id="isActive"
-                              checked={editingUser.isActive}
-                              onChange={(e) => setEditingUser({ ...editingUser, isActive: e.target.checked })}
+                              checked={updateUserData.isActive || false}
+                              onCheckedChange={(checked) => setUpdateUserData(prev => ({ ...prev, isActive: checked }))}
                             />
                             <Label htmlFor="isActive">Active User</Label>
                           </div>
@@ -445,8 +462,8 @@ export default function UserManagement() {
                             <Button variant="outline" onClick={() => setEditingUser(null)}>
                               Cancel
                             </Button>
-                            <Button onClick={() => handleUpdateUser(user, editingUser)}>
-                              Update User
+                            <Button onClick={handleUpdateUser} disabled={updateUserMutation.isPending}>
+                              {updateUserMutation.isPending ? "Updating..." : "Update User"}
                             </Button>
                           </div>
                         </div>
