@@ -24,7 +24,7 @@ export default function Settings() {
   const { user, logout } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
-  const { startTour, resetOnboarding } = useOnboarding();
+  // const { startTour, resetOnboarding } = useOnboarding(); // Disabled per user preference
   const { theme, toggleTheme } = useTheme();
   const { settings: notificationSettings, updateSettings } = useNotifications();
   const [isLoading, setIsLoading] = useState(false);
