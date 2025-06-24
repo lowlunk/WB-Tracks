@@ -26,18 +26,15 @@ const requireAuth = (req: any, res: any, next: any) => {
 };
 
 // Configure multer for file uploads
+// Ensure upload directory exists at startup
+const uploadDir = path.join(process.cwd(), 'uploads', 'components');
+fs.mkdir(uploadDir, { recursive: true }).catch(console.error);
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadDir = path.join(process.cwd(), 'uploads', 'components');
-      // Use sync mkdir to avoid callback issues
-      try {
-        const fs_sync = require('fs');
-        fs_sync.mkdirSync(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-      } catch (error) {
-        cb(error as Error, uploadDir);
-      }
+      // Directory already exists, just return it
+      cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

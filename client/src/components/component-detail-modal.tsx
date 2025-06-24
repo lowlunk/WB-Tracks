@@ -24,6 +24,7 @@ import {
   ZoomIn
 } from "lucide-react";
 import { format } from "date-fns";
+import AddStockModal from "./add-stock-modal";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ComponentDetailModalProps {
@@ -673,6 +674,14 @@ export default function ComponentDetailModal({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Add Stock Modal */}
+      <AddStockModal
+        isOpen={isAddStockModalOpen}
+        onClose={() => setIsAddStockModalOpen(false)}
+        componentId={componentId}
+        componentNumber={comp.componentNumber}
+      />
     </Dialog>
   );
 }
