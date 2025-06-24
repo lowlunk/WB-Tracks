@@ -742,6 +742,47 @@ export class DatabaseStorage implements IStorage {
 
 
   async initializeDefaultData(): Promise<void> {
+    // Create demo users if they don't exist
+    const adminUser = await this.getUserByUsername('admin');
+    if (!adminUser) {
+      await this.createUser({
+        username: 'admin',
+        email: 'admin@wb-tracks.local',
+        password: await bcrypt.hash('admin123', 10),
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        isActive: true
+      });
+    }
+
+    const regularUser = await this.getUserByUsername('user');
+    if (!regularUser) {
+      await this.createUser({
+        username: 'user',
+        email: 'user@wb-tracks.local',
+        password: await bcrypt.hash('user123', 10),
+        firstName: 'Regular',
+        lastName: 'User',
+        role: 'user',
+        isActive: true
+      });
+    }
+
+    // Create cbryson user if it doesn't exist
+    const cbrysonUser = await this.getUserByUsername('cbryson');
+    if (!cbrysonUser) {
+      await this.createUser({
+        username: 'cbryson',
+        email: 'cbryson@foam.com',
+        password: await bcrypt.hash('admin123', 10),
+        firstName: 'Chris',
+        lastName: 'Bryson',
+        role: 'admin',
+        isActive: true
+      });
+    }
+
     // Create default facility if it doesn't exist
     const existingFacilities = await db.select().from(facilities);
     let defaultFacility: Facility;

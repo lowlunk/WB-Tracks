@@ -73,7 +73,9 @@ function Router() {
     );
   }
 
-  // No login screen - auto-login handles authentication
+  if (!isAuthenticated) {
+    return <SimpleLogin />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
