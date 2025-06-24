@@ -43,6 +43,7 @@ export default function ComponentDetailModal({
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [expandedPhoto, setExpandedPhoto] = useState<any>(null);
+  const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false);
 
   // Fetch component data
   const { data: component, isLoading: componentLoading } = useQuery({
@@ -100,8 +101,15 @@ export default function ComponentDetailModal({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to upload photo');
+        const errorText = await response.text();
+        let errorMessage = 'Failed to upload photo';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       return response.json();
@@ -112,13 +120,22 @@ export default function ComponentDetailModal({
         title: "Photo uploaded successfully",
         description: "The photo has been added to the component.",
       });
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     },
     onError: (error: Error) => {
+      console.error('Photo upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error.message.includes('fs') ? 'Photo upload is temporarily unavailable. Please try again later.' : error.message,
         variant: "destructive",
       });
+      // Reset file input on error
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     },
   });
 
@@ -242,23 +259,27 @@ export default function ComponentDetailModal({
               <Package className="h-5 w-5" />
               <span>{comp.componentNumber}</span>
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              className="flex items-center space-x-1"
-            >
-              <Edit className="h-4 w-4" />
-              <span>Edit</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                  className="flex items-center space-x-1"
+                >
+                  <Edit className="h-4 w-4" />
+                  <span>Edit</span>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
@@ -348,31 +369,117 @@ export default function ComponentDetailModal({
           <TabsContent value="inventory" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Inventory Locations</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Current Stock Levels</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsAddStockModalOpen(true)}
+                    className="flex items-center space-x-1"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add Stock</span>
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {inventoryLoading ? (
                   <div className="flex items-center justify-center h-32">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                   </div>
-                ) : inventoryItemsArray.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No inventory found for this component</p>
                 ) : (
-                  <div className="space-y-3">
-                    {inventoryItemsArray.map((item: any) => (
-                      <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <MapPin className="h-4 w-4 text-gray-500" />
+                  <div className="space-y-4">
+                    {/* Stock Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                              <MapPin className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">Main Inventory</p>
+                              <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{totalMainStock}</p>
+                              <p className="text-xs text-blue-600 dark:text-blue-300">Central storage area</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                              <Package className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-green-800 dark:text-green-200">Line Inventory</p>
+                              <p className="text-2xl font-bold text-green-900 dark:text-green-100">{totalLineStock}</p>
+                              <p className="text-xs text-green-600 dark:text-green-300">Production line stock</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Total Stock */}
+                    <Card className="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium">{item.location?.name}</p>
-                            <p className="text-sm text-gray-500">{item.location?.description}</p>
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Stock</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{totalMainStock + totalLineStock}</p>
+                          </div>
+                          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                            <Package className="h-6 w-6 text-gray-600" />
                           </div>
                         </div>
-                        <Badge variant="secondary" className="text-lg px-3 py-1">
-                          {item.quantity}
-                        </Badge>
+                      </CardContent>
+                    </Card>
+
+                    {/* Detailed Breakdown - Only show if there are actual inventory items */}
+                    {inventoryItemsArray.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Detailed Breakdown</h4>
+                        <div className="space-y-2">
+                          {inventoryItemsArray
+                            .filter((item: any) => item.componentId === componentId)
+                            .map((item: any) => (
+                            <div key={item.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border">
+                              <div className="flex items-center space-x-3">
+                                <MapPin className="h-4 w-4 text-gray-500" />
+                                <div>
+                                  <p className="font-medium text-sm">{item.location?.name || 'Unknown Location'}</p>
+                                  <p className="text-xs text-gray-500">{item.location?.description || 'No description'}</p>
+                                </div>
+                              </div>
+                              <Badge variant="secondary" className="font-semibold">
+                                {item.quantity || 0}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    )}
+
+                    {inventoryItemsArray.length === 0 && (
+                      <div className="text-center py-8">
+                        <Package className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                          No Stock Available
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">
+                          This component doesn't have any stock in inventory yet.
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsAddStockModalOpen(true)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Initial Stock
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
