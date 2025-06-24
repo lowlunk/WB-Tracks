@@ -86,21 +86,15 @@ export default function UserManagement() {
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ["/api/admin/users"],
-    queryFn: async () => {
-      try {
-        console.log("Fetching users from API...");
-        const response = await apiRequest("/api/admin/users");
-        console.log("Users API response:", response);
-        // Ensure we always return an array
-        if (!response) return [];
-        return Array.isArray(response) ? response : [];
-      } catch (error: any) {
-        console.error("Failed to fetch users:", error);
-        throw error;
-      }
-    },
+    enabled: !!currentUser && currentUser.role === 'admin', // Only fetch if user is admin
     retry: 1,
   });
+
+  // Debug logging
+  console.log("User Management - Current User:", currentUser);
+  console.log("User Management - Users data:", users);
+  console.log("User Management - Loading:", isLoading);
+  console.log("User Management - Error:", error);
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: CreateUserData) => {
