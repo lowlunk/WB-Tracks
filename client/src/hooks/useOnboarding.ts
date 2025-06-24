@@ -6,20 +6,19 @@ export function useOnboarding() {
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Check if user has completed onboarding
-      const hasCompletedOnboarding = localStorage.getItem(`onboarding-completed-${user.id}`);
-      const hasSkippedOnboarding = localStorage.getItem(`onboarding-skipped-${user.id}`);
-      
-      if (!hasCompletedOnboarding && !hasSkippedOnboarding) {
-        // Show tour after a brief delay for better UX
-        const timer = setTimeout(() => {
-          setShowTour(true);
-        }, 1500);
-        
-        return () => clearTimeout(timer);
-      }
-    }
+    // Walkthrough disabled per user preference
+    // if (isAuthenticated && user) {
+    //   const hasCompletedOnboarding = localStorage.getItem(`onboarding-completed-${user.id}`);
+    //   const hasSkippedOnboarding = localStorage.getItem(`onboarding-skipped-${user.id}`);
+    //   
+    //   if (!hasCompletedOnboarding && !hasSkippedOnboarding) {
+    //     const timer = setTimeout(() => {
+    //       setShowTour(true);
+    //     }, 1500);
+    //     
+    //     return () => clearTimeout(timer);
+    //   }
+    // }
   }, [isAuthenticated, user]);
 
   const startTour = () => {

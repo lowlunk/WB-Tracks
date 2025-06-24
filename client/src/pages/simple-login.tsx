@@ -65,14 +65,7 @@ export default function SimpleLogin() {
     loginMutation.mutate({ username, password });
   };
 
-  const handleDemoLogin = (demoType: 'admin' | 'user') => {
-    setError("");
-    const credentials = demoType === 'admin' 
-      ? { username: 'admin', password: 'admin123' }
-      : { username: 'user', password: 'user123' };
-    
-    loginMutation.mutate(credentials);
-  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
@@ -152,40 +145,7 @@ export default function SimpleLogin() {
             </Button>
           </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-800 px-2 text-gray-500">
-                Demo Accounts
-              </span>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDemoLogin('admin')}
-              disabled={loginMutation.isPending}
-            >
-              Admin Demo
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDemoLogin('user')}
-              disabled={loginMutation.isPending}
-            >
-              User Demo
-            </Button>
-          </div>
-
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Admin: admin / admin123</p>
-            <p>User: user / user123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

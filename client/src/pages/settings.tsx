@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useOnboarding } from "@/hooks/useOnboarding";
+// import { useOnboarding } from "@/hooks/useOnboarding"; // Disabled per user preference
 import { useTheme } from "@/hooks/useTheme";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
@@ -312,29 +312,7 @@ export default function Settings() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Quick Tour</Label>
-                  <p className="text-sm text-gray-500">
-                    Restart the guided walkthrough of WB-Tracks features
-                  </p>
-                </div>
-                <Button
-                  onClick={() => {
-                    resetOnboarding();
-                    startTour();
-                    toast({
-                      title: "Tour Started",
-                      description: "Follow the highlighted elements to learn about WB-Tracks features",
-                    });
-                  }}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <Play className="h-4 w-4" />
-                  Start Tour
-                </Button>
-              </div>
+              {/* Quick Tour section removed per user preference */}
             </CardContent>
           </Card>
 

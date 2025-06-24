@@ -96,6 +96,11 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 24, 2025: Removed demo account display from login page and disabled walkthrough system per user preference
+  - Cleaned up simple-login.tsx to remove demo account buttons and credentials
+  - Disabled onboarding tour system in useOnboarding hook and App.tsx
+  - Removed Quick Tour section from settings page
+  - Login page now shows clean interface without demo account clutter
 - June 24, 2025: Implemented comprehensive user management system for admin accounts
   - Fixed authentication system by removing auto-login and implementing proper login page
   - Created user management interface with role assignment (admin, manager, shipping, prod, user)  

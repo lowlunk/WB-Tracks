@@ -25,7 +25,7 @@ import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
 import BarcodeScanner from "@/components/barcode-scanner";
 
-import OnboardingTour from "@/components/onboarding-tour";
+// import OnboardingTour from "@/components/onboarding-tour"; // Disabled per user preference
 
 // Enhanced notification content component with dismissible banner
 // Removed NotificationContent function - no banner popups per user preference
@@ -50,7 +50,7 @@ function Router() {
 
   const [showScanner, setShowScanner] = useState(false);
 
-  const { showTour, completeTour } = useOnboarding();
+
   const { theme } = useTheme();
 
   // Apply theme to document element
@@ -155,11 +155,7 @@ function Router() {
 
 
 
-      <OnboardingTour
-        isOpen={showTour}
-        onClose={completeTour}
-        mode="complete"
-      />
+      {/* OnboardingTour disabled per user preference */}
     </div>
   );
 }
