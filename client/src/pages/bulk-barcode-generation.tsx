@@ -53,6 +53,220 @@ export default function BulkBarcodeGeneration() {
     },
   });
 
+  // Print all barcodes function
+  const handlePrintAllBarcodes = async () => {
+    if (!allComponentsData || allComponentsData.length === 0) {
+      toast({
+        title: "No Components Found",
+        description: "No components available for printing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        title: "Print Blocked",
+        description: "Please allow popups for this site to print barcodes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Generate QR codes for all components with barcodes
+      const componentsWithBarcodes = allComponentsData.filter((comp: any) => comp.barcode);
+      const qrCodes: string[] = [];
+
+      for (const component of componentsWithBarcodes) {
+        try {
+          const qrCodeDataUrl = await QRCode.toDataURL(component.barcode, {
+            margin: 4,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            },
+            width: 200
+          } as any);
+          qrCodes.push(`
+            <div class="label">
+              <img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code" />
+              <div class="part-number">${component.componentNumber}</div>
+            </div>
+          `);
+        } catch (error) {
+          console.error(`Failed to generate QR code for ${component.componentNumber}:`, error);
+        }
+      }
+
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Component Barcode Labels</title>
+            <style>
+              @page { size: letter; margin: 0.5in; }
+              body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+              .header { text-align: center; margin-bottom: 20px; page-break-after: avoid; }
+              .label-sheet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.1in; }
+              .label { 
+                width: 2.625in; 
+                height: 1in; 
+                border: 1px solid #ddd; 
+                padding: 0.05in;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                page-break-inside: avoid;
+                box-sizing: border-box;
+              }
+              .qr-code { width: 0.6in; height: 0.6in; margin-bottom: 0.02in; }
+              .part-number { font-size: 8pt; font-weight: bold; margin-bottom: 0.01in; }
+              @media print {
+                .no-print { display: none; }
+                .label { border: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header no-print">
+              <h2>Component Barcode Labels</h2>
+              <p>Generated: ${new Date().toLocaleDateString()} | Total Labels: ${qrCodes.length}</p>
+              <button onclick="window.print()">Print Labels</button>
+            </div>
+            <div class="label-sheet">
+              ${qrCodes.join('')}
+            </div>
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+
+      toast({
+        title: "Print Ready",
+        description: `Generated ${qrCodes.length} barcode labels for printing`,
+      });
+
+    } catch (error) {
+      console.error("Error generating print content:", error);
+      toast({
+        title: "Print Failed",
+        description: "Failed to generate barcode labels",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Download all barcodes function
+  const handleDownloadAllBarcodes = async () => {
+    if (!allComponentsData || allComponentsData.length === 0) {
+      toast({
+        title: "No Components Found",
+        description: "No components available for download",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const componentsWithBarcodes = allComponentsData.filter((comp: any) => comp.barcode);
+      
+      // Create a canvas to combine all QR codes
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Calculate layout (3 columns, auto rows)
+      const labelsPerRow = 3;
+      const labelWidth = 252; // 2.625" at 96 DPI
+      const labelHeight = 96; // 1" at 96 DPI
+      const rows = Math.ceil(componentsWithBarcodes.length / labelsPerRow);
+      
+      canvas.width = labelsPerRow * labelWidth;
+      canvas.height = rows * labelHeight;
+      
+      // White background
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let processedCount = 0;
+
+      for (let i = 0; i < componentsWithBarcodes.length; i++) {
+        const component = componentsWithBarcodes[i];
+        const row = Math.floor(i / labelsPerRow);
+        const col = i % labelsPerRow;
+        const x = col * labelWidth;
+        const y = row * labelHeight;
+
+        try {
+          const qrCodeDataUrl = await QRCode.toDataURL(component.barcode, {
+            margin: 4,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            },
+            width: 60
+          } as any);
+
+          const img = new Image();
+          img.onload = () => {
+            // Draw QR code
+            const qrSize = 60;
+            const qrX = x + (labelWidth - qrSize) / 2;
+            const qrY = y + 10;
+            ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+
+            // Draw part number
+            ctx.fillStyle = 'black';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(component.componentNumber, x + labelWidth / 2, y + qrY + qrSize + 15);
+
+            processedCount++;
+
+            // If this is the last barcode, download the canvas
+            if (processedCount === componentsWithBarcodes.length) {
+              setTimeout(() => {
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `component-barcodes-${new Date().toISOString().split('T')[0]}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    toast({
+                      title: "Download Complete",
+                      description: `Downloaded ${componentsWithBarcodes.length} barcode labels`,
+                    });
+                  }
+                });
+              }, 100);
+            }
+          };
+          img.src = qrCodeDataUrl;
+        } catch (error) {
+          console.error(`Failed to generate QR code for ${component.componentNumber}:`, error);
+          processedCount++;
+        }
+      }
+
+    } catch (error) {
+      console.error("Error generating download:", error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate barcode download",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Bulk barcode generation mutation
   const generateBarcodesMutation = useMutation({
     mutationFn: async (componentIds: number[]) => {
@@ -350,7 +564,98 @@ export default function BulkBarcodeGeneration() {
             </p>
             <div className="flex gap-2 justify-center">
               <Button 
-                onClick={handlePrintAllBarcodes}
+                onClick={async () => {
+                  if (!allComponentsData || allComponentsData.length === 0) {
+                    toast({
+                      title: "No Components Found",
+                      description: "No components available for printing",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  const printWindow = window.open('', '_blank');
+                  if (!printWindow) {
+                    toast({
+                      title: "Print Blocked",
+                      description: "Please allow popups for this site to print barcodes",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  try {
+                    const componentsWithBarcodes = allComponentsData.filter((comp: any) => comp.barcode);
+                    const qrCodes: string[] = [];
+
+                    for (const component of componentsWithBarcodes) {
+                      try {
+                        const qrCodeDataUrl = await QRCode.toDataURL(component.barcode, {
+                          margin: 4,
+                          color: { dark: '#000000', light: '#FFFFFF' },
+                          width: 200
+                        } as any);
+                        
+                        qrCodes.push(`
+                          <div class="label">
+                            <img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code" />
+                            <div class="part-number">${component.componentNumber}</div>
+                          </div>
+                        `);
+                      } catch (error) {
+                        console.error(`Failed to generate QR code for ${component.componentNumber}:`, error);
+                      }
+                    }
+
+                    const printContent = `
+                      <!DOCTYPE html>
+                      <html>
+                        <head>
+                          <title>Component Barcode Labels</title>
+                          <style>
+                            @page { size: letter; margin: 0.5in; }
+                            body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                            .header { text-align: center; margin-bottom: 20px; page-break-after: avoid; }
+                            .label-sheet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.1in; }
+                            .label { 
+                              width: 2.625in; height: 1in; border: 1px solid #ddd; padding: 0.05in;
+                              text-align: center; display: flex; flex-direction: column;
+                              justify-content: center; align-items: center; page-break-inside: avoid;
+                              box-sizing: border-box;
+                            }
+                            .qr-code { width: 0.6in; height: 0.6in; margin-bottom: 0.02in; }
+                            .part-number { font-size: 8pt; font-weight: bold; margin-bottom: 0.01in; }
+                            @media print { .no-print { display: none; } .label { border: none; } }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="header no-print">
+                            <h2>Component Barcode Labels</h2>
+                            <p>Generated: ${new Date().toLocaleDateString()} | Total Labels: ${qrCodes.length}</p>
+                            <button onclick="window.print()">Print Labels</button>
+                          </div>
+                          <div class="label-sheet">${qrCodes.join('')}</div>
+                        </body>
+                      </html>
+                    `;
+
+                    printWindow.document.write(printContent);
+                    printWindow.document.close();
+
+                    toast({
+                      title: "Print Ready",
+                      description: `Generated ${qrCodes.length} barcode labels for printing`,
+                    });
+
+                  } catch (error) {
+                    console.error("Error generating print content:", error);
+                    toast({
+                      title: "Print Failed",
+                      description: "Failed to generate barcode labels",
+                      variant: "destructive",
+                    });
+                  }
+                }}
                 className="flex items-center gap-2"
               >
                 <Printer className="h-4 w-4" />
@@ -358,7 +663,99 @@ export default function BulkBarcodeGeneration() {
               </Button>
               <Button 
                 variant="outline"
-                onClick={handleDownloadAllBarcodes}
+                onClick={async () => {
+                  if (!allComponentsData || allComponentsData.length === 0) {
+                    toast({
+                      title: "No Components Found",
+                      description: "No components available for download",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  try {
+                    const componentsWithBarcodes = allComponentsData.filter((comp: any) => comp.barcode);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return;
+
+                    const labelsPerRow = 3;
+                    const labelWidth = 252;
+                    const labelHeight = 96;
+                    const rows = Math.ceil(componentsWithBarcodes.length / labelsPerRow);
+                    
+                    canvas.width = labelsPerRow * labelWidth;
+                    canvas.height = rows * labelHeight;
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    let processedCount = 0;
+
+                    for (let i = 0; i < componentsWithBarcodes.length; i++) {
+                      const component = componentsWithBarcodes[i];
+                      const row = Math.floor(i / labelsPerRow);
+                      const col = i % labelsPerRow;
+                      const x = col * labelWidth;
+                      const y = row * labelHeight;
+
+                      try {
+                        const qrCodeDataUrl = await QRCode.toDataURL(component.barcode, {
+                          margin: 4,
+                          color: { dark: '#000000', light: '#FFFFFF' },
+                          width: 60
+                        } as any);
+
+                        const img = new Image();
+                        img.onload = () => {
+                          const qrSize = 60;
+                          const qrX = x + (labelWidth - qrSize) / 2;
+                          const qrY = y + 10;
+                          ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+
+                          ctx.fillStyle = 'black';
+                          ctx.font = '10px Arial';
+                          ctx.textAlign = 'center';
+                          ctx.fillText(component.componentNumber, x + labelWidth / 2, y + qrY + qrSize + 15);
+
+                          processedCount++;
+
+                          if (processedCount === componentsWithBarcodes.length) {
+                            setTimeout(() => {
+                              canvas.toBlob((blob) => {
+                                if (blob) {
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `component-barcodes-${new Date().toISOString().split('T')[0]}.png`;
+                                  a.click();
+                                  URL.revokeObjectURL(url);
+
+                                  toast({
+                                    title: "Download Complete",
+                                    description: `Downloaded ${componentsWithBarcodes.length} barcode labels`,
+                                  });
+                                }
+                              });
+                            }, 100);
+                          }
+                        };
+                        img.src = qrCodeDataUrl;
+                      } catch (error) {
+                        console.error(`Failed to generate QR code for ${component.componentNumber}:`, error);
+                        processedCount++;
+                      }
+                    }
+
+                  } catch (error) {
+                    console.error("Error generating download:", error);
+                    toast({
+                      title: "Download Failed",
+                      description: "Failed to generate barcode download",
+                      variant: "destructive",
+                    });
+                  }
+                }}
                 className="flex items-center gap-2"
               >
                 <Download className="h-4 w-4" />
