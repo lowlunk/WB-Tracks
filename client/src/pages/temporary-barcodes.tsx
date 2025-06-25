@@ -69,10 +69,21 @@ export default function TemporaryBarcodesPage() {
   // Create barcode mutation
   const createMutation = useMutation({
     mutationFn: async (data: CreateBarcodeFormData) => {
-      return await apiRequest("/api/barcodes/temporary", {
+      const response = await fetch("/api/barcodes/temporary", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
         body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || `HTTP ${response.status}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/barcodes/temporary"] });
@@ -94,9 +105,17 @@ export default function TemporaryBarcodesPage() {
   // Delete barcode mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/barcodes/temporary/${id}`, {
+      const response = await fetch(`/api/barcodes/temporary/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || `HTTP ${response.status}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/barcodes/temporary"] });
@@ -117,9 +136,17 @@ export default function TemporaryBarcodesPage() {
   // Cleanup expired barcodes mutation
   const cleanupMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/barcodes/temporary/cleanup", {
+      const response = await fetch("/api/barcodes/temporary/cleanup", {
         method: "POST",
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || `HTTP ${response.status}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/barcodes/temporary"] });
