@@ -3,6 +3,12 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -27,7 +33,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
   const { user } = useAuth();
   
   // Get notification count from low stock items
-  const { data: lowStockItems } = useQuery({
+  const { data: lowStockItems = [] } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
     refetchInterval: 30000,
   });
