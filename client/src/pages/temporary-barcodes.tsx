@@ -17,8 +17,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { QrCode, Plus, Trash2, Clock, Eye, Copy, RefreshCw } from "lucide-react";
+import { QrCode, Plus, Trash2, Clock, Eye, Copy, RefreshCw, Printer, Download } from "lucide-react";
 import { format } from "date-fns";
+import QRCode from "qrcode";
 
 const createBarcodeSchema = z.object({
   componentId: z.string().optional().transform(val => val ? parseInt(val) : undefined),
@@ -187,6 +188,141 @@ export default function TemporaryBarcodesPage() {
       title: "Copied",
       description: "Barcode copied to clipboard",
     });
+  };
+
+  const generateQRCode = async (barcode: string) => {
+    try {
+      const qrCodeDataURL = await QRCode.toDataURL(barcode, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      return qrCodeDataURL;
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      return null;
+    }
+  };
+
+  const printBarcode = async (barcode: TemporaryBarcode) => {
+    try {
+      const qrCodeDataURL = await generateQRCode(barcode.barcode);
+      if (!qrCodeDataURL) {
+        toast({
+          title: "Error",
+          description: "Failed to generate QR code",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast({
+          title: "Error",
+          description: "Please allow popups to print barcodes",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Barcode - ${barcode.barcode}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                text-align: center; 
+                margin: 20px;
+                background: white;
+              }
+              .barcode-container {
+                display: inline-block;
+                border: 2px solid #ddd;
+                padding: 20px;
+                margin: 10px;
+                background: white;
+              }
+              .barcode-text {
+                font-size: 18px;
+                font-weight: bold;
+                margin: 10px 0;
+                letter-spacing: 2px;
+              }
+              .barcode-info {
+                font-size: 12px;
+                color: #666;
+                margin: 5px 0;
+              }
+              .qr-code {
+                margin: 10px 0;
+              }
+              @media print {
+                body { margin: 0; }
+                .no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="barcode-container">
+              <div class="barcode-info">Purpose: ${barcode.purpose.toUpperCase()}</div>
+              <img src="${qrCodeDataURL}" alt="QR Code" class="qr-code" />
+              <div class="barcode-text">${barcode.barcode}</div>
+              <div class="barcode-info">Expires: ${format(new Date(barcode.expiresAt), 'MMM d, HH:mm')}</div>
+              ${barcode.description ? `<div class="barcode-info">${barcode.description}</div>` : ''}
+            </div>
+            <div class="no-print" style="margin-top: 20px;">
+              <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px;">Print</button>
+              <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; margin-left: 10px;">Close</button>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate printable barcode",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadQRCode = async (barcode: TemporaryBarcode) => {
+    try {
+      const qrCodeDataURL = await generateQRCode(barcode.barcode);
+      if (!qrCodeDataURL) {
+        toast({
+          title: "Error",
+          description: "Failed to generate QR code",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.download = `barcode-${barcode.barcode}.png`;
+      link.href = qrCodeDataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Downloaded",
+        description: "QR code downloaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download QR code",
+        variant: "destructive",
+      });
+    }
   };
 
   const isExpired = (expiresAt: string) => {

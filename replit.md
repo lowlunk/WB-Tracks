@@ -96,6 +96,12 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 25, 2025: Added QR code generation and printing functionality to temporary barcode system
+  - Integrated qrcode library for generating scannable QR codes from temporary barcodes
+  - Added print functionality with formatted barcode labels including purpose, expiration, and description
+  - Implemented download feature for QR codes as PNG images
+  - Enhanced action buttons in barcode table with print and download options
+  - Created professional print layout with proper styling for label printing
 - June 25, 2025: Implemented comprehensive temporary barcode generation system for testing purposes
   - Added database schema for temporary barcodes with TMP-[PURPOSE]-[TIMESTAMP]-[RANDOM] format
   - Enhanced barcode lookup API to handle temporary barcodes with automatic expiration checking
