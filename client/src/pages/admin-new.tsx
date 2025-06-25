@@ -26,7 +26,8 @@ import {
   Edit,
   Shield,
   Download,
-  Upload
+  Upload,
+  QrCode
 } from "lucide-react";
 
 export default function AdminDashboard() {

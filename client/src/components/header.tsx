@@ -39,7 +39,7 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
   });
   
   // Only show notification count if notifications are enabled
-  const notificationCount = settings?.enabled ? (lowStockItems?.length || 0) : 0;
+  const notificationCount = settings?.enabled ? (Array.isArray(lowStockItems) ? lowStockItems.length : 0) : 0;
   
 
 
@@ -119,34 +119,11 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
 
             {/* Notification bell removed per user preference */}
 
-            {/* Admin QR Code Management Dropdown */}
+            {/* Admin QR Code Management */}
             {user?.role === 'admin' && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="wb-focus-visible" 
-                    title="Barcode Management"
-                  >
-                    <QrCode className="h-5 w-5 text-orange-500" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/temporary-barcodes" className="flex items-center gap-2 w-full">
-                      <QrCode className="h-4 w-4" />
-                      Temporary Barcodes
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/bulk-barcode-generation" className="flex items-center gap-2 w-full">
-                      <Package className="h-4 w-4" />
-                      Bulk Barcode Generation
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link href="/bulk-barcode-generation" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Bulk Barcode Generation">
+                <QrCode className="h-5 w-5 text-orange-500" />
+              </Link>
             )}
 
             {/* Scan button */}
