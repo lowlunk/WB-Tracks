@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, X, Star, Package } from "lucide-react";
+import { Camera, Upload, X, Star, Package, Scan } from "lucide-react";
+import BarcodeScanner from "./barcode-scanner";
 
 interface ComponentEditModalProps {
   isOpen: boolean;
@@ -28,7 +29,10 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
     supplier: "",
     unitPrice: "",
     notes: "",
+    barcode: "",
   });
+
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
 
   // Fetch component data
   const { data: component, isLoading } = useQuery({
@@ -55,6 +59,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
         supplier: comp.supplier || "",
         unitPrice: comp.unitPrice?.toString() || "",
         notes: comp.notes || "",
+        barcode: comp.barcode || "",
       });
     }
   }, [component, isOpen]);
@@ -243,6 +248,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Component Details Form */}
           <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Component Details</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="componentNumber">Component Number</Label>
