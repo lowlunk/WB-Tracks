@@ -334,9 +334,26 @@ export default function BulkBarcodeGeneration() {
           <CardContent className="text-center py-8">
             <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-600" />
             <h3 className="text-lg font-semibold mb-2">All Components Have Barcodes</h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Every component in the system already has an assigned barcode.
             </p>
+            <div className="flex gap-2 justify-center">
+              <Button 
+                onClick={() => window.open('/print-all-barcodes', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                Print All Barcodes
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => window.open('/download-all-barcodes', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download All Barcodes
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (
