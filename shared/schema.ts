@@ -120,6 +120,21 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Temporary barcodes for testing purposes
+export const temporaryBarcodes = pgTable("temporary_barcodes", {
+  id: serial("id").primaryKey(),
+  barcode: varchar("barcode", { length: 50 }).notNull().unique(),
+  componentId: integer("component_id").references(() => components.id),
+  purpose: text("purpose").notNull(), // 'testing', 'training', 'demo'
+  description: text("description"),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  usageCount: integer("usage_count").notNull().default(0),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Component photos table
 export const componentPhotos = pgTable("component_photos", {
   id: serial("id").primaryKey(),
@@ -178,6 +193,17 @@ export const userGroupMembershipRelations = relations(userGroupMemberships, ({ o
   group: one(userGroups, {
     fields: [userGroupMemberships.groupId],
     references: [userGroups.id],
+  }),
+}));
+
+export const temporaryBarcodeRelations = relations(temporaryBarcodes, ({ one }) => ({
+  component: one(components, {
+    fields: [temporaryBarcodes.componentId],
+    references: [components.id],
+  }),
+  createdBy: one(users, {
+    fields: [temporaryBarcodes.createdBy],
+    references: [users.id],
   }),
 }));
 
