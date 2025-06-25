@@ -850,6 +850,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Barcode lookup endpoint - enhanced for temporary barcodes
+  app.post("/api/barcode/lookup", async (req, res) => {
+    try {
+      const { barcode } = req.body;
+      
+      if (!barcode || typeof barcode !== 'string') {
+        return res.status(400).json({ message: "Invalid barcode provided" });
+      }
+
+      const trimmedBarcode = barcode.trim();
+
+      // Check if it's a temporary barcode first
+      if (trimmedBarcode.startsWith('TMP-')) {
+        const tempBarcode = await storage.getTemporaryBarcodeByCode(trimmedBarcode);
+        
+        if (!tempBarcode) {
+          return res.status(404).json({ message: "Temporary barcode not found or expired" });
+        }
+
+        // Check if expired
+        if (new Date() > tempBarcode.expiresAt) {
+          return res.status(404).json({ message: "Temporary barcode has expired" });
+        }
+
+        // Update usage count
+        await storage.updateTemporaryBarcodeUsage(trimmedBarcode);
+
+        // If linked to a component, return component data
+        if (tempBarcode.componentId) {
+          const component = await storage.getComponent(tempBarcode.componentId);
+          if (component) {
+            return res.json({
+              ...component,
+              isTemporary: true,
+              temporaryBarcode: tempBarcode
+            });
+          }
+        }
+
+        // Return temporary barcode info if no component linked
+        return res.json({
+          componentNumber: tempBarcode.barcode,
+          description: tempBarcode.description || `Temporary ${tempBarcode.purpose} barcode`,
+          isTemporary: true,
+          temporaryBarcode: tempBarcode
+        });
+      }
+
+      // Try to find component by barcode (component number)
+      const component = await storage.getComponentByNumber(trimmedBarcode);
+      
+      if (!component) {
+        return res.status(404).json({ message: "Component not found" });
+      }
+
+      res.json(component);
+    } catch (error) {
+      console.error("Barcode lookup error:", error);
+      res.status(500).json({ message: "Failed to lookup barcode" });
+    }
+  });
+
+  // Temporary barcode management routes
+  app.get("/api/barcodes/temporary", requireAuth, async (req, res) => {
+    try {
+      const barcodes = await storage.getAllTemporaryBarcodes();
+      res.json(barcodes);
+    } catch (error) {
+      console.error("Error fetching temporary barcodes:", error);
+      res.status(500).json({ message: "Failed to fetch temporary barcodes" });
+    }
+  });
+
+  app.post("/api/barcodes/temporary", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const validatedData = createTemporaryBarcodeSchema.parse(req.body);
+      
+      const barcode = await storage.createTemporaryBarcode(validatedData, userId);
+      res.status(201).json(barcode);
+    } catch (error: any) {
+      console.error("Error creating temporary barcode:", error);
+      res.status(400).json({ message: error.message || "Invalid barcode data" });
+    }
+  });
+
+  app.delete("/api/barcodes/temporary/:id", requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteTemporaryBarcode(id);
+      res.json({ message: "Temporary barcode deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting temporary barcode:", error);
+      res.status(500).json({ message: "Failed to delete temporary barcode" });
+    }
+  });
+
+  app.post("/api/barcodes/temporary/cleanup", requireAuth, async (req, res) => {
+    try {
+      const result = await storage.cleanupExpiredBarcodes();
+      res.json(result);
+    } catch (error) {
+      console.error("Error cleaning up expired barcodes:", error);
+      res.status(500).json({ message: "Failed to cleanup expired barcodes" });
+    }
+  });
+
   // Barcode scanning endpoint
   app.post("/api/barcode/lookup", async (req, res) => {
     try {
