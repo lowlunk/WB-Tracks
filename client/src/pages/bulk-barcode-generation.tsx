@@ -31,6 +31,7 @@ export default function BulkBarcodeGeneration() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedBarcodes, setGeneratedBarcodes] = useState<BarcodeGenerationResult[]>([]);
+  const [allComponents, setAllComponents] = useState<Component[]>([]);
 
   // Fetch components without barcodes
   const { data: componentsWithoutBarcodes = [], isLoading } = useQuery({
@@ -38,6 +39,16 @@ export default function BulkBarcodeGeneration() {
     queryFn: async () => {
       const response = await fetch("/api/components/without-barcodes");
       if (!response.ok) throw new Error("Failed to fetch components");
+      return response.json();
+    },
+  });
+
+  // Fetch all components for printing
+  const { data: allComponentsData = [] } = useQuery({
+    queryKey: ["/api/components"],
+    queryFn: async () => {
+      const response = await fetch("/api/components");
+      if (!response.ok) throw new Error("Failed to fetch all components");
       return response.json();
     },
   });
@@ -339,7 +350,7 @@ export default function BulkBarcodeGeneration() {
             </p>
             <div className="flex gap-2 justify-center">
               <Button 
-                onClick={() => window.open('/print-all-barcodes', '_blank')}
+                onClick={handlePrintAllBarcodes}
                 className="flex items-center gap-2"
               >
                 <Printer className="h-4 w-4" />
@@ -347,7 +358,7 @@ export default function BulkBarcodeGeneration() {
               </Button>
               <Button 
                 variant="outline"
-                onClick={() => window.open('/download-all-barcodes', '_blank')}
+                onClick={handleDownloadAllBarcodes}
                 className="flex items-center gap-2"
               >
                 <Download className="h-4 w-4" />
