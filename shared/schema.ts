@@ -327,6 +327,21 @@ export const consumeItemSchema = z.object({
   notes: z.string().optional(),
 });
 
+export const insertTemporaryBarcodeSchema = createInsertSchema(temporaryBarcodes).omit({
+  id: true,
+  createdAt: true,
+  usageCount: true,
+  lastUsedAt: true,
+  barcode: true,
+});
+
+export const createTemporaryBarcodeSchema = z.object({
+  componentId: z.number().optional(),
+  purpose: z.enum(['testing', 'training', 'demo']),
+  description: z.string().optional(),
+  expirationHours: z.number().min(1).max(168).default(24), // 1 hour to 1 week
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Facility = typeof facilities.$inferSelect;
@@ -348,6 +363,9 @@ export type InsertInventoryTransaction = z.infer<typeof insertInventoryTransacti
 export type TransferItem = z.infer<typeof transferItemSchema>;
 export type ConsumeItem = z.infer<typeof consumeItemSchema>;
 export type LoginData = z.infer<typeof loginSchema>;
+export type TemporaryBarcode = typeof temporaryBarcodes.$inferSelect;
+export type InsertTemporaryBarcode = z.infer<typeof insertTemporaryBarcodeSchema>;
+export type CreateTemporaryBarcode = z.infer<typeof createTemporaryBarcodeSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
 
 export interface InventoryItemWithDetails extends InventoryItem {

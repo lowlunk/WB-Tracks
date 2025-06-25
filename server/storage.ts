@@ -7,6 +7,7 @@ import {
   users,
   userGroups,
   componentPhotos,
+  temporaryBarcodes,
   type Component,
   type InsertComponent,
   type Facility,
@@ -29,6 +30,9 @@ import {
   type ComponentWithInventory,
   type LoginData,
   type RegisterData,
+  type TemporaryBarcode,
+  type InsertTemporaryBarcode,
+  type CreateTemporaryBarcode,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, isNull } from "drizzle-orm";
@@ -109,6 +113,15 @@ export interface IStorage {
 
   // Initialize default data
   initializeDefaultData(): Promise<void>;
+
+  // Temporary barcode methods
+  createTemporaryBarcode(data: CreateTemporaryBarcode, userId: number): Promise<TemporaryBarcode>;
+  getAllTemporaryBarcodes(): Promise<TemporaryBarcode[]>;
+  getTemporaryBarcode(id: number): Promise<TemporaryBarcode | undefined>;
+  getTemporaryBarcodeByCode(barcode: string): Promise<TemporaryBarcode | undefined>;
+  updateTemporaryBarcodeUsage(barcode: string): Promise<void>;
+  deleteTemporaryBarcode(id: number): Promise<void>;
+  cleanupExpiredBarcodes(): Promise<{ deletedCount: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1005,6 +1018,67 @@ export class DatabaseStorage implements IStorage {
         { componentNumber: "400320", description: "320MM MG4 12MM WIDE" }
       ];
     }
+  }
+
+  // Temporary barcode methods
+  async createTemporaryBarcode(data: CreateTemporaryBarcode, userId: number): Promise<TemporaryBarcode> {
+    // Generate unique temporary barcode with format: TMP-[PURPOSE]-[TIMESTAMP]-[RANDOM]
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const purposePrefix = data.purpose.toUpperCase().substring(0, 3);
+    const barcode = `TMP-${purposePrefix}-${timestamp}-${random}`;
+
+    // Calculate expiration date
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + data.expirationHours);
+
+    const [newBarcode] = await db.insert(temporaryBarcodes).values({
+      barcode,
+      componentId: data.componentId,
+      purpose: data.purpose,
+      description: data.description,
+      createdBy: userId,
+      expiresAt,
+      isActive: true,
+    }).returning();
+
+    return newBarcode;
+  }
+
+  async getAllTemporaryBarcodes(): Promise<TemporaryBarcode[]> {
+    return await db.select().from(temporaryBarcodes).orderBy(desc(temporaryBarcodes.createdAt));
+  }
+
+  async getTemporaryBarcode(id: number): Promise<TemporaryBarcode | undefined> {
+    const [barcode] = await db.select().from(temporaryBarcodes).where(eq(temporaryBarcodes.id, id));
+    return barcode || undefined;
+  }
+
+  async getTemporaryBarcodeByCode(barcode: string): Promise<TemporaryBarcode | undefined> {
+    const [tempBarcode] = await db.select().from(temporaryBarcodes).where(eq(temporaryBarcodes.barcode, barcode));
+    return tempBarcode || undefined;
+  }
+
+  async updateTemporaryBarcodeUsage(barcode: string): Promise<void> {
+    await db.update(temporaryBarcodes)
+      .set({ 
+        usageCount: sql`${temporaryBarcodes.usageCount} + 1`,
+        lastUsedAt: new Date(),
+      })
+      .where(eq(temporaryBarcodes.barcode, barcode));
+  }
+
+  async deleteTemporaryBarcode(id: number): Promise<void> {
+    await db.delete(temporaryBarcodes).where(eq(temporaryBarcodes.id, id));
+  }
+
+  async cleanupExpiredBarcodes(): Promise<{ deletedCount: number }> {
+    const now = new Date();
+    const result = await db.delete(temporaryBarcodes)
+      .where(sql`${temporaryBarcodes.expiresAt} < ${now}`)
+      .returning({ id: temporaryBarcodes.id });
+    
+    return { deletedCount: result.length };
   }
 }
 
