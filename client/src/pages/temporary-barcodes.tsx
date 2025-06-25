@@ -144,7 +144,12 @@ export default function TemporaryBarcodesPage() {
   });
 
   const onSubmit = (data: CreateBarcodeFormData) => {
-    createMutation.mutate(data);
+    // Convert "none" back to undefined for the API
+    const submitData = {
+      ...data,
+      componentId: data.componentId === "none" ? undefined : data.componentId
+    };
+    createMutation.mutate(submitData);
   };
 
   const copyToClipboard = (text: string) => {
@@ -247,14 +252,14 @@ export default function TemporaryBarcodesPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Link to Component (Optional)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || "none"}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select component..." />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">No component</SelectItem>
+                            <SelectItem value="none">No component</SelectItem>
                             {components.map((component) => (
                               <SelectItem key={component.id} value={component.id.toString()}>
                                 {component.componentNumber} - {component.description}
