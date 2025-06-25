@@ -45,6 +45,7 @@ export const components = pgTable("components", {
   supplier: text("supplier"),
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
   notes: text("notes"),
+  barcode: varchar("barcode", { length: 255 }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

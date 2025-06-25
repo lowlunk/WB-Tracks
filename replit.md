@@ -96,6 +96,12 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes
+- June 25, 2025: Added scan-to-input barcode assignment feature for components
+  - Added barcode field to components database schema
+  - Integrated barcode scanner into component edit dialog
+  - Allows scanning existing 2D barcodes and assigning them to components
+  - Added scan button next to barcode input field with camera integration
+  - Updated component update API to handle barcode field
 - June 25, 2025: Added QR code generation and printing functionality to temporary barcode system
   - Integrated qrcode library for generating scannable QR codes from temporary barcodes
   - Added print functionality with formatted barcode labels including purpose, expiration, and description

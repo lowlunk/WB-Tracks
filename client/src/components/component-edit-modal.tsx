@@ -214,6 +214,18 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
     }
   };
 
+  const handleBarcodeScan = (scannedCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      barcode: scannedCode
+    }));
+    setShowBarcodeScanner(false);
+    toast({
+      title: "Barcode Scanned",
+      description: `Barcode "${scannedCode}" assigned to component`,
+    });
+  };
+
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -322,6 +334,35 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
                   onChange={handleChange}
                   disabled={readOnly}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="barcode">Component Barcode</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="barcode"
+                    name="barcode"
+                    value={formData.barcode}
+                    onChange={handleChange}
+                    disabled={readOnly}
+                    placeholder="Scan or enter existing 2D barcode"
+                  />
+                  {!readOnly && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowBarcodeScanner(true)}
+                      className="px-3"
+                      title="Scan barcode with camera"
+                    >
+                      <Scan className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Assign an existing 2D barcode to this component for scanning
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -470,6 +511,15 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
             </Button>
           )}
         </DialogFooter>
+
+        {/* Barcode Scanner Modal */}
+        <BarcodeScanner
+          isOpen={showBarcodeScanner}
+          onClose={() => setShowBarcodeScanner(false)}
+          onScan={handleBarcodeScan}
+          title="Scan Component Barcode"
+          description="Scan an existing 2D barcode to assign it to this component"
+        />
       </DialogContent>
     </Dialog>
   );
