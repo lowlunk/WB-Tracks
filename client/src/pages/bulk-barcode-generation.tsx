@@ -62,16 +62,13 @@ export default function BulkBarcodeGeneration() {
         
         try {
           const qrCodeDataUrl = await QRCode.toDataURL(componentNumber, {
-            errorCorrectionLevel: 'H',
-            type: 'image/png',
-            quality: 0.92,
             margin: 4,
             color: {
               dark: '#000000',
               light: '#FFFFFF'
             },
             width: 200
-          });
+          } as any);
           
           results.push({
             componentId,
@@ -239,16 +236,18 @@ export default function BulkBarcodeGeneration() {
 
         // If this is the last barcode, download the canvas
         if (i === generatedBarcodes.length - 1) {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `component-barcodes-${new Date().toISOString().split('T')[0]}.png`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }
-          });
+          setTimeout(() => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `component-barcodes-${new Date().toISOString().split('T')[0]}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }
+            });
+          }, 100);
         }
       };
       img.src = barcode.qrCodeDataUrl;

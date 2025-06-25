@@ -35,7 +35,7 @@ import {
   type CreateTemporaryBarcode,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc, isNull } from "drizzle-orm";
+import { eq, and, sql, desc, isNull, inArray, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -122,6 +122,17 @@ export interface IStorage {
   updateTemporaryBarcodeUsage(barcode: string): Promise<void>;
   deleteTemporaryBarcode(id: number): Promise<void>;
   cleanupExpiredBarcodes(): Promise<{ deletedCount: number }>;
+
+  // Bulk barcode operations
+  getComponentsWithoutBarcodes(): Promise<any[]>;
+  bulkGenerateBarcodes(componentIds: number[]): Promise<{
+    success: boolean;
+    barcodes: Array<{
+      componentId: number;
+      componentNumber: string;
+      barcode: string;
+    }>;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1079,6 +1090,88 @@ export class DatabaseStorage implements IStorage {
       .returning({ id: temporaryBarcodes.id });
     
     return { deletedCount: result.length };
+  }
+
+  // Bulk barcode operations
+  async getComponentsWithoutBarcodes(): Promise<any[]> {
+    return await db
+      .select({
+        id: components.id,
+        componentNumber: components.componentNumber,
+        description: components.description,
+        category: components.category,
+      })
+      .from(components)
+      .where(
+        and(
+          eq(components.isActive, true),
+          or(
+            isNull(components.barcode),
+            eq(components.barcode, '')
+          )
+        )
+      )
+      .orderBy(components.componentNumber);
+  }
+
+  async bulkGenerateBarcodes(componentIds: number[]): Promise<{
+    success: boolean;
+    barcodes: Array<{
+      componentId: number;
+      componentNumber: string;
+      barcode: string;
+    }>;
+  }> {
+    try {
+      // Get components that need barcodes
+      const componentsToUpdate = await db
+        .select({
+          id: components.id,
+          componentNumber: components.componentNumber,
+        })
+        .from(components)
+        .where(
+          and(
+            inArray(components.id, componentIds),
+            eq(components.isActive, true),
+            or(
+              isNull(components.barcode),
+              eq(components.barcode, '')
+            )
+          )
+        );
+
+      const results: Array<{
+        componentId: number;
+        componentNumber: string;
+        barcode: string;
+      }> = [];
+
+      // Update each component with its part number as barcode
+      for (const component of componentsToUpdate) {
+        await db
+          .update(components)
+          .set({ 
+            barcode: component.componentNumber,
+            updatedAt: new Date()
+          })
+          .where(eq(components.id, component.id));
+
+        results.push({
+          componentId: component.id,
+          componentNumber: component.componentNumber,
+          barcode: component.componentNumber,
+        });
+      }
+
+      return {
+        success: true,
+        barcodes: results,
+      };
+    } catch (error) {
+      console.error("Error in bulk barcode generation:", error);
+      throw new Error("Failed to generate barcodes");
+    }
   }
 }
 

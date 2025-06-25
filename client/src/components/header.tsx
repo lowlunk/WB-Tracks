@@ -113,18 +113,34 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
 
             {/* Notification bell removed per user preference */}
 
-            {/* Temporary Barcodes (Admin only) */}
+            {/* Admin QR Code Management Dropdown */}
             {user?.role === 'admin' && (
-              <Link href="/barcodes/temporary">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="wb-focus-visible" 
-                  title="Temporary Barcodes (Testing)"
-                >
-                  <QrCode className="h-5 w-5 text-orange-500" />
-                </Button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="wb-focus-visible" 
+                    title="Barcode Management"
+                  >
+                    <QrCode className="h-5 w-5 text-orange-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/temporary-barcodes" className="flex items-center gap-2 w-full">
+                      <QrCode className="h-4 w-4" />
+                      Temporary Barcodes
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/bulk-barcode-generation" className="flex items-center gap-2 w-full">
+                      <Package className="h-4 w-4" />
+                      Bulk Barcode Generation
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
             {/* Scan button */}

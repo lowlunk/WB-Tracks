@@ -135,7 +135,7 @@ function Router() {
             </Route>
             <Route path="/settings" component={Settings} />
             <Route path="/admin/users" component={UserManagement} />
-            <Route path="/barcodes/temporary">
+            <Route path="/temporary-barcodes">
               {() => {
                 const TemporaryBarcodesPage = lazy(() => import("@/pages/temporary-barcodes"));
                 return (
@@ -145,6 +145,20 @@ function Router() {
                     </div>
                   }>
                     <TemporaryBarcodesPage />
+                  </Suspense>
+                );
+              }}
+            </Route>
+            <Route path="/bulk-barcode-generation">
+              {() => {
+                const BulkBarcodeGenerationPage = lazy(() => import("@/pages/bulk-barcode-generation"));
+                return (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  }>
+                    <BulkBarcodeGenerationPage />
                   </Suspense>
                 );
               }}
