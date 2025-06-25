@@ -743,45 +743,60 @@ export class DatabaseStorage implements IStorage {
 
 
   async initializeDefaultData(): Promise<void> {
-    // Create demo users if they don't exist
+    // Create demo users if they don't exist (check both username and email)
     const adminUser = await this.getUserByUsername('admin');
-    if (!adminUser) {
-      await this.createUser({
-        username: 'admin',
-        email: 'admin@wb-tracks.local',
-        password: await bcrypt.hash('admin123', 10),
-        firstName: 'Admin',
-        lastName: 'User',
-        role: 'admin',
-        isActive: true
-      });
+    const adminEmailUser = await this.getUserByEmail('admin@wb-tracks.local');
+    if (!adminUser && !adminEmailUser) {
+      try {
+        await this.createUser({
+          username: 'admin',
+          email: 'admin@wb-tracks.local',
+          password: await bcrypt.hash('admin123', 10),
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'admin',
+          isActive: true
+        });
+      } catch (error) {
+        console.log('Admin user already exists, skipping creation');
+      }
     }
 
     const regularUser = await this.getUserByUsername('user');
-    if (!regularUser) {
-      await this.createUser({
-        username: 'user',
-        email: 'user@wb-tracks.local',
-        password: await bcrypt.hash('user123', 10),
-        firstName: 'Regular',
-        lastName: 'User',
-        role: 'user',
-        isActive: true
-      });
+    const regularEmailUser = await this.getUserByEmail('user@wb-tracks.local');
+    if (!regularUser && !regularEmailUser) {
+      try {
+        await this.createUser({
+          username: 'user',
+          email: 'user@wb-tracks.local',
+          password: await bcrypt.hash('user123', 10),
+          firstName: 'Regular',
+          lastName: 'User',
+          role: 'user',
+          isActive: true
+        });
+      } catch (error) {
+        console.log('Regular user already exists, skipping creation');
+      }
     }
 
     // Create cbryson user if it doesn't exist
     const cbrysonUser = await this.getUserByUsername('cbryson');
-    if (!cbrysonUser) {
-      await this.createUser({
-        username: 'cbryson',
-        email: 'cbryson@foam.com',
-        password: await bcrypt.hash('admin123', 10),
-        firstName: 'Chris',
-        lastName: 'Bryson',
-        role: 'admin',
-        isActive: true
-      });
+    const cbrysonEmailUser = await this.getUserByEmail('cbryson@foam.com');
+    if (!cbrysonUser && !cbrysonEmailUser) {
+      try {
+        await this.createUser({
+          username: 'cbryson',
+          email: 'cbryson@foam.com',
+          password: await bcrypt.hash('admin123', 10),
+          firstName: 'Chris',
+          lastName: 'Bryson',
+          role: 'admin',
+          isActive: true
+        });
+      } catch (error) {
+        console.log('CBryson user already exists, skipping creation');
+      }
     }
 
     // Create default facility if it doesn't exist
