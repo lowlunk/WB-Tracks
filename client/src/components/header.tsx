@@ -113,6 +113,20 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
 
             {/* Notification bell removed per user preference */}
 
+            {/* Temporary Barcodes (Admin only) */}
+            {user?.role === 'admin' && (
+              <Link href="/barcodes/temporary">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="wb-focus-visible" 
+                  title="Temporary Barcodes (Testing)"
+                >
+                  <QrCode className="h-5 w-5 text-orange-500" />
+                </Button>
+              </Link>
+            )}
+
             {/* Scan button */}
             <Button 
               onClick={onScanClick}
