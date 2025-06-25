@@ -563,14 +563,31 @@ export default function TemporaryBarcodesPage() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          onClick={() => printBarcode(barcode)}
+                          title="Print QR code"
+                        >
+                          <Printer className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => downloadQRCode(barcode)}
+                          title="Download QR code"
+                        >
+                          <Download className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           onClick={() => setSelectedBarcode(barcode)}
+                          title="View details"
                         >
                           <Eye className="h-3 w-3" />
                         </Button>
                         
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="ghost">
+                            <Button size="sm" variant="ghost" title="Delete barcode">
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </AlertDialogTrigger>
