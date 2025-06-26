@@ -96,6 +96,12 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes  
+- June 26, 2025: Updated complete component database with new 167-item component list
+  - Replaced all 288 old components with new manufacturing component list from CSV
+  - Each component includes proper descriptions and part numbers from production specs
+  - All components automatically assigned barcodes matching their part numbers (217520, 217543, etc.)
+  - Set initial inventory to 1000 units per component across all locations
+  - Maintained existing barcode system functionality for immediate QR code generation and printing
 - June 25, 2025: Implemented mass 2D barcode creation for all components that scan as their part numbers
   - Added bulk barcode generation page for admin users
   - Created QR codes that encode component part numbers for simple scanning
