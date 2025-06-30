@@ -137,6 +137,20 @@ function Router() {
             <Route path="/settings" component={Settings} />
             <Route path="/admin/users" component={UserManagement} />
             <Route path="/orders" component={Orders} />
+            <Route path="/components/:id">
+              {(params) => {
+                const ComponentDetail = lazy(() => import("@/pages/component-detail"));
+                return (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  }>
+                    <ComponentDetail componentId={params.id} />
+                  </Suspense>
+                );
+              }}
+            </Route>
             <Route path="/temporary-barcodes">
               {() => {
                 const TemporaryBarcodesPage = lazy(() => import("@/pages/temporary-barcodes"));
