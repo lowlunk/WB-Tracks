@@ -29,10 +29,11 @@ import Quagga from "@ericblade/quagga2";
 interface Code39ScannerProps {
   isOpen: boolean;
   onClose: () => void;
-  onScan: (result: any) => void;
+  onScan?: (result: any) => void;
+  navigateOnScan?: boolean; // New prop to control navigation behavior
 }
 
-export default function Code39Scanner({ isOpen, onClose, onScan }: Code39ScannerProps) {
+export default function Code39Scanner({ isOpen, onClose, onScan, navigateOnScan = false }: Code39ScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
@@ -40,6 +41,7 @@ export default function Code39Scanner({ isOpen, onClose, onScan }: Code39Scanner
   const scannerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Cleanup on unmount or close
   useEffect(() => {
@@ -144,10 +146,21 @@ export default function Code39Scanner({ isOpen, onClose, onScan }: Code39Scanner
     onSuccess: (component: any) => {
       setScannedComponent(component);
       stopScanner();
-      toast({
-        title: "Component Found",
-        description: `Found ${component.componentNumber} - ${component.description}`,
-      });
+      
+      if (navigateOnScan) {
+        // Navigate directly to component page for inventory operations
+        toast({
+          title: "Opening Component",
+          description: `${component.componentNumber} - ${component.description}`,
+        });
+        handleClose();
+        setLocation(`/components/${component.id}`);
+      } else {
+        toast({
+          title: "Component Found",
+          description: `Found ${component.componentNumber} - ${component.description}`,
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -167,8 +180,15 @@ export default function Code39Scanner({ isOpen, onClose, onScan }: Code39Scanner
 
   const handleUseComponent = () => {
     if (scannedComponent) {
-      onScan(scannedComponent);
-      handleClose();
+      if (navigateOnScan) {
+        // Navigate to component page
+        setLocation(`/components/${scannedComponent.id}`);
+        handleClose();
+      } else if (onScan) {
+        // Use existing callback for other purposes
+        onScan(scannedComponent);
+        handleClose();
+      }
     }
   };
 
