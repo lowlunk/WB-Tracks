@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Upload, X, Star, Package, Scan } from "lucide-react";
-import BarcodeScanner from "./barcode-scanner";
+import Code39Scanner from "./code39-scanner";
 
 interface ComponentEditModalProps {
   isOpen: boolean;
@@ -513,7 +513,7 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
         </DialogFooter>
 
         {/* Barcode Scanner Modal */}
-        <BarcodeScanner
+        <Code39Scanner
           isOpen={showBarcodeScanner}
           onClose={() => setShowBarcodeScanner(false)}
           onScan={handleBarcodeScan}
