@@ -308,7 +308,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                 console.log('Starting barcode detection on mobile device');
                 try {
                   codeReaderRef.current.decodeFromVideoDevice(
-                    selectedCamera ? selectedCamera : null,
+                    selectedCamera || null,
                     videoRef.current,
                     (result, error) => {
                       if (result) {
