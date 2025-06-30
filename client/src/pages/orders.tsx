@@ -238,10 +238,10 @@ export default function Orders() {
   const handleBarcodeScanned = (component: any) => {
     if (scanTargetOrder) {
       // Auto-add scanned component to the order
-      const warehouseLocation = locations.find((loc: any) => 
+      const warehouseLocation = (locations as any[]).find((loc: any) => 
         loc.name.toLowerCase().includes('warehouse') || loc.name.toLowerCase().includes('main')
       );
-      const insertLocation = locations.find((loc: any) => 
+      const insertLocation = (locations as any[]).find((loc: any) => 
         loc.name.toLowerCase().includes('insert') || loc.name.toLowerCase().includes('line')
       );
 

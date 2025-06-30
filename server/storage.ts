@@ -1221,7 +1221,7 @@ export class DatabaseStorage implements IStorage {
     // Get order items for each order
     const ordersWithItems = await Promise.all(result.map(async (order) => {
       const items = await this.getOrderItems(order.id);
-      return { ...order, orderItems: items };
+      return { ...order, orderItems: items } as any;
     }));
 
     return ordersWithItems;
@@ -1322,21 +1322,13 @@ export class DatabaseStorage implements IStorage {
           componentNumber: components.componentNumber,
           description: components.description,
         },
-        fromLocation: {
-          name: sql`from_loc.name`,
-        },
-        toLocation: {
-          name: sql`to_loc.name`,
-        },
       })
       .from(orderItems)
       .leftJoin(components, eq(orderItems.componentId, components.id))
-      .leftJoin(inventoryLocations.as('from_loc'), eq(orderItems.fromLocationId, sql`from_loc.id`))
-      .leftJoin(inventoryLocations.as('to_loc'), eq(orderItems.toLocationId, sql`to_loc.id`))
       .where(eq(orderItems.orderId, orderId))
       .orderBy(orderItems.createdAt);
 
-    return result;
+    return result as any;
   }
 }
 
