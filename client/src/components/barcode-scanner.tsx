@@ -498,7 +498,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-semibold flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              Scan Barcode/QR Code
+              Scan Barcode (CODE39/QR)
             </DialogTitle>
             <Button
               variant="ghost"
@@ -588,7 +588,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                     <div className="absolute bottom-4 left-4 right-4">
                       <div className="bg-black/70 text-white px-3 py-2 rounded text-sm text-center">
                         <QrCode className="h-4 w-4 inline mr-2" />
-                        Scanning for barcodes and QR codes...
+                        Scanning for CODE39 barcodes and QR codes...
                       </div>
                     </div>
                   </>
@@ -596,7 +596,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                   <div className="w-full h-full flex flex-col items-center justify-center text-white p-4">
                     <Camera className="h-16 w-16 mb-4 opacity-50" />
                     <p className="text-center mb-2 text-sm">
-                      Position barcode or QR code within camera view
+                      Position CODE39 barcode or QR code within camera view
                     </p>
                     <p className="text-center mb-4 text-xs opacity-75">
                       Make sure to allow camera permissions when prompted

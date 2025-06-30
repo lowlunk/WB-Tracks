@@ -96,6 +96,11 @@ WB-Tracks is a comprehensive local inventory management system designed for prod
 - **Production Optimization**: Asset bundling, compression, and caching
 
 ## Recent Changes  
+- June 30, 2025: Enhanced barcode scanner to support CODE39 barcodes for physical Brother P-touch labels
+  - Scanner now recognizes both CODE39 and QR code formats simultaneously
+  - Users can scan physical CODE39 labels created with Brother P-touch software
+  - Component lookup works seamlessly with external barcode labels
+  - Updated scanner interface to indicate CODE39 support
 - June 26, 2025: Updated complete component database with new 167-item component list
   - Replaced all 288 old components with new manufacturing component list from CSV
   - Each component includes proper descriptions and part numbers from production specs
