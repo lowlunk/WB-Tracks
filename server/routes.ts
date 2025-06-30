@@ -1684,6 +1684,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shift Picking API routes
+  app.post("/api/shift-picking", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { shiftNumber, shiftDate, assignedTo } = req.body;
+      
+      const shiftPickingData = {
+        shiftNumber,
+        shiftDate,
+        createdBy: userId,
+        assignedTo: assignedTo ? parseInt(assignedTo) : null,
+        status: 'draft' as const
+      };
+      
+      const shiftPicking = await storage.createShiftPicking(shiftPickingData);
+      res.json(shiftPicking);
+    } catch (error) {
+      console.error("Error creating shift picking:", error);
+      res.status(500).json({ message: "Failed to create shift picking" });
+    }
+  });
+
   app.get("/api/shift-picking/:date", requireAuth, async (req, res) => {
     try {
       const shiftDate = req.params.date;
@@ -1692,6 +1713,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching shift pickings:", error);
       res.status(500).json({ message: "Failed to fetch shift pickings" });
+    }
+  });
+
+  app.get("/api/shift-picking/overview/:date", requireAuth, async (req, res) => {
+    try {
+      const shiftDate = req.params.date;
+      const shiftPickings = await storage.getShiftPickingsForDate(shiftDate);
+      res.json(shiftPickings);
+    } catch (error) {
+      console.error("Error fetching shift picking overview:", error);
+      res.status(500).json({ message: "Failed to fetch overview" });
+    }
+  });
+
+  app.post("/api/shift-picking/:id/items", requireAuth, async (req, res) => {
+    try {
+      const shiftPickingId = parseInt(req.params.id);
+      const itemData = req.body;
+      
+      const item = await storage.addShiftPickingItem(shiftPickingId, itemData);
+      res.json(item);
+    } catch (error) {
+      console.error("Error adding shift picking item:", error);
+      res.status(500).json({ message: "Failed to add item" });
+    }
+  });
+
+  // Get shift pickings assigned to current user
+  app.get("/api/shift-picking/my-assignments", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const today = new Date().toISOString().split('T')[0];
+      
+      const allShiftPickings = await storage.getShiftPickingsForDate(today);
+      const myAssignments = allShiftPickings.filter(sp => sp.assignedTo === userId);
+      
+      res.json(myAssignments);
+    } catch (error) {
+      console.error("Error fetching user assignments:", error);
+      res.status(500).json({ message: "Failed to fetch assignments" });
     }
   });
 

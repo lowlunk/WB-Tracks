@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Clock, 
   FileUp, 
@@ -65,6 +66,8 @@ interface ShiftPicking {
 export default function ShiftPicking() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   
   const [selectedShift, setSelectedShift] = useState<1 | 2 | 3>(1);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -94,14 +97,15 @@ export default function ShiftPicking() {
     queryKey: [`/api/shift-picking/${selectedDate}/${selectedShift}`],
   });
 
-  // Fetch all shift pickings for overview
+  // Fetch all shift pickings for overview (admin) or just user assignments (non-admin)
   const { data: allShiftPickings } = useQuery({
-    queryKey: [`/api/shift-picking/overview/${selectedDate}`],
+    queryKey: isAdmin ? [`/api/shift-picking/overview/${selectedDate}`] : ["/api/shift-picking/my-assignments"],
   });
 
-  // Fetch users for assignment
+  // Fetch users for assignment (admin only)
   const { data: users } = useQuery({
     queryKey: ["/api/admin/users"],
+    enabled: isAdmin,
   });
 
   // Create shift picking mutation
@@ -286,16 +290,18 @@ export default function ShiftPicking() {
             Digital shift-based picking worksheets for main-to-line inventory transfers
           </p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button onClick={() => setShowImportDialog(true)}>
-            <FileUp className="h-4 w-4 mr-2" />
-            Import Worksheet
-          </Button>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Shift Picking
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center space-x-3">
+            <Button onClick={() => setShowImportDialog(true)}>
+              <FileUp className="h-4 w-4 mr-2" />
+              Import Worksheet
+            </Button>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Shift Picking
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Date and Shift Selector */}
