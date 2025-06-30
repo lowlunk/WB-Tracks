@@ -18,7 +18,7 @@ import TransferModal from "@/components/transfer-modal";
 import AddComponentDialog from "@/components/add-component-dialog";
 import AddInventoryDialog from "@/components/add-inventory-dialog";
 import BarcodeLabelPrinter from "@/components/barcode-label-printer";
-import BarcodeScanner from "@/components/barcode-scanner";
+import Code39Scanner from "@/components/code39-scanner";
 import ConsumedComponentsModal from "@/components/consumed-components-modal";
 import InventoryImportDialog from "@/components/inventory-import-dialog";
 import { 
@@ -359,7 +359,7 @@ export default function Inventory() {
         component={printComponent}
       />
 
-      <BarcodeScanner
+      <Code39Scanner
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScanResult}

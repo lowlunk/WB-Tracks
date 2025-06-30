@@ -23,7 +23,7 @@ import UserManagement from "@/pages/user-management";
 import NotFound from "@/pages/not-found";
 import Header from "@/components/header";
 import BottomNavigation from "@/components/bottom-navigation";
-import BarcodeScanner from "@/components/barcode-scanner";
+import Code39Scanner from "@/components/code39-scanner";
 
 // import OnboardingTour from "@/components/onboarding-tour"; // Disabled per user preference
 
@@ -186,7 +186,7 @@ function Router() {
         )}
       </main>
 
-      <BarcodeScanner
+      <Code39Scanner
         isOpen={showScanner}
         onClose={() => setShowScanner(false)}
         onScan={(result) => {

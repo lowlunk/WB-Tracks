@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import BarcodeScanner from "@/components/barcode-scanner";
+import Code39Scanner from "@/components/code39-scanner";
 import TransferModal from "@/components/transfer-modal";
 import ConsumeModal from "@/components/consume-modal";
 import AddComponentDialog from "@/components/add-component-dialog";
@@ -441,7 +441,7 @@ export default function Dashboard() {
       )}
 
       {/* Modals */}
-      <BarcodeScanner
+      <Code39Scanner
         isOpen={showScanner}
         onClose={() => setShowScanner(false)}
         onScan={handleScanResult}

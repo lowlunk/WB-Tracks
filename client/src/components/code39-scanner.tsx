@@ -74,20 +74,7 @@ export default function Code39Scanner({ isOpen, onClose, onScan }: Code39Scanner
         },
         numOfWorkers: 2,
         frequency: 5, // Slower frequency for better CODE39 detection
-        debug: {
-          showCanvas: false,
-          showPatches: false,
-          showFoundPatches: false,
-          showSkeleton: false,
-          showLabels: false,
-          showPatchLabels: false,
-          showRemainingPatchLabels: false,
-          boxFromPatches: {
-            showTransformed: false,
-            showTransformedBox: false,
-            showBB: false
-          }
-        }
+        debug: false
       });
 
       Quagga.start();
