@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal, jsonb, index, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal, jsonb, index, unique, date } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -467,4 +467,110 @@ export interface InventoryItemWithDetails extends InventoryItem {
 
 export interface ComponentWithInventory extends Component {
   inventoryItems: InventoryItemWithDetails[];
+}
+
+// Shift Picking System for Component Traceability Forms
+export const shiftPickings = pgTable("shift_pickings", {
+  id: serial("id").primaryKey(),
+  shiftNumber: integer("shift_number").notNull(), // 1, 2, or 3
+  shiftDate: date("shift_date").notNull(),
+  status: varchar("status", { length: 50 }).default("draft").notNull(), // draft, active, completed
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  completedAt: timestamp("completed_at"),
+  totalItems: integer("total_items").default(0).notNull(),
+  completedItems: integer("completed_items").default(0).notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const shiftPickingItems = pgTable("shift_picking_items", {
+  id: serial("id").primaryKey(),
+  shiftPickingId: integer("shift_picking_id").references(() => shiftPickings.id, { onDelete: "cascade" }).notNull(),
+  inventoryCode: varchar("inventory_code", { length: 100 }).notNull(),
+  partDescription: text("part_description").notNull(),
+  quantityRequired: integer("quantity_required").notNull(),
+  quantityPicked: integer("quantity_picked"),
+  transferTime: timestamp("transfer_time"),
+  status: varchar("status", { length: 50 }).default("pending").notNull(), // pending, in_progress, completed
+  pickedBy: integer("picked_by").references(() => users.id),
+  componentId: integer("component_id").references(() => components.id),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for shift picking
+export const shiftPickingsRelations = relations(shiftPickings, ({ one, many }) => ({
+  createdByUser: one(users, {
+    fields: [shiftPickings.createdBy],
+    references: [users.id],
+    relationName: "shiftPickingCreator"
+  }),
+  assignedToUser: one(users, {
+    fields: [shiftPickings.assignedTo],
+    references: [users.id],
+    relationName: "shiftPickingAssignee"
+  }),
+  items: many(shiftPickingItems),
+}));
+
+export const shiftPickingItemsRelations = relations(shiftPickingItems, ({ one }) => ({
+  shiftPicking: one(shiftPickings, {
+    fields: [shiftPickingItems.shiftPickingId],
+    references: [shiftPickings.id],
+  }),
+  component: one(components, {
+    fields: [shiftPickingItems.componentId],
+    references: [components.id],
+  }),
+  pickedByUser: one(users, {
+    fields: [shiftPickingItems.pickedBy],
+    references: [users.id],
+    relationName: "shiftPickingItemPicker"
+  }),
+}));
+
+// Shift picking schemas
+export const insertShiftPickingSchema = createInsertSchema(shiftPickings, {
+  shiftDate: z.string()
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  totalItems: true,
+  completedItems: true,
+});
+
+export const insertShiftPickingItemSchema = createInsertSchema(shiftPickingItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  quantityPicked: true,
+  transferTime: true,
+  status: true,
+  pickedBy: true,
+});
+
+export type ShiftPicking = typeof shiftPickings.$inferSelect;
+export type InsertShiftPicking = z.infer<typeof insertShiftPickingSchema>;
+export type ShiftPickingItem = typeof shiftPickingItems.$inferSelect;
+export type InsertShiftPickingItem = z.infer<typeof insertShiftPickingItemSchema>;
+
+// Additional types for API responses
+export interface ShiftPickingWithItems extends ShiftPicking {
+  items: (ShiftPickingItem & {
+    component?: Component;
+    pickedByUser?: User;
+  })[];
+  createdByUser?: User;
+  assignedToUser?: User;
+}
+
+export interface Location extends InventoryLocation {}
+export interface Transaction extends InventoryTransaction {
+  component?: Component;
+  fromLocation?: InventoryLocation;
+  toLocation?: InventoryLocation;
 }
