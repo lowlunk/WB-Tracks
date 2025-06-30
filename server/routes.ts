@@ -134,6 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Authentication routes
   app.post("/api/login", async (req, res) => {
+    console.log('Login endpoint hit:', req.body);
     try {
       const { username, password } = req.body;
 
