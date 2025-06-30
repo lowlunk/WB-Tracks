@@ -442,6 +442,24 @@ export type InsertTemporaryBarcode = z.infer<typeof insertTemporaryBarcodeSchema
 export type CreateTemporaryBarcode = z.infer<typeof createTemporaryBarcodeSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
 
+// Orders schema and types
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderItem = typeof orderItems.$inferSelect;
+
 export interface InventoryItemWithDetails extends InventoryItem {
   component: Component;
   location: InventoryLocation;
