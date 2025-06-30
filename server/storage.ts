@@ -33,6 +33,12 @@ import {
   type TemporaryBarcode,
   type InsertTemporaryBarcode,
   type CreateTemporaryBarcode,
+  type Order,
+  type InsertOrder,
+  type OrderItem,
+  type InsertOrderItem,
+  orders,
+  orderItems,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, isNull, inArray, or } from "drizzle-orm";
@@ -133,6 +139,17 @@ export interface IStorage {
       barcode: string;
     }>;
   }>;
+
+  // Orders methods
+  getAllOrders(): Promise<Order[]>;
+  getOrder(id: number): Promise<Order | undefined>;
+  createOrder(order: InsertOrder, createdBy: number): Promise<Order>;
+  updateOrderStatus(id: number, status: string): Promise<Order>;
+  deleteOrder(id: number): Promise<void>;
+  addOrderItem(orderId: number, item: InsertOrderItem): Promise<OrderItem>;
+  updateOrderItem(id: number, updates: Partial<InsertOrderItem>): Promise<OrderItem>;
+  deleteOrderItem(id: number): Promise<void>;
+  getOrderItems(orderId: number): Promise<OrderItem[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1172,6 +1189,154 @@ export class DatabaseStorage implements IStorage {
       console.error("Error in bulk barcode generation:", error);
       throw new Error("Failed to generate barcodes");
     }
+  }
+  // Orders methods implementation
+  async getAllOrders(): Promise<Order[]> {
+    const result = await db
+      .select({
+        id: orders.id,
+        orderNumber: orders.orderNumber,
+        title: orders.title,
+        description: orders.description,
+        status: orders.status,
+        priority: orders.priority,
+        targetDate: orders.targetDate,
+        completedAt: orders.completedAt,
+        createdBy: orders.createdBy,
+        assignedTo: orders.assignedTo,
+        notes: orders.notes,
+        isActive: orders.isActive,
+        createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+        createdByUser: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+          username: users.username,
+        },
+      })
+      .from(orders)
+      .leftJoin(users, eq(orders.createdBy, users.id))
+      .orderBy(desc(orders.createdAt));
+
+    // Get order items for each order
+    const ordersWithItems = await Promise.all(result.map(async (order) => {
+      const items = await this.getOrderItems(order.id);
+      return { ...order, orderItems: items };
+    }));
+
+    return ordersWithItems;
+  }
+
+  async getOrder(id: number): Promise<Order | undefined> {
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, id));
+    
+    if (!order) return undefined;
+
+    const items = await this.getOrderItems(id);
+    return { ...order, orderItems: items };
+  }
+
+  async createOrder(orderData: InsertOrder, createdBy: number): Promise<Order> {
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [order] = await db
+      .insert(orders)
+      .values({
+        ...orderData,
+        orderNumber,
+        createdBy,
+      })
+      .returning();
+
+    return order;
+  }
+
+  async updateOrderStatus(id: number, status: string): Promise<Order> {
+    const [order] = await db
+      .update(orders)
+      .set({ 
+        status,
+        updatedAt: new Date(),
+        ...(status === 'completed' ? { completedAt: new Date() } : {})
+      })
+      .where(eq(orders.id, id))
+      .returning();
+
+    return order;
+  }
+
+  async deleteOrder(id: number): Promise<void> {
+    await db.delete(orders).where(eq(orders.id, id));
+  }
+
+  async addOrderItem(orderId: number, item: InsertOrderItem): Promise<OrderItem> {
+    const [orderItem] = await db
+      .insert(orderItems)
+      .values({
+        ...item,
+        orderId,
+      })
+      .returning();
+
+    return orderItem;
+  }
+
+  async updateOrderItem(id: number, updates: Partial<InsertOrderItem>): Promise<OrderItem> {
+    const [orderItem] = await db
+      .update(orderItems)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(orderItems.id, id))
+      .returning();
+
+    return orderItem;
+  }
+
+  async deleteOrderItem(id: number): Promise<void> {
+    await db.delete(orderItems).where(eq(orderItems.id, id));
+  }
+
+  async getOrderItems(orderId: number): Promise<OrderItem[]> {
+    const result = await db
+      .select({
+        id: orderItems.id,
+        orderId: orderItems.orderId,
+        componentId: orderItems.componentId,
+        quantityRequested: orderItems.quantityRequested,
+        quantityPicked: orderItems.quantityPicked,
+        fromLocationId: orderItems.fromLocationId,
+        toLocationId: orderItems.toLocationId,
+        status: orderItems.status,
+        notes: orderItems.notes,
+        pickedAt: orderItems.pickedAt,
+        transferredAt: orderItems.transferredAt,
+        createdAt: orderItems.createdAt,
+        updatedAt: orderItems.updatedAt,
+        component: {
+          id: components.id,
+          componentNumber: components.componentNumber,
+          description: components.description,
+        },
+        fromLocation: {
+          name: sql`from_loc.name`,
+        },
+        toLocation: {
+          name: sql`to_loc.name`,
+        },
+      })
+      .from(orderItems)
+      .leftJoin(components, eq(orderItems.componentId, components.id))
+      .leftJoin(inventoryLocations.as('from_loc'), eq(orderItems.fromLocationId, sql`from_loc.id`))
+      .leftJoin(inventoryLocations.as('to_loc'), eq(orderItems.toLocationId, sql`to_loc.id`))
+      .where(eq(orderItems.orderId, orderId))
+      .orderBy(orderItems.createdAt);
+
+    return result;
   }
 }
 

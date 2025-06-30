@@ -1571,5 +1571,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Orders API routes
+  app.get("/api/orders", requireAuth, async (req, res) => {
+    try {
+      const orders = await storage.getAllOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", requireAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const order = await storage.getOrder(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+
+  app.post("/api/orders", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const orderData = req.body;
+      
+      const order = await storage.createOrder(orderData, userId);
+      res.json(order);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
+  app.patch("/api/orders/:id/status", requireAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      const order = await storage.updateOrderStatus(orderId, status);
+      res.json(order);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  app.delete("/api/orders/:id", requireAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      await storage.deleteOrder(orderId);
+      res.json({ message: "Order deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      res.status(500).json({ message: "Failed to delete order" });
+    }
+  });
+
+  app.post("/api/orders/:id/items", requireAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const itemData = req.body;
+      
+      const orderItem = await storage.addOrderItem(orderId, itemData);
+      res.json(orderItem);
+    } catch (error) {
+      console.error("Error adding order item:", error);
+      res.status(500).json({ message: "Failed to add order item" });
+    }
+  });
+
+  app.get("/api/orders/:id/items", requireAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const items = await storage.getOrderItems(orderId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching order items:", error);
+      res.status(500).json({ message: "Failed to fetch order items" });
+    }
+  });
+
+  app.patch("/api/order-items/:id", requireAuth, async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const orderItem = await storage.updateOrderItem(itemId, updates);
+      res.json(orderItem);
+    } catch (error) {
+      console.error("Error updating order item:", error);
+      res.status(500).json({ message: "Failed to update order item" });
+    }
+  });
+
+  app.delete("/api/order-items/:id", requireAuth, async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.id);
+      await storage.deleteOrderItem(itemId);
+      res.json({ message: "Order item deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting order item:", error);
+      res.status(500).json({ message: "Failed to delete order item" });
+    }
+  });
+
   return httpServer;
 }

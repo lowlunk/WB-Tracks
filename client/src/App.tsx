@@ -136,6 +136,7 @@ function Router() {
             </Route>
             <Route path="/settings" component={Settings} />
             <Route path="/admin/users" component={UserManagement} />
+            <Route path="/orders" component={Orders} />
             <Route path="/temporary-barcodes">
               {() => {
                 const TemporaryBarcodesPage = lazy(() => import("@/pages/temporary-barcodes"));
