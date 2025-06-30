@@ -111,10 +111,21 @@ export default function ShiftPicking() {
   // Create shift picking mutation
   const createShiftPickingMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/shift-picking", {
+      const response = await fetch("/api/shift-picking", {
         method: "POST",
-        body: JSON.stringify(data)
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create shift picking");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -138,10 +149,21 @@ export default function ShiftPicking() {
   // Add item mutation
   const addItemMutation = useMutation({
     mutationFn: async ({ shiftPickingId, item }: { shiftPickingId: number, item: any }) => {
-      return await apiRequest(`/api/shift-picking/${shiftPickingId}/items`, {
+      const response = await fetch(`/api/shift-picking/${shiftPickingId}/items`, {
         method: "POST",
-        body: JSON.stringify(item)
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(item),
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to add item");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -164,10 +186,21 @@ export default function ShiftPicking() {
   // Update item status mutation
   const updateItemMutation = useMutation({
     mutationFn: async ({ itemId, updates }: { itemId: number, updates: any }) => {
-      return await apiRequest(`/api/shift-picking/items/${itemId}`, {
+      const response = await fetch(`/api/shift-picking-item/${itemId}`, {
         method: "PATCH",
-        body: JSON.stringify(updates)
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update item");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
