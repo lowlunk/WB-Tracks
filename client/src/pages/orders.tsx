@@ -199,7 +199,7 @@ export default function Orders() {
     },
   });
 
-  const filteredOrders = orders.filter((order: Order) => {
+  const filteredOrders = (orders as Order[]).filter((order: Order) => {
     const matchesSearch = 
       order.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||

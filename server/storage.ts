@@ -1221,10 +1221,10 @@ export class DatabaseStorage implements IStorage {
     // Get order items for each order
     const ordersWithItems = await Promise.all(result.map(async (order) => {
       const items = await this.getOrderItems(order.id);
-      return { ...order, orderItems: items } as any;
+      return { ...order, orderItems: items };
     }));
 
-    return ordersWithItems;
+    return ordersWithItems as any;
   }
 
   async getOrder(id: number): Promise<Order | undefined> {
