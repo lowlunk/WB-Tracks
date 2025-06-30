@@ -111,10 +111,11 @@ export default function Orders() {
   // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
-      return apiRequest("/api/orders", {
+      return await fetch("/api/orders", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
-      });
+      }).then(res => res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
@@ -143,10 +144,11 @@ export default function Orders() {
   // Add item to order mutation
   const addItemMutation = useMutation({
     mutationFn: async ({ orderId, item }: { orderId: number; item: any }) => {
-      return apiRequest(`/api/orders/${orderId}/items`, {
+      return await fetch(`/api/orders/${orderId}/items`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item),
-      });
+      }).then(res => res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
@@ -175,10 +177,11 @@ export default function Orders() {
   // Update order status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: number; status: string }) => {
-      return apiRequest(`/api/orders/${orderId}/status`, {
+      return await fetch(`/api/orders/${orderId}/status`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
-      });
+      }).then(res => res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
