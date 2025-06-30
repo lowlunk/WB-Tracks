@@ -1683,5 +1683,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shift Picking API routes
+  app.get("/api/shift-picking/:date", requireAuth, async (req, res) => {
+    try {
+      const shiftDate = req.params.date;
+      const shiftPickings = await storage.getShiftPickingsForDate(shiftDate);
+      res.json(shiftPickings);
+    } catch (error) {
+      console.error("Error fetching shift pickings:", error);
+      res.status(500).json({ message: "Failed to fetch shift pickings" });
+    }
+  });
+
+  app.get("/api/shift-picking/:date/:shiftNumber", requireAuth, async (req, res) => {
+    try {
+      const shiftDate = req.params.date;
+      const shiftNumber = parseInt(req.params.shiftNumber);
+      const shiftPicking = await storage.getShiftPicking(shiftDate, shiftNumber);
+      
+      if (!shiftPicking) {
+        return res.status(404).json({ message: "Shift picking not found" });
+      }
+      
+      res.json(shiftPicking);
+    } catch (error) {
+      console.error("Error fetching shift picking:", error);
+      res.status(500).json({ message: "Failed to fetch shift picking" });
+    }
+  });
+
+  app.post("/api/shift-picking/import", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { shiftNumber, shiftDate, worksheetData } = req.body;
+      
+      const shiftPicking = await storage.importShiftPickingWorksheet(
+        shiftNumber,
+        shiftDate,
+        userId,
+        worksheetData
+      );
+      
+      res.json(shiftPicking);
+    } catch (error) {
+      console.error("Error importing shift picking worksheet:", error);
+      res.status(500).json({ message: "Failed to import worksheet" });
+    }
+  });
+
+  app.patch("/api/shift-picking-item/:id", requireAuth, async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.id);
+      const userId = (req.session as any).userId;
+      const updates = req.body;
+      
+      // If updating status to completed or in_progress, set pickedBy
+      if ((updates.status === 'completed' || updates.status === 'in_progress') && !updates.pickedBy) {
+        updates.pickedBy = userId;
+      }
+      
+      const item = await storage.updateShiftPickingItem(itemId, updates);
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating shift picking item:", error);
+      res.status(500).json({ message: "Failed to update item" });
+    }
+  });
+
+  app.delete("/api/shift-picking-item/:id", requireAuth, async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.id);
+      await storage.deleteShiftPickingItem(itemId);
+      res.json({ message: "Item deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting shift picking item:", error);
+      res.status(500).json({ message: "Failed to delete item" });
+    }
+  });
+
   return httpServer;
 }

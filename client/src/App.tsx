@@ -137,6 +137,20 @@ function Router() {
             <Route path="/settings" component={Settings} />
             <Route path="/admin/users" component={UserManagement} />
             <Route path="/orders" component={Orders} />
+            <Route path="/shift-picking">
+              {() => {
+                const ShiftPickingPage = lazy(() => import("@/pages/shift-picking"));
+                return (
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                  }>
+                    <ShiftPickingPage />
+                  </Suspense>
+                );
+              }}
+            </Route>
             <Route path="/components/:id">
               {(params) => {
                 const ComponentDetail = lazy(() => import("@/pages/component-detail"));

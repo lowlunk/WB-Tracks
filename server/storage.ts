@@ -39,6 +39,13 @@ import {
   type InsertOrderItem,
   orders,
   orderItems,
+  shiftPickings,
+  shiftPickingItems,
+  type ShiftPicking,
+  type ShiftPickingItem,
+  type ShiftPickingWithItems,
+  type InsertShiftPicking,
+  type InsertShiftPickingItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql, desc, isNull, inArray, or } from "drizzle-orm";
@@ -1329,6 +1336,224 @@ export class DatabaseStorage implements IStorage {
       .orderBy(orderItems.createdAt);
 
     return result as any;
+  }
+
+  // Shift Picking Management
+  async createShiftPicking(data: InsertShiftPicking): Promise<ShiftPicking> {
+    const [shiftPicking] = await db.insert(shiftPickings).values(data).returning();
+    return shiftPicking;
+  }
+
+  async getShiftPicking(shiftDate: string, shiftNumber: number): Promise<ShiftPickingWithItems | null> {
+    const [shiftPicking] = await db
+      .select()
+      .from(shiftPickings)
+      .where(and(
+        eq(shiftPickings.shiftDate, shiftDate),
+        eq(shiftPickings.shiftNumber, shiftNumber)
+      ))
+      .limit(1);
+
+    if (!shiftPicking) return null;
+
+    const items = await db
+      .select({
+        id: shiftPickingItems.id,
+        shiftPickingId: shiftPickingItems.shiftPickingId,
+        inventoryCode: shiftPickingItems.inventoryCode,
+        partDescription: shiftPickingItems.partDescription,
+        quantityRequired: shiftPickingItems.quantityRequired,
+        quantityPicked: shiftPickingItems.quantityPicked,
+        transferTime: shiftPickingItems.transferTime,
+        status: shiftPickingItems.status,
+        pickedBy: shiftPickingItems.pickedBy,
+        componentId: shiftPickingItems.componentId,
+        notes: shiftPickingItems.notes,
+        createdAt: shiftPickingItems.createdAt,
+        updatedAt: shiftPickingItems.updatedAt,
+        component: components,
+        pickedByUser: users
+      })
+      .from(shiftPickingItems)
+      .leftJoin(components, eq(shiftPickingItems.componentId, components.id))
+      .leftJoin(users, eq(shiftPickingItems.pickedBy, users.id))
+      .where(eq(shiftPickingItems.shiftPickingId, shiftPicking.id))
+      .orderBy(shiftPickingItems.createdAt);
+
+    return {
+      ...shiftPicking,
+      items: items.map(item => ({
+        id: item.id,
+        shiftPickingId: item.shiftPickingId,
+        inventoryCode: item.inventoryCode,
+        partDescription: item.partDescription,
+        quantityRequired: item.quantityRequired,
+        quantityPicked: item.quantityPicked,
+        transferTime: item.transferTime,
+        status: item.status,
+        pickedBy: item.pickedBy,
+        componentId: item.componentId,
+        notes: item.notes,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        component: item.component || undefined,
+        pickedByUser: item.pickedByUser || undefined
+      }))
+    } as ShiftPickingWithItems;
+  }
+
+  async getShiftPickingsForDate(shiftDate: string): Promise<ShiftPickingWithItems[]> {
+    const allShiftPickings = await db
+      .select()
+      .from(shiftPickings)
+      .leftJoin(users, eq(shiftPickings.createdBy, users.id))
+      .where(eq(shiftPickings.shiftDate, shiftDate))
+      .orderBy(shiftPickings.shiftNumber);
+
+    const result = await Promise.all(
+      allShiftPickings.map(async (sp) => {
+        const items = await db
+          .select({
+            id: shiftPickingItems.id,
+            shiftPickingId: shiftPickingItems.shiftPickingId,
+            inventoryCode: shiftPickingItems.inventoryCode,
+            partDescription: shiftPickingItems.partDescription,
+            quantityRequired: shiftPickingItems.quantityRequired,
+            quantityPicked: shiftPickingItems.quantityPicked,
+            transferTime: shiftPickingItems.transferTime,
+            status: shiftPickingItems.status,
+            pickedBy: shiftPickingItems.pickedBy,
+            componentId: shiftPickingItems.componentId,
+            notes: shiftPickingItems.notes,
+            createdAt: shiftPickingItems.createdAt,
+            updatedAt: shiftPickingItems.updatedAt,
+            component: components
+          })
+          .from(shiftPickingItems)
+          .leftJoin(components, eq(shiftPickingItems.componentId, components.id))
+          .where(eq(shiftPickingItems.shiftPickingId, sp.shift_pickings.id));
+
+        return {
+          ...sp.shift_pickings,
+          items: items.map(item => ({
+            id: item.id,
+            shiftPickingId: item.shiftPickingId,
+            inventoryCode: item.inventoryCode,
+            partDescription: item.partDescription,
+            quantityRequired: item.quantityRequired,
+            quantityPicked: item.quantityPicked,
+            transferTime: item.transferTime,
+            status: item.status,
+            pickedBy: item.pickedBy,
+            componentId: item.componentId,
+            notes: item.notes,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            component: item.component || undefined
+          })),
+          createdByUser: sp.users || undefined
+        } as ShiftPickingWithItems;
+      })
+    );
+
+    return result;
+  }
+
+  async addShiftPickingItem(shiftPickingId: number, data: InsertShiftPickingItem): Promise<ShiftPickingItem> {
+    // Try to link to existing component by inventory code
+    const component = await this.getComponentByNumber(data.inventoryCode);
+    
+    const itemData = {
+      ...data,
+      shiftPickingId,
+      componentId: component?.id || null
+    };
+
+    const [item] = await db.insert(shiftPickingItems).values(itemData).returning();
+
+    // Update total items count
+    await this.updateShiftPickingCounts(shiftPickingId);
+
+    return item;
+  }
+
+  async updateShiftPickingItem(itemId: number, updates: Partial<ShiftPickingItem>): Promise<ShiftPickingItem> {
+    const [item] = await db
+      .update(shiftPickingItems)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(shiftPickingItems.id, itemId))
+      .returning();
+
+    // Update counts if status changed
+    if (updates.status) {
+      const shiftPickingId = item.shiftPickingId;
+      await this.updateShiftPickingCounts(shiftPickingId);
+    }
+
+    return item;
+  }
+
+  async deleteShiftPickingItem(itemId: number): Promise<void> {
+    const item = await db.select().from(shiftPickingItems).where(eq(shiftPickingItems.id, itemId)).limit(1);
+    if (item.length > 0) {
+      await db.delete(shiftPickingItems).where(eq(shiftPickingItems.id, itemId));
+      await this.updateShiftPickingCounts(item[0].shiftPickingId);
+    }
+  }
+
+  private async updateShiftPickingCounts(shiftPickingId: number): Promise<void> {
+    const items = await db
+      .select()
+      .from(shiftPickingItems)
+      .where(eq(shiftPickingItems.shiftPickingId, shiftPickingId));
+
+    const totalItems = items.length;
+    const completedItems = items.filter(item => item.status === 'completed').length;
+
+    await db
+      .update(shiftPickings)
+      .set({ 
+        totalItems, 
+        completedItems,
+        updatedAt: new Date()
+      })
+      .where(eq(shiftPickings.id, shiftPickingId));
+  }
+
+  async importShiftPickingWorksheet(
+    shiftNumber: number, 
+    shiftDate: string, 
+    userId: number, 
+    worksheetData: Array<{ inventoryCode: string; partDescription: string; transferTime?: string }>
+  ): Promise<ShiftPickingWithItems> {
+    // Create or get existing shift picking
+    let shiftPicking = await this.getShiftPicking(shiftDate, shiftNumber);
+    
+    if (!shiftPicking) {
+      const newShiftPicking = await this.createShiftPicking({
+        shiftNumber,
+        shiftDate,
+        createdBy: userId,
+        status: 'draft'
+      });
+      shiftPicking = { ...newShiftPicking, items: [] };
+    }
+
+    // Add items from worksheet
+    for (const row of worksheetData) {
+      if (row.inventoryCode && row.partDescription) {
+        await this.addShiftPickingItem(shiftPicking.id, {
+          shiftPickingId: shiftPicking.id,
+          inventoryCode: row.inventoryCode.trim(),
+          partDescription: row.partDescription.trim(),
+          quantityRequired: 1, // Default quantity, can be edited later
+          notes: row.transferTime ? `Transfer time: ${row.transferTime}` : undefined
+        });
+      }
+    }
+
+    // Return updated shift picking
+    return await this.getShiftPicking(shiftDate, shiftNumber) as ShiftPickingWithItems;
   }
 }
 

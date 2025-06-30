@@ -8,7 +8,7 @@ import {
   Package,
   Shield,
   BarChart3,
-  ListOrdered
+  ClipboardList
 } from "lucide-react";
 
 export default function BottomNavigation() {
@@ -41,10 +41,10 @@ export default function BottomNavigation() {
       active: location === "/inventory",
     },
     {
-      href: "/orders",
-      icon: ListOrdered,
-      label: "Orders",
-      active: location === "/orders",
+      href: "/shift-picking",
+      icon: ClipboardList,
+      label: "Picking",
+      active: location === "/shift-picking",
     },
     ...(isAdmin ? [{
       href: "/admin",
