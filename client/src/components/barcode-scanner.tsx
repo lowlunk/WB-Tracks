@@ -119,19 +119,23 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
   const initializeCodeReader = () => {
     if (!codeReaderRef.current) {
       codeReaderRef.current = new BrowserMultiFormatReader();
-      // Support multiple barcode formats including 2D codes
+      // Configure hints for better CODE39 detection
       const hints = new Map();
       hints.set(2, [
+        BarcodeFormat.CODE_39, // Prioritize CODE39 first
         BarcodeFormat.QR_CODE,
         BarcodeFormat.DATA_MATRIX,
         BarcodeFormat.PDF_417,
         BarcodeFormat.CODE_128,
-        BarcodeFormat.CODE_39,
         BarcodeFormat.EAN_13,
         BarcodeFormat.EAN_8,
         BarcodeFormat.UPC_A,
         BarcodeFormat.UPC_E,
       ]);
+      // Set specific hints for CODE39 scanning
+      hints.set(1, true); // TRY_HARDER hint for better detection
+      hints.set(3, false); // PURE_BARCODE = false for real-world scanning
+      console.log('Code reader initialized with formats:', hints.get(2));
       codeReaderRef.current.hints = hints;
     }
   };
@@ -155,7 +159,7 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
         });
         setIsScanning(false);
         // Try to reinitialize
-        setTimeout(() => setMode('barcode'), 500);
+        setTimeout(() => startCamera(), 500);
         return;
       }
       
@@ -215,15 +219,15 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
             readyState: track.readyState
           }))
         });
-      } catch (streamError) {
+      } catch (streamError: any) {
         console.error('Failed to get camera stream:', streamError);
         let errorMessage = "Camera access failed.";
         
-        if (streamError.name === 'NotAllowedError') {
+        if (streamError?.name === 'NotAllowedError') {
           errorMessage = "Camera permission denied. Please allow camera access in your browser settings.";
-        } else if (streamError.name === 'NotFoundError') {
+        } else if (streamError?.name === 'NotFoundError') {
           errorMessage = "No camera found. Please check camera connection.";
-        } else if (streamError.name === 'NotReadableError') {
+        } else if (streamError?.name === 'NotReadableError') {
           errorMessage = "Camera is in use by another app. Please close other camera apps.";
         }
         
@@ -304,11 +308,15 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                 console.log('Starting barcode detection on mobile device');
                 try {
                   codeReaderRef.current.decodeFromVideoDevice(
-                    selectedCamera || undefined,
+                    selectedCamera ? selectedCamera : null,
                     videoRef.current,
                     (result, error) => {
                       if (result) {
-                        console.log('Barcode detected:', result.getText());
+                        console.log('Barcode detected:', {
+                          text: result.getText(),
+                          format: result.getBarcodeFormat()?.toString(),
+                          resultPoints: result.getResultPoints()?.length
+                        });
                         const barcodeText = result.getText();
                         handleBarcodeDetected(barcodeText);
                         stopCamera(); // Stop after successful scan
@@ -446,12 +454,19 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
 
   const lookupMutation = useMutation({
     mutationFn: async (barcode: string) => {
-      return await apiRequest("/api/barcode/lookup", {
+      const response = await fetch("/api/barcode/lookup", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ barcode }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
     },
-    onSuccess: (component) => {
+    onSuccess: (component: any) => {
       setScannedComponent(component);
       stopCamera();
       toast({
