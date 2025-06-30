@@ -94,6 +94,14 @@ export default function Header({ onScanClick, onNotificationClick, onSettingsCli
                 Inventory
               </Button>
             </Link>
+            <Link href="/shift-picking">
+              <Button 
+                variant={location === "/shift-picking" ? "default" : "ghost"}
+                className={location === "/shift-picking" ? "wb-btn-primary" : ""}
+              >
+                Picking
+              </Button>
+            </Link>
             {user?.role === 'admin' && (
               <Link href="/admin/users">
                 <Button 
