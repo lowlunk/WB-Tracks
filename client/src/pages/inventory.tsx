@@ -362,7 +362,7 @@ export default function Inventory() {
       <Code39Scanner
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
-        onScan={handleScanResult}
+        navigateOnScan={true}
       />
 
       <ConsumedComponentsModal

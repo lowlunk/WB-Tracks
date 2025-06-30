@@ -121,6 +121,43 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Orders for daily pick lists
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  orderNumber: varchar("order_number", { length: 100 }).notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("pending"), // 'pending', 'in_progress', 'completed', 'cancelled'
+  priority: text("priority").notNull().default("normal"), // 'low', 'normal', 'high', 'urgent'
+  targetDate: timestamp("target_date"),
+  completedAt: timestamp("completed_at"),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  notes: text("notes"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Order items - components that need to be picked for each order
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id).notNull(),
+  componentId: integer("component_id").references(() => components.id).notNull(),
+  quantityRequested: integer("quantity_requested").notNull(),
+  quantityPicked: integer("quantity_picked").notNull().default(0),
+  fromLocationId: integer("from_location_id").references(() => inventoryLocations.id), // Source warehouse location
+  toLocationId: integer("to_location_id").references(() => inventoryLocations.id), // Target insert line location
+  status: text("status").notNull().default("pending"), // 'pending', 'picked', 'transferred', 'completed'
+  notes: text("notes"),
+  pickedAt: timestamp("picked_at"),
+  transferredAt: timestamp("transferred_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  unique().on(table.orderId, table.componentId), // Prevent duplicate components in same order
+]);
+
 // Temporary barcodes for testing purposes
 export const temporaryBarcodes = pgTable("temporary_barcodes", {
   id: serial("id").primaryKey(),
@@ -205,6 +242,42 @@ export const temporaryBarcodeRelations = relations(temporaryBarcodes, ({ one }) 
   createdBy: one(users, {
     fields: [temporaryBarcodes.createdBy],
     references: [users.id],
+  }),
+}));
+
+// Orders relations
+export const orderRelations = relations(orders, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [orders.createdBy],
+    references: [users.id],
+    relationName: "orderCreator",
+  }),
+  assignedTo: one(users, {
+    fields: [orders.assignedTo],
+    references: [users.id],
+    relationName: "orderAssignee",
+  }),
+  orderItems: many(orderItems),
+}));
+
+export const orderItemRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  component: one(components, {
+    fields: [orderItems.componentId],
+    references: [components.id],
+  }),
+  fromLocation: one(inventoryLocations, {
+    fields: [orderItems.fromLocationId],
+    references: [inventoryLocations.id],
+    relationName: "fromLocation",
+  }),
+  toLocation: one(inventoryLocations, {
+    fields: [orderItems.toLocationId],
+    references: [inventoryLocations.id],
+    relationName: "toLocation",
   }),
 }));
 

@@ -444,7 +444,7 @@ export default function Dashboard() {
       <Code39Scanner
         isOpen={showScanner}
         onClose={() => setShowScanner(false)}
-        onScan={handleScanResult}
+        navigateOnScan={true}
       />
 
       <TransferModal

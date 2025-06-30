@@ -189,10 +189,7 @@ function Router() {
       <Code39Scanner
         isOpen={showScanner}
         onClose={() => setShowScanner(false)}
-        onScan={(result) => {
-          console.log('Scanned:', result);
-          setShowScanner(false);
-        }}
+        navigateOnScan={true}
       />
 
 

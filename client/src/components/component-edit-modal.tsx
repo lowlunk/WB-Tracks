@@ -517,8 +517,6 @@ export default function ComponentEditModal({ isOpen, onClose, componentId, readO
           isOpen={showBarcodeScanner}
           onClose={() => setShowBarcodeScanner(false)}
           onScan={handleBarcodeScan}
-          title="Scan Component Barcode"
-          description="Scan an existing 2D barcode to assign it to this component"
         />
       </DialogContent>
     </Dialog>
