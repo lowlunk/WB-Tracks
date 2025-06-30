@@ -59,19 +59,19 @@ export default function Dashboard() {
   useWebSocket();
 
   // Data queries
-  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+  const { data: dashboardStats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
 
-  const { data: components } = useQuery({
+  const { data: components = [] } = useQuery({
     queryKey: ["/api/components"],
   });
 
-  const { data: recentActivity, isLoading: activityLoading } = useQuery({
+  const { data: recentActivity = [], isLoading: activityLoading } = useQuery({
     queryKey: ["/api/dashboard/recent-activity"],
   });
 
-  const { data: lowStockItems } = useQuery({
+  const { data: lowStockItems = [] } = useQuery({
     queryKey: ["/api/inventory/low-stock"],
     refetchInterval: 30000,
   });
