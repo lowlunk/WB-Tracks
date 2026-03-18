@@ -18,7 +18,6 @@ import ServerRackPage from "@/pages/server-rack";
 import CamerasPage from "@/pages/cameras";
 import NvrsPage from "@/pages/nvrs";
 import PunchClocksPage from "@/pages/punch-clocks";
-import { PerplexityAttribution } from "@/components/PerplexityAttribution";
 
 function AppRouter() {
   return (
@@ -58,7 +57,7 @@ function App() {
                   </header>
                   <main className="flex-1 overflow-y-auto">
                     <AppRouter />
-                    <PerplexityAttribution />
+
                   </main>
                 </div>
               </div>
