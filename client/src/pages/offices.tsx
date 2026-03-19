@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
@@ -21,6 +22,7 @@ export default function OfficesPage() {
   const [addOfficeOpen, setAddOfficeOpen] = useState(false);
   const [addPlateOpen, setAddPlateOpen] = useState<string | null>(null);
   const [editOffice, setEditOffice] = useState<Office | null>(null);
+  const [editPlate, setEditPlate] = useState<PortPlate | null>(null);
   const [search, setSearch] = useState("");
   const [expandedOffices, setExpandedOffices] = useState<Set<string>>(new Set());
 
@@ -77,6 +79,18 @@ export default function OfficesPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/port-plates"] });
       setAddPlateOpen(null);
       toast({ title: "Port plate added" });
+    },
+  });
+
+  const updatePlateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+      const res = await apiRequest("PATCH", `/api/port-plates/${id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/port-plates"] });
+      setEditPlate(null);
+      toast({ title: "Port plate updated" });
     },
   });
 
@@ -266,6 +280,9 @@ export default function OfficesPage() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <StatusBadge status={plate.status} />
+                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEditPlate(plate)} data-testid={`button-edit-plate-${plate.id}`}>
+                                  <Pencil className="h-3 w-3 text-muted-foreground" />
+                                </Button>
                                 <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => deletePlateMutation.mutate(plate.id)} data-testid={`button-delete-plate-${plate.id}`}>
                                   <Trash2 className="h-3 w-3 text-muted-foreground" />
                                 </Button>
@@ -290,6 +307,55 @@ export default function OfficesPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Port Plate Dialog */}
+      <Dialog open={!!editPlate} onOpenChange={(o) => !o && setEditPlate(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit {editPlate?.plateLabel}</DialogTitle></DialogHeader>
+          {editPlate && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                updatePlateMutation.mutate({
+                  id: editPlate.id,
+                  data: {
+                    plateLabel: fd.get("plateLabel") as string,
+                    portCount: parseInt(fd.get("portCount") as string) || 2,
+                    connectedSwitchId: fd.get("connectedSwitchId") as string || null,
+                    connectedPorts: fd.get("connectedPorts") as string || null,
+                    status: fd.get("status") as string,
+                    notes: fd.get("notes") as string || null,
+                  },
+                });
+              }}
+              className="space-y-3"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label htmlFor="ep-label">Plate Label</Label><Input id="ep-label" name="plateLabel" defaultValue={editPlate.plateLabel} required /></div>
+                <div><Label htmlFor="ep-count">Port Count</Label><Input id="ep-count" name="portCount" type="number" defaultValue={editPlate.portCount} /></div>
+                <div><Label htmlFor="ep-switch">Connected Switch ID</Label><Input id="ep-switch" name="connectedSwitchId" defaultValue={editPlate.connectedSwitchId || ""} /></div>
+                <div><Label htmlFor="ep-ports">Connected Ports</Label><Input id="ep-ports" name="connectedPorts" defaultValue={editPlate.connectedPorts || ""} /></div>
+                <div className="col-span-2">
+                  <Label htmlFor="ep-status">Status</Label>
+                  <Select name="status" defaultValue={editPlate.status}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="offline">Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div><Label htmlFor="ep-notes">Notes</Label><Textarea id="ep-notes" name="notes" className="resize-none" defaultValue={editPlate.notes || ""} /></div>
+              <Button type="submit" className="w-full" disabled={updatePlateMutation.isPending}>
+                {updatePlateMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Office Dialog */}
       <Dialog open={!!editOffice} onOpenChange={(o) => !o && setEditOffice(null)}>

@@ -133,7 +133,8 @@ export class MemStorage implements IStorage {
     const sw4: Switch = { id: "sw-4", name: "Lab Switch", model: "TP-Link TL-SG1016", ipAddress: null, location: "Lab", totalPorts: 16, manageable: false, status: "warning", notes: "Losing ports intermittently" };
     [sw1, sw2, sw3, sw4].forEach(s => this.switchesMap.set(s.id, s));
 
-    // Seed some ports for Core Switch 1
+    // Seed ports for all switches
+    // Core Switch 1 (sw-1) — 28 ports
     for (let i = 1; i <= 28; i++) {
       const port: SwitchPort = {
         id: `sp-1-${i}`,
@@ -145,6 +146,51 @@ export class MemStorage implements IStorage {
         speed: i <= 4 ? "1Gbps" : "100Mbps",
         connectedTo: i <= 4 ? `Uplink to ISP/Router Port ${i}` : i <= 10 ? `Server ${i - 4}` : null,
         notes: null,
+      };
+      this.switchPortsMap.set(port.id, port);
+    }
+    // Floor 1 Switch (sw-2) — 26 ports
+    for (let i = 1; i <= 26; i++) {
+      const port: SwitchPort = {
+        id: `sp-2-${i}`,
+        switchId: "sw-2",
+        portNumber: i,
+        label: i <= 10 ? `Office Port ${i}` : i === 25 ? "Uplink to Core" : null,
+        status: i <= 14 ? "in_use" : i <= 20 ? "available" : i <= 24 ? "reserved" : i === 25 ? "in_use" : "available",
+        vlan: i <= 14 ? "VLAN 20" : "VLAN 20",
+        speed: "100Mbps",
+        connectedTo: i <= 10 ? `PP-${100 + Math.ceil(i / 2)} Port ${((i - 1) % 2) + 1}` : i === 25 ? "Core Switch 1 Port 15" : null,
+        notes: null,
+      };
+      this.switchPortsMap.set(port.id, port);
+    }
+    // Floor 2 Switch (sw-3) — 24 ports
+    for (let i = 1; i <= 24; i++) {
+      const port: SwitchPort = {
+        id: `sp-3-${i}`,
+        switchId: "sw-3",
+        portNumber: i,
+        label: i <= 4 ? `Office 201 Port ${i}` : i === 24 ? "Uplink to Core" : null,
+        status: i <= 8 ? "in_use" : i <= 18 ? "available" : i <= 22 ? "reserved" : i === 24 ? "in_use" : "available",
+        vlan: "VLAN 30",
+        speed: "100Mbps",
+        connectedTo: i <= 4 ? `PP-201A Port ${i}` : i === 24 ? "Core Switch 1 Port 16" : null,
+        notes: null,
+      };
+      this.switchPortsMap.set(port.id, port);
+    }
+    // Lab Switch (sw-4) — 16 ports
+    for (let i = 1; i <= 16; i++) {
+      const port: SwitchPort = {
+        id: `sp-4-${i}`,
+        switchId: "sw-4",
+        portNumber: i,
+        label: i <= 3 ? `Lab Bench ${i}` : i === 16 ? "Uplink" : null,
+        status: i <= 6 ? "in_use" : i <= 12 ? "available" : i <= 15 ? "reserved" : "in_use",
+        vlan: "VLAN 40",
+        speed: "100Mbps",
+        connectedTo: i <= 3 ? `Lab Bench ${i} PC` : i === 16 ? "Core Switch 1 Port 17" : null,
+        notes: i === 5 ? "Intermittent" : null,
       };
       this.switchPortsMap.set(port.id, port);
     }

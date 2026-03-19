@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Network, MapPin, Globe, Trash2 } from "lucide-react";
+import { Plus, Network, MapPin, Globe, Trash2, Pencil } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import type { Switch } from "@shared/schema";
@@ -20,6 +20,7 @@ import type { Switch } from "@shared/schema";
 export default function SwitchesPage() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [editSwitch, setEditSwitch] = useState<Switch | null>(null);
   const [search, setSearch] = useState("");
 
   const { data: switches, isLoading } = useQuery<Switch[]>({
@@ -36,6 +37,19 @@ export default function SwitchesPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       setOpen(false);
       toast({ title: "Switch added" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Switch> }) => {
+      const res = await apiRequest("PATCH", `/api/switches/${id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/switches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      setEditSwitch(null);
+      toast({ title: "Switch updated" });
     },
   });
 
@@ -183,6 +197,14 @@ export default function SwitchesPage() {
                   <Button
                     size="icon"
                     variant="ghost"
+                    onClick={(e) => { e.preventDefault(); setEditSwitch(sw); }}
+                    data-testid={`button-edit-switch-${sw.id}`}
+                  >
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     onClick={(e) => { e.preventDefault(); deleteMutation.mutate(sw.id); }}
                     data-testid={`button-delete-switch-${sw.id}`}
                   >
@@ -200,6 +222,61 @@ export default function SwitchesPage() {
           </div>
         )}
       </div>
+      {/* Edit Switch Dialog */}
+      <Dialog open={!!editSwitch} onOpenChange={(o) => !o && setEditSwitch(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit {editSwitch?.name}</DialogTitle></DialogHeader>
+          {editSwitch && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                updateMutation.mutate({
+                  id: editSwitch.id,
+                  data: {
+                    name: fd.get("name") as string,
+                    model: fd.get("model") as string || null,
+                    ipAddress: fd.get("ipAddress") as string || null,
+                    location: fd.get("location") as string || null,
+                    totalPorts: parseInt(fd.get("totalPorts") as string) || 24,
+                    manageable: fd.get("manageable") === "on",
+                    status: fd.get("status") as string || "active",
+                    notes: fd.get("notes") as string || null,
+                  },
+                });
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label htmlFor="e-name">Name</Label><Input id="e-name" name="name" defaultValue={editSwitch.name} required /></div>
+                <div><Label htmlFor="e-model">Model</Label><Input id="e-model" name="model" defaultValue={editSwitch.model || ""} /></div>
+                <div><Label htmlFor="e-ip">IP Address</Label><Input id="e-ip" name="ipAddress" defaultValue={editSwitch.ipAddress || ""} /></div>
+                <div><Label htmlFor="e-loc">Location</Label><Input id="e-loc" name="location" defaultValue={editSwitch.location || ""} /></div>
+                <div><Label htmlFor="e-ports">Total Ports</Label><Input id="e-ports" name="totalPorts" type="number" defaultValue={editSwitch.totalPorts} /></div>
+                <div>
+                  <Label htmlFor="e-status">Status</Label>
+                  <Select name="status" defaultValue={editSwitch.status}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="offline">Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <SwitchToggle id="e-manageable" name="manageable" defaultChecked={editSwitch.manageable} />
+                <Label htmlFor="e-manageable">Manageable</Label>
+              </div>
+              <div><Label htmlFor="e-notes">Notes</Label><Textarea id="e-notes" name="notes" className="resize-none" defaultValue={editSwitch.notes || ""} /></div>
+              <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
