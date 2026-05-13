@@ -7,6 +7,11 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
+  // ── Health check ──────────────────────────────────────
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok", ts: new Date().toISOString() });
+  });
+
   // ── Switches ──────────────────────────────────────────
   app.get("/api/switches", async (_req, res) => {
     res.json(await storage.getSwitches());

@@ -335,4 +335,9 @@ export class MemStorage implements IStorage {
   async deletePunchClock(id: string) { return this.punchClockCrud.remove(id); }
 }
 
-export const storage = new MemStorage();
+import { DatabaseStorage } from "./db-storage";
+
+// Use Postgres in production, fallback to memory in dev without DATABASE_URL
+export const storage: IStorage = process.env.DATABASE_URL
+  ? new DatabaseStorage()
+  : new MemStorage();
